@@ -1,78 +1,78 @@
-"S:\Texas Instruments2\BLE-CC254x-1.4.0\Components\osal\common\OSAL_Memory.c"
+"C:\Users\Rune\Desktop\Easy-Connect Code\CC2540\ECM\Components\osal\common\OSAL_Memory.c"
 -std=c99
 -ferror-limit=100
 -I
-S:\Texas Instruments2\BLE-CC254x-1.4.0\Projects\ble\SimpleBLEPeripheral\CC2540DB\..\..\common
+C:\Users\Rune\Desktop\Easy-Connect Code\CC2540\ECM\Projects\ble\SimpleBLEPeripheral\CC2540DB\..\..\common
 -I
-S:\Texas Instruments2\BLE-CC254x-1.4.0\Projects\ble\SimpleBLEPeripheral\CC2540DB\..\..\include
+C:\Users\Rune\Desktop\Easy-Connect Code\CC2540\ECM\Projects\ble\SimpleBLEPeripheral\CC2540DB\..\..\include
 -I
-S:\Texas Instruments2\BLE-CC254x-1.4.0\Projects\ble\SimpleBLEPeripheral\CC2540DB\..\..\..\..\Components\hal\include
+C:\Users\Rune\Desktop\Easy-Connect Code\CC2540\ECM\Projects\ble\SimpleBLEPeripheral\CC2540DB\..\..\..\..\Components\hal\include
 -I
-S:\Texas Instruments2\BLE-CC254x-1.4.0\Projects\ble\SimpleBLEPeripheral\CC2540DB\..\..\..\..\Components\hal\target\CC2540EB
+C:\Users\Rune\Desktop\Easy-Connect Code\CC2540\ECM\Projects\ble\SimpleBLEPeripheral\CC2540DB\..\..\..\..\Components\hal\target\CC2540EB
 -I
-S:\Texas Instruments2\BLE-CC254x-1.4.0\Projects\ble\SimpleBLEPeripheral\CC2540DB\..\..\..\..\Components\osal\include
+C:\Users\Rune\Desktop\Easy-Connect Code\CC2540\ECM\Projects\ble\SimpleBLEPeripheral\CC2540DB\..\..\..\..\Components\osal\include
 -I
-S:\Texas Instruments2\BLE-CC254x-1.4.0\Projects\ble\SimpleBLEPeripheral\CC2540DB\..\..\..\..\Components\services\saddr
+C:\Users\Rune\Desktop\Easy-Connect Code\CC2540\ECM\Projects\ble\SimpleBLEPeripheral\CC2540DB\..\..\..\..\Components\services\saddr
 -I
-S:\Texas Instruments2\BLE-CC254x-1.4.0\Projects\ble\SimpleBLEPeripheral\CC2540DB\..\..\..\..\Components\ble\include
+C:\Users\Rune\Desktop\Easy-Connect Code\CC2540\ECM\Projects\ble\SimpleBLEPeripheral\CC2540DB\..\..\..\..\Components\ble\include
 -I
-S:\Texas Instruments2\BLE-CC254x-1.4.0\Projects\ble\SimpleBLEPeripheral\CC2540DB\..\..\..\..\Components\ble\controller\phy
+C:\Users\Rune\Desktop\Easy-Connect Code\CC2540\ECM\Projects\ble\SimpleBLEPeripheral\CC2540DB\..\..\..\..\Components\ble\controller\phy
 -I
-S:\Texas Instruments2\BLE-CC254x-1.4.0\Projects\ble\SimpleBLEPeripheral\CC2540DB\..\..\..\..\Components\ble\controller\include
+C:\Users\Rune\Desktop\Easy-Connect Code\CC2540\ECM\Projects\ble\SimpleBLEPeripheral\CC2540DB\..\..\..\..\Components\ble\controller\include
 -I
-S:\Texas Instruments2\BLE-CC254x-1.4.0\Projects\ble\SimpleBLEPeripheral\CC2540DB\..\..\..\..\Components\ble\hci
+C:\Users\Rune\Desktop\Easy-Connect Code\CC2540\ECM\Projects\ble\SimpleBLEPeripheral\CC2540DB\..\..\..\..\Components\ble\hci
 -I
-S:\Texas Instruments2\BLE-CC254x-1.4.0\Projects\ble\SimpleBLEPeripheral\CC2540DB\..\..\..\..\Components\ble\host
+C:\Users\Rune\Desktop\Easy-Connect Code\CC2540\ECM\Projects\ble\SimpleBLEPeripheral\CC2540DB\..\..\..\..\Components\ble\host
 -I
-S:\Texas Instruments2\BLE-CC254x-1.4.0\Projects\ble\SimpleBLEPeripheral\CC2540DB\..\..\common\cc2540
+C:\Users\Rune\Desktop\Easy-Connect Code\CC2540\ECM\Projects\ble\SimpleBLEPeripheral\CC2540DB\..\..\common\cc2540
 -I
-S:\Texas Instruments2\BLE-CC254x-1.4.0\Projects\ble\SimpleBLEPeripheral\CC2540DB\..\..\common\npi\npi_np
+C:\Users\Rune\Desktop\Easy-Connect Code\CC2540\ECM\Projects\ble\SimpleBLEPeripheral\CC2540DB\..\..\common\npi\npi_np
 -I
-S:\Texas Instruments2\BLE-CC254x-1.4.0\Projects\ble\SimpleBLEPeripheral\CC2540DB\..\..\Profiles\Roles
+C:\Users\Rune\Desktop\Easy-Connect Code\CC2540\ECM\Projects\ble\SimpleBLEPeripheral\CC2540DB\..\..\Profiles\Roles
 -I
-S:\Texas Instruments2\BLE-CC254x-1.4.0\Projects\ble\SimpleBLEPeripheral\CC2540DB\..\..\Profiles\SimpleProfile
+C:\Users\Rune\Desktop\Easy-Connect Code\CC2540\ECM\Projects\ble\SimpleBLEPeripheral\CC2540DB\..\..\Profiles\SimpleProfile
 -I
-S:\Texas Instruments2\BLE-CC254x-1.4.0\Projects\ble\SimpleBLEPeripheral\CC2540DB\..\..\Profiles\Keys
+C:\Users\Rune\Desktop\Easy-Connect Code\CC2540\ECM\Projects\ble\SimpleBLEPeripheral\CC2540DB\..\..\Profiles\Keys
 -I
-S:\Texas Instruments2\BLE-CC254x-1.4.0\Projects\ble\SimpleBLEPeripheral\CC2540DB\..\..\Profiles\DevInfo
+C:\Users\Rune\Desktop\Easy-Connect Code\CC2540\ECM\Projects\ble\SimpleBLEPeripheral\CC2540DB\..\..\Profiles\DevInfo
 -I
 C:\Program Files (x86)\IAR Systems\Embedded Workbench 6.5\8051\inc
 -I
 C:\Program Files (x86)\IAR Systems\Embedded Workbench 6.5\8051\inc\clib
 -I
-S:\Texas Instruments2\BLE-CC254x-1.4.0\Projects\ble\common
+C:\Users\Rune\Desktop\Easy-Connect Code\CC2540\ECM\Projects\ble\common
 -I
-S:\Texas Instruments2\BLE-CC254x-1.4.0\Projects\ble\include
+C:\Users\Rune\Desktop\Easy-Connect Code\CC2540\ECM\Projects\ble\include
 -I
-S:\Texas Instruments2\BLE-CC254x-1.4.0\Components\hal\include
+C:\Users\Rune\Desktop\Easy-Connect Code\CC2540\ECM\Components\hal\include
 -I
-S:\Texas Instruments2\BLE-CC254x-1.4.0\Components\hal\target\CC2540EB
+C:\Users\Rune\Desktop\Easy-Connect Code\CC2540\ECM\Components\hal\target\CC2540EB
 -I
-S:\Texas Instruments2\BLE-CC254x-1.4.0\Components\osal\include
+C:\Users\Rune\Desktop\Easy-Connect Code\CC2540\ECM\Components\osal\include
 -I
-S:\Texas Instruments2\BLE-CC254x-1.4.0\Components\services\saddr
+C:\Users\Rune\Desktop\Easy-Connect Code\CC2540\ECM\Components\services\saddr
 -I
-S:\Texas Instruments2\BLE-CC254x-1.4.0\Components\ble\include
+C:\Users\Rune\Desktop\Easy-Connect Code\CC2540\ECM\Components\ble\include
 -I
-S:\Texas Instruments2\BLE-CC254x-1.4.0\Components\ble\controller\phy
+C:\Users\Rune\Desktop\Easy-Connect Code\CC2540\ECM\Components\ble\controller\phy
 -I
-S:\Texas Instruments2\BLE-CC254x-1.4.0\Components\ble\controller\include
+C:\Users\Rune\Desktop\Easy-Connect Code\CC2540\ECM\Components\ble\controller\include
 -I
-S:\Texas Instruments2\BLE-CC254x-1.4.0\Components\ble\hci
+C:\Users\Rune\Desktop\Easy-Connect Code\CC2540\ECM\Components\ble\hci
 -I
-S:\Texas Instruments2\BLE-CC254x-1.4.0\Components\ble\host
+C:\Users\Rune\Desktop\Easy-Connect Code\CC2540\ECM\Components\ble\host
 -I
-S:\Texas Instruments2\BLE-CC254x-1.4.0\Projects\ble\common\cc2540
+C:\Users\Rune\Desktop\Easy-Connect Code\CC2540\ECM\Projects\ble\common\cc2540
 -I
-S:\Texas Instruments2\BLE-CC254x-1.4.0\Projects\ble\common\npi\npi_np
+C:\Users\Rune\Desktop\Easy-Connect Code\CC2540\ECM\Projects\ble\common\npi\npi_np
 -I
-S:\Texas Instruments2\BLE-CC254x-1.4.0\Projects\ble\Profiles\Roles
+C:\Users\Rune\Desktop\Easy-Connect Code\CC2540\ECM\Projects\ble\Profiles\Roles
 -I
-S:\Texas Instruments2\BLE-CC254x-1.4.0\Projects\ble\Profiles\SimpleProfile
+C:\Users\Rune\Desktop\Easy-Connect Code\CC2540\ECM\Projects\ble\Profiles\SimpleProfile
 -I
-S:\Texas Instruments2\BLE-CC254x-1.4.0\Projects\ble\Profiles\Keys
+C:\Users\Rune\Desktop\Easy-Connect Code\CC2540\ECM\Projects\ble\Profiles\Keys
 -I
-S:\Texas Instruments2\BLE-CC254x-1.4.0\Projects\ble\Profiles\DevInfo
+C:\Users\Rune\Desktop\Easy-Connect Code\CC2540\ECM\Projects\ble\Profiles\DevInfo
 -DINT_HEAP_LEN=3072
 -DHALNODEBUG=0
 -DOSAL_CBTIMER_NUM_TASKS=1
@@ -377,8 +377,8 @@ S:\Texas Instruments2\BLE-CC254x-1.4.0\Projects\ble\Profiles\DevInfo
 -D__PLAIN_INT_BITFIELD_IS_SIGNED__=1
 -D__HAS_LOCATED_DECLARATION__=1
 -D__IAR_COMPILERBASE__=593409
--D__DATE__="Feb 11 2014"
--D__TIME__="22:33:12"
+-D__DATE__="Feb 12 2014"
+-D__TIME__="00:09:36"
 -D__STDC__=1
 -D__STDC_VERSION__=199901L
 -D__STDC_HOSTED__=1
