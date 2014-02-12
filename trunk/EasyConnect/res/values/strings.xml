@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">EasyConnect</string>
+    <string name="action_settings">Settings</string>
+    <string name="hello_world">Hello world!</string>
+    <string name="title_activity_create_new_profile">CreateNewProfileActivity</string>
+    <string name="title_activity_module_list">ModuleListActivity</string>
+
+</resources>
