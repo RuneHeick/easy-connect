@@ -32,6 +32,22 @@
             android:name="iha.bachelor.smo.aba.rah.easyconnect.ModuleListActivity"
             android:label="@string/title_activity_module_list" >
         </activity>
+        <activity
+            android:name="iha.bachelor.smo.aba.rah.easyconnect.EditProfileActivity"
+            android:label="@string/title_activity_edit_profile" >
+        </activity>
+        <activity
+            android:name="iha.bachelor.smo.aba.rah.easyconnect.SettingsActivity"
+            android:label="@string/title_activity_settings" >
+        </activity>
+        <activity
+            android:name="iha.bachelor.smo.aba.rah.easyconnect.RoomUnitSetupActivity"
+            android:label="@string/title_activity_room_unit_setup" >
+        </activity>
+        <activity
+            android:name="iha.bachelor.smo.aba.rah.easyconnect.ConfigureModuleActivity"
+            android:label="@string/title_activity_configure_module" >
+        </activity>
     </application>
 
 </manifest>
