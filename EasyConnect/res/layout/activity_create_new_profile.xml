@@ -1,4 +1,4 @@
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -6,11 +6,47 @@
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
+    android:orientation="vertical"
     tools:context=".CreateNewProfileActivity" >
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/hello_world" />
+    	<EditText
+       		android:id="@+id/ProfileNameEditText"
+       		android:hint="@string/ProfileName"
+        	android:layout_width="wrap_content"
+        	android:layout_height="wrap_content"
+        	android:ems="10" />
+    	
 
-</RelativeLayout>
+    	<EditText
+        	android:id="@+id/EasyConnectPasswordEditText"
+        	android:hint="@string/ProfilePassword"
+        	android:layout_width="wrap_content"
+        	android:layout_height="wrap_content"
+        	android:ems="10"
+        	android:inputType="textPassword" />
+    	
+    	
+    	<EditText
+    	    android:id="@+id/WifiNameEditText"
+    	    android:hint="@string/WifiPassword"
+        	android:layout_width="wrap_content"
+        	android:layout_height="wrap_content"
+        	android:ems="10" />
+    	
+    	
+    	<EditText
+    	    android:id="@+id/WifiPasswordEditText"
+    	    android:hint="@string/WifiPassword"
+        	android:layout_width="wrap_content"
+        	android:layout_height="wrap_content"
+        	android:ems="10"
+        	android:inputType="textPassword" />
+    	
+    	
+    	<Button 
+        	android:text="@string/SaveProfile"
+	        android:layout_width="fill_parent" 
+    	    android:layout_height="wrap_content"
+        	android:onClick="SaveProfile" />
+    	
+</LinearLayout>
