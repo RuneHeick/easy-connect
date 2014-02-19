@@ -8670,14 +8670,29 @@
   </configuration>
   <group>
     <name>APP</name>
+    <group>
+      <name>Mangers</name>
+      <file>
+        <name>$PROJ_DIR$\..\Source\DeviceNameManger.c</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\..\Source\DeviceNameManger.h</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\..\Source\GAPManger.c</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\..\Source\GAPManger.h</name>
+      </file>
+    </group>
+    <file>
+      <name>$PROJ_DIR$\..\Source\ECM_Controller.c</name>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\Source\ECM_Controller.h</name>
+    </file>
     <file>
       <name>$PROJ_DIR$\..\Source\OSAL_SimpleBLEPeripheral.c</name>
-    </file>
-    <file>
-      <name>$PROJ_DIR$\..\Source\simpleBLEPeripheral.c</name>
-    </file>
-    <file>
-      <name>$PROJ_DIR$\..\Source\simpleBLEPeripheral.h</name>
     </file>
     <file>
       <name>$PROJ_DIR$\..\Source\SimpleBLEPeripheral_Main.c</name>
