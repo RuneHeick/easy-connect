@@ -153,25 +153,26 @@ static uint8 scanRspData[] =
   // complete name
   0x14,   // length of this data
   GAP_ADTYPE_LOCAL_NAME_COMPLETE,
-  0x53,   // 'S'
-  0x69,   // 'i'
-  0x6d,   // 'm'
-  0x70,   // 'p'
-  0x6c,   // 'l'
-  0x65,   // 'e'
-  0x42,   // 'B'
-  0x4c,   // 'L'
-  0x45,   // 'E'
-  0x50,   // 'P'
-  0x65,   // 'e'
-  0x72,   // 'r'
-  0x69,   // 'i'
-  0x70,   // 'p'
-  0x68,   // 'h'
-  0x65,   // 'e'
-  0x72,   // 'r'
-  0x61,   // 'a'
-  0x6c,   // 'l'
+  'E',   // 'S'
+  'a',   // 'i'
+  's',   // 'm'
+  'y',   // 'p'
+  ' ',   // 'l'
+  'C',   // 'e'
+  'o',   // 'B'
+  'n',   // 'L'
+  'n',   // 'E'
+  'e',   // 'P'
+  'c',   // 'e'
+  't',   // 'r'
+  ' ',   // 'i'
+  'M',   // 'p'
+  'o',   // 'h'
+  'd',   // 'e'
+  'u',   // 'r'
+  'l',   // 'a'
+  'e',   // 'l'
+  
 
   // connection interval range
   0x05,   // length of this data
@@ -204,11 +205,10 @@ static uint8 advertData[] =
   GAP_ADTYPE_16BIT_MORE,      // some of the UUID's, but not all
   LO_UINT16( SIMPLEPROFILE_SERV_UUID ),
   HI_UINT16( SIMPLEPROFILE_SERV_UUID ),
-
 };
 
 // GAP GATT Attributes
-static uint8 attDeviceName[GAP_DEVICE_NAME_LEN] = "Simple BLE Peripheral";
+static uint8 attDeviceName[GAP_DEVICE_NAME_LEN] = "Easy Connect Module";
 
 /*********************************************************************
  * LOCAL FUNCTIONS
