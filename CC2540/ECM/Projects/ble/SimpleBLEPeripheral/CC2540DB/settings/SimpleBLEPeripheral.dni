@@ -9,7 +9,7 @@ TriggerName=main
 LimitSize=0
 ByteLimit=50
 [DebugChecksum]
-Checksum=1735762484
+Checksum=1940728877
 [CallStack]
 ShowArgs=0
 [Disassembly]
@@ -19,22 +19,19 @@ Fmt0=struct attAttribute_t-handle	4	0
 [watch_formats]
 Fmt0={W}0:NameLength	3	0
 Fmt1={W}0:nameSize	3	0
+Fmt2={W}0:scanRspSize	3	0
 [TermIOLog]
 LoggingEnabled=_ 0
 LogFile=_ ""
-[Breakpoints]
-Bp0=_ "STD_CODE" "{$PROJ_DIR$\..\Source\GAPManger.c}.204.1" 0 0 0 0 "" 0 ""
-Bp1=_ "STD_CODE" "{$PROJ_DIR$\..\Source\GAPManger.c}.207.5" 0 0 0 0 "" 0 ""
-Bp2=_ "STD_CODE" "{$PROJ_DIR$\..\Source\GAPManger.c}.204.25" 0 0 0 0 "" 0 ""
-Bp3=_ "STD_CODE" "{$PROJ_DIR$\..\Source\ECM_Controller.c}.95.3" 1 0 0 0 "" 0 ""
-Count=4
-[ChipconEmu]
-Stop timers on halt=1
-Leave target running=1
 [Log file]
 LoggingEnabled=_ 0
 LogFile=_ ""
 Category=_ 0
+[Breakpoints]
+Count=0
+[ChipconEmu]
+Stop timers on halt=0
+Leave target running=1
 [Aliases]
 A0=_ "C:\Users\Rune\Desktop\Easy-Connect Code\CC2540\ECM\Components\hal\target\CC2540EB\hal_aes.c" ""
 A1=_ "C:\Users\Rune\Desktop\Easy-Connect Code\CC2540\ECM\Components\hal\target\CC2540EB\hal_startup.c" ""
