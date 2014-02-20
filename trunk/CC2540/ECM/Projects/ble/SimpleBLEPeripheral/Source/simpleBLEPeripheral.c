@@ -40,7 +40,7 @@
 /*********************************************************************
  * INCLUDES
  */
-
+#include <stdio.h>
 #include "bcomdef.h"
 #include "OSAL.h"
 #include "OSAL_PwrMgr.h"
@@ -69,6 +69,7 @@
 #include "gapbondmgr.h"
 
 #include "simpleBLEPeripheral.h"
+#include "DeviceNameManger.h"
 
 #if defined FEATURE_OAD
   #include "oad.h"
@@ -124,6 +125,9 @@
 // Length of bd addr as a string
 #define B_ADDR_STR_LEN                        15
 
+#define MAX_SCAN_RSP_SIZE                     31
+
+
 /*********************************************************************
  * TYPEDEFS
  */
@@ -148,45 +152,47 @@ static uint8 simpleBLEPeripheral_TaskID;   // Task ID for internal task/event pr
 static gaprole_States_t gapProfileState = GAPROLE_INIT;
 
 // GAP - SCAN RSP data (max size = 31 bytes)
-static uint8 scanRspData[] =
+static uint8* scanRspData ;
+
+
+uint8 GAPManget_SetupName()
 {
-  // complete name
-  0x14,   // length of this data
-  GAP_ADTYPE_LOCAL_NAME_COMPLETE,
-  'E',   // 'S'
-  'a',   // 'i'
-  's',   // 'm'
-  'y',   // 'p'
-  ' ',   // 'l'
-  'C',   // 'e'
-  'o',   // 'B'
-  'n',   // 'L'
-  'n',   // 'E'
-  'e',   // 'P'
-  'c',   // 'e'
-  't',   // 'r'
-  ' ',   // 'i'
-  'M',   // 'p'
-  'o',   // 'h'
-  'd',   // 'e'
-  'u',   // 'r'
-  'l',   // 'a'
-  'e',   // 'l'
-  
+    uint8 size = 0; 
+    uint8 nameSize = deviceName_GetNameLen();
+    uint8 buffersize = 2+nameSize+9;
+    
+    if(buffersize>MAX_SCAN_RSP_SIZE)
+    {
+      nameSize -= buffersize - MAX_SCAN_RSP_SIZE; 
+      buffersize = MAX_SCAN_RSP_SIZE;
+    } 
+      
+    scanRspData = osal_mem_alloc(buffersize);
+    if(scanRspData==NULL)
+      return 0; 
+    scanRspData[size++] = nameSize+1; // 1 for index field 
+    scanRspData[size++] = GAP_ADTYPE_LOCAL_NAME_COMPLETE; // index field 
+    
+    deviceName_GetName(&scanRspData[size],buffersize,nameSize);
+    size = size + nameSize;
+    
+    //Connection Info. 
+    scanRspData[size++] = 0x05;   // length of this data
+    scanRspData[size++] = GAP_ADTYPE_SLAVE_CONN_INTERVAL_RANGE;
+    scanRspData[size++] = LO_UINT16( DEFAULT_DESIRED_MIN_CONN_INTERVAL );   // 100ms
+    scanRspData[size++] = HI_UINT16( DEFAULT_DESIRED_MIN_CONN_INTERVAL );
+    scanRspData[size++] = LO_UINT16( DEFAULT_DESIRED_MAX_CONN_INTERVAL );   // 1s
+    scanRspData[size++] = HI_UINT16( DEFAULT_DESIRED_MAX_CONN_INTERVAL );
 
-  // connection interval range
-  0x05,   // length of this data
-  GAP_ADTYPE_SLAVE_CONN_INTERVAL_RANGE,
-  LO_UINT16( DEFAULT_DESIRED_MIN_CONN_INTERVAL ),   // 100ms
-  HI_UINT16( DEFAULT_DESIRED_MIN_CONN_INTERVAL ),
-  LO_UINT16( DEFAULT_DESIRED_MAX_CONN_INTERVAL ),   // 1s
-  HI_UINT16( DEFAULT_DESIRED_MAX_CONN_INTERVAL ),
+    // Tx power level
+    scanRspData[size++] = 0x02;   // length of this data
+    scanRspData[size++] = GAP_ADTYPE_POWER_LEVEL;
+    scanRspData[size++] = 0 ;     // 0dBm
+    
+    
+    return size; 
+}
 
-  // Tx power level
-  0x02,   // length of this data
-  GAP_ADTYPE_POWER_LEVEL,
-  0       // 0dBm
-};
 
 // GAP - Advertisement data (max size = 31 bytes, though this is
 // best kept short to conserve power while advertisting)
@@ -272,7 +278,7 @@ static simpleProfileCBs_t simpleBLEPeripheral_SimpleProfileCBs =
 void SimpleBLEPeripheral_Init( uint8 task_id )
 {
   simpleBLEPeripheral_TaskID = task_id;
-
+  deviceName_SetName("Rune Arbjeg Heicks Module"); 
   // Setup the GAP
   VOID GAP_SetParamValue( TGAP_CONN_PAUSE_PERIPHERAL, DEFAULT_CONN_PAUSE_PERIPHERAL );
   
@@ -296,12 +302,14 @@ void SimpleBLEPeripheral_Init( uint8 task_id )
     uint16 desired_max_interval = DEFAULT_DESIRED_MAX_CONN_INTERVAL;
     uint16 desired_slave_latency = DEFAULT_DESIRED_SLAVE_LATENCY;
     uint16 desired_conn_timeout = DEFAULT_DESIRED_CONN_TIMEOUT;
-
+    
+    uint8 RspLen = GAPManget_SetupName();
+    
     // Set the GAP Role Parameters
     GAPRole_SetParameter( GAPROLE_ADVERT_ENABLED, sizeof( uint8 ), &initial_advertising_enable );
     GAPRole_SetParameter( GAPROLE_ADVERT_OFF_TIME, sizeof( uint16 ), &gapRole_AdvertOffTime );
 
-    GAPRole_SetParameter( GAPROLE_SCAN_RSP_DATA, sizeof ( scanRspData ), scanRspData );
+    GAPRole_SetParameter( GAPROLE_SCAN_RSP_DATA, RspLen*sizeof( uint8 ) , scanRspData );
     GAPRole_SetParameter( GAPROLE_ADVERT_DATA, sizeof( advertData ), advertData );
 
     GAPRole_SetParameter( GAPROLE_PARAM_UPDATE_ENABLE, sizeof( uint8 ), &enable_update_request );

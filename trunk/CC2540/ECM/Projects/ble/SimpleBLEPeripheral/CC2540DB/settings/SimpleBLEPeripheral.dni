@@ -9,7 +9,7 @@ TriggerName=main
 LimitSize=0
 ByteLimit=50
 [DebugChecksum]
-Checksum=1940728877
+Checksum=755410895
 [CallStack]
 ShowArgs=0
 [Disassembly]
@@ -18,17 +18,21 @@ MixedMode=1
 Fmt0=struct attAttribute_t-handle	4	0
 [watch_formats]
 Fmt0={W}0:NameLength	3	0
-Fmt1={W}0:nameSize	3	0
-Fmt2={W}0:scanRspSize	3	0
-[TermIOLog]
-LoggingEnabled=_ 0
-LogFile=_ ""
+Fmt1={W}0:RspLen	3	0
+Fmt2={W}0:buffersize	3	0
+Fmt3={W}0:nameSize	3	0
+Fmt4={W}0:scanRspSize	3	0
+Fmt5={W}0:size	3	0
 [Log file]
 LoggingEnabled=_ 0
 LogFile=_ ""
 Category=_ 0
+[TermIOLog]
+LoggingEnabled=_ 0
+LogFile=_ ""
 [Breakpoints]
-Count=0
+Bp0=_ "STD_CODE" "{$PROJ_DIR$\..\Source\GenericValueManger.h}.19.1" 1 0 0 0 "" 0 ""
+Count=1
 [ChipconEmu]
 Stop timers on halt=0
 Leave target running=1
