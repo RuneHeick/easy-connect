@@ -218,8 +218,8 @@ void GAPManeger_Setup()
   }
 
   // Set the GAP Characteristics
-  GGS_SetParameter( GGS_DEVICE_NAME_ATT, GAP_DEVICE_NAME_LEN, attDeviceName );
-  //GGS_SetParameter( GGS_DEVICE_NAME_ATT, deviceName_GetNameLen(), (uint8*)deviceName_GetDeviceName() );
+  //GGS_SetParameter( GGS_DEVICE_NAME_ATT, GAP_DEVICE_NAME_LEN, attDeviceName );
+  GGS_SetParameter( GGS_DEVICE_NAME_ATT, deviceName_GetNameLen(), (uint8*)deviceName_GetDeviceName() );
 
   // Set advertising interval
   {

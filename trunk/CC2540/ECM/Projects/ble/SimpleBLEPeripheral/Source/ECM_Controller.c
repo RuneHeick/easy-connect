@@ -94,7 +94,7 @@ void SimpleBLEPeripheral_Init( uint8 task_id )
 {
   simpleBLEPeripheral_TaskID = task_id;
 
-  deviceName_SetName("Test Name 123");
+  deviceName_SetName("Test Name");
 
   GAPManeger_Setup();
  
