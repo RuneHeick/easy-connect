@@ -3,7 +3,7 @@
  */
 
 #include "DeviceNameManger.h"
-
+#include <stdio.h>
 
 //This Contains the Device Name. 
 static uint8* NamePtr; 
@@ -23,13 +23,13 @@ uint8 deviceName_GetNameLen()
 
 
 //returns len of Name, and puts name in buffer
-uint8 deviceName_GetName(uint8* buffer,uint8 bufferSize,uint8 startIndex)
+uint8 deviceName_GetName(uint8* buffer,uint8 bufferSize,uint8 count)
 {
   if(DeviceMangerIsInit==true)
   {
-   if(bufferSize-startIndex>=NameLength)
+   if(bufferSize>=count&&count<=NameLength)
    {
-      osal_memcpy(&buffer[startIndex], NamePtr, NameLength);
+      osal_memcpy(buffer, NamePtr, count);
       return NameLength;
    }
   }
@@ -52,6 +52,7 @@ bool deviceName_SetName(uint8* Name)
   NamePtr = osal_mem_alloc(len);
   if(NamePtr==NULL)
   {
+    printf("Name Error"); 
     deviceName_Reset();
     return false; 
   }
