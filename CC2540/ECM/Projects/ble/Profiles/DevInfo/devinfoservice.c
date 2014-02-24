@@ -49,6 +49,7 @@
 #include "gatt_profile_uuid.h"
 #include "gattservapp.h"
 
+#include "GenericValueManger.h"
 #include "devinfoservice.h"
 
 /*********************************************************************
@@ -72,12 +73,6 @@ CONST uint8 devInfoServUUID[ATT_BT_UUID_SIZE] =
   LO_UINT16(DEVINFO_SERV_UUID), HI_UINT16(DEVINFO_SERV_UUID)
 };
 
-// System ID
-CONST uint8 devInfoSystemIdUUID[ATT_BT_UUID_SIZE] =
-{
-  LO_UINT16(SYSTEM_ID_UUID), HI_UINT16(SYSTEM_ID_UUID)
-};
-
 // Model Number String
 CONST uint8 devInfoModelNumberUUID[ATT_BT_UUID_SIZE] =
 {
@@ -90,40 +85,10 @@ CONST uint8 devInfoSerialNumberUUID[ATT_BT_UUID_SIZE] =
   LO_UINT16(SERIAL_NUMBER_UUID), HI_UINT16(SERIAL_NUMBER_UUID)
 };
 
-// Firmware Revision String
-CONST uint8 devInfoFirmwareRevUUID[ATT_BT_UUID_SIZE] =
-{
-  LO_UINT16(FIRMWARE_REV_UUID), HI_UINT16(FIRMWARE_REV_UUID)
-};
-
-// Hardware Revision String
-CONST uint8 devInfoHardwareRevUUID[ATT_BT_UUID_SIZE] =
-{
-  LO_UINT16(HARDWARE_REV_UUID), HI_UINT16(HARDWARE_REV_UUID)
-};
-
-// Software Revision String
-CONST uint8 devInfoSoftwareRevUUID[ATT_BT_UUID_SIZE] =
-{
-  LO_UINT16(SOFTWARE_REV_UUID), HI_UINT16(SOFTWARE_REV_UUID)
-};
-
 // Manufacturer Name String
 CONST uint8 devInfoMfrNameUUID[ATT_BT_UUID_SIZE] =
 {
   LO_UINT16(MANUFACTURER_NAME_UUID), HI_UINT16(MANUFACTURER_NAME_UUID)
-};
-
-// IEEE 11073-20601 Regulatory Certification Data List
-CONST uint8 devInfo11073CertUUID[ATT_BT_UUID_SIZE] =
-{
-  LO_UINT16(IEEE_11073_CERT_DATA_UUID), HI_UINT16(IEEE_11073_CERT_DATA_UUID)
-};
-
-// PnP ID
-CONST uint8 devInfoPnpIdUUID[ATT_BT_UUID_SIZE] =
-{
-  LO_UINT16(PNP_ID_UUID), HI_UINT16(PNP_ID_UUID)
 };
 
 
@@ -146,53 +111,18 @@ CONST uint8 devInfoPnpIdUUID[ATT_BT_UUID_SIZE] =
 // Device Information Service attribute
 static CONST gattAttrType_t devInfoService = { ATT_BT_UUID_SIZE, devInfoServUUID };
 
-// System ID characteristic
-static uint8 devInfoSystemIdProps = GATT_PROP_READ;
-static uint8 devInfoSystemId[DEVINFO_SYSTEM_ID_LEN] = {0, 0, 0, 0, 0, 0, 0, 0};
-
 // Model Number String characteristic
 static uint8 devInfoModelNumberProps = GATT_PROP_READ;
-static const uint8 devInfoModelNumber[] = "Model Number";
+static GenericValue devInfoModelNumber; // = "Model Number";
 
 // Serial Number String characteristic
 static uint8 devInfoSerialNumberProps = GATT_PROP_READ;
-static const uint8 devInfoSerialNumber[] = "Serial Number";
-
-// Firmware Revision String characteristic
-static uint8 devInfoFirmwareRevProps = GATT_PROP_READ;
-static const uint8 devInfoFirmwareRev[] = "Firmware Revision";
-
-// Hardware Revision String characteristic
-static uint8 devInfoHardwareRevProps = GATT_PROP_READ;
-static const uint8 devInfoHardwareRev[] = "Hardware Revision";
-
-// Software Revision String characteristic
-static uint8 devInfoSoftwareRevProps = GATT_PROP_READ;
-static const uint8 devInfoSoftwareRev[] = "Software Revision";
+static GenericValue devInfoSerialNumber; // = "Serial Number";
 
 // Manufacturer Name String characteristic
 static uint8 devInfoMfrNameProps = GATT_PROP_READ;
-static const uint8 devInfoMfrName[] = "Manufacturer Name";
+static GenericValue devInfoMfrName; // = "Manufacturer Name som er meget meget langt fordi det er fra kina";
 
-// IEEE 11073-20601 Regulatory Certification Data List characteristic
-static uint8 devInfo11073CertProps = GATT_PROP_READ;
-static const uint8 devInfo11073Cert[] =
-{
-  DEVINFO_11073_BODY_EXP,      // authoritative body type
-  0x00,                       // authoritative body structure type
-                              // authoritative body data follows below:
-  'e', 'x', 'p', 'e', 'r', 'i', 'm', 'e', 'n', 't', 'a', 'l'
-};
-
-// System ID characteristic
-static uint8 devInfoPnpIdProps = GATT_PROP_READ;
-static uint8 devInfoPnpId[DEVINFO_PNP_ID_LEN] =
-{
-  1,                                      // Vendor ID source (1=Bluetooth SIG)
-  LO_UINT16(0x000D), HI_UINT16(0x000D),   // Vendor ID (Texas Instruments)
-  LO_UINT16(0x0000), HI_UINT16(0x0000),   // Product ID (vendor-specific)
-  LO_UINT16(0x0110), HI_UINT16(0x0110)    // Product version (JJ.M.N)
-};
 
 /*********************************************************************
  * Profile Attributes - Table
@@ -205,25 +135,9 @@ static gattAttribute_t devInfoAttrTbl[] =
     { ATT_BT_UUID_SIZE, primaryServiceUUID }, /* type */
     GATT_PERMIT_READ,                         /* permissions */
     0,                                        /* handle */
-    (uint8 *)&devInfoService                /* pValue */
+    (uint8 *)&devInfoService                  /* pValue */
   },
-
-    // System ID Declaration
-    {
-      { ATT_BT_UUID_SIZE, characterUUID },
-      GATT_PERMIT_READ,
-      0,
-      &devInfoSystemIdProps
-    },
-
-      // System ID Value
-      {
-        { ATT_BT_UUID_SIZE, devInfoSystemIdUUID },
-        GATT_PERMIT_READ,
-        0,
-        (uint8 *) devInfoSystemId
-      },
-
+  
     // Model Number String Declaration
     {
       { ATT_BT_UUID_SIZE, characterUUID },
@@ -237,7 +151,7 @@ static gattAttribute_t devInfoAttrTbl[] =
         { ATT_BT_UUID_SIZE, devInfoModelNumberUUID },
         GATT_PERMIT_READ,
         0,
-        (uint8 *) devInfoModelNumber
+        NULL
       },
 
     // Serial Number String Declaration
@@ -253,55 +167,7 @@ static gattAttribute_t devInfoAttrTbl[] =
         { ATT_BT_UUID_SIZE, devInfoSerialNumberUUID },
         GATT_PERMIT_READ,
         0,
-        (uint8 *) devInfoSerialNumber
-      },
-
-    // Firmware Revision String Declaration
-    {
-      { ATT_BT_UUID_SIZE, characterUUID },
-      GATT_PERMIT_READ,
-      0,
-      &devInfoFirmwareRevProps
-    },
-
-      // Firmware Revision Value
-      {
-        { ATT_BT_UUID_SIZE, devInfoFirmwareRevUUID },
-        GATT_PERMIT_READ,
-        0,
-        (uint8 *) devInfoFirmwareRev
-      },
-
-    // Hardware Revision String Declaration
-    {
-      { ATT_BT_UUID_SIZE, characterUUID },
-      GATT_PERMIT_READ,
-      0,
-      &devInfoHardwareRevProps
-    },
-
-      // Hardware Revision Value
-      {
-        { ATT_BT_UUID_SIZE, devInfoHardwareRevUUID },
-        GATT_PERMIT_READ,
-        0,
-        (uint8 *) devInfoHardwareRev
-      },
-
-    // Software Revision String Declaration
-    {
-      { ATT_BT_UUID_SIZE, characterUUID },
-      GATT_PERMIT_READ,
-      0,
-      &devInfoSoftwareRevProps
-    },
-
-      // Software Revision Value
-      {
-        { ATT_BT_UUID_SIZE, devInfoSoftwareRevUUID },
-        GATT_PERMIT_READ,
-        0,
-        (uint8 *) devInfoSoftwareRev
+        NULL
       },
 
     // Manufacturer Name String Declaration
@@ -317,39 +183,7 @@ static gattAttribute_t devInfoAttrTbl[] =
         { ATT_BT_UUID_SIZE, devInfoMfrNameUUID },
         GATT_PERMIT_READ,
         0,
-        (uint8 *) devInfoMfrName
-      },
-
-    // IEEE 11073-20601 Regulatory Certification Data List Declaration
-    {
-      { ATT_BT_UUID_SIZE, characterUUID },
-      GATT_PERMIT_READ,
-      0,
-      &devInfo11073CertProps
-    },
-
-      // IEEE 11073-20601 Regulatory Certification Data List Value
-      {
-        { ATT_BT_UUID_SIZE, devInfo11073CertUUID },
-        GATT_PERMIT_READ,
-        0,
-        (uint8 *) devInfo11073Cert
-      },
-
-    // PnP ID Declaration
-    {
-      { ATT_BT_UUID_SIZE, characterUUID },
-      GATT_PERMIT_READ,
-      0,
-      &devInfoPnpIdProps
-    },
-
-      // PnP ID Value
-      {
-        { ATT_BT_UUID_SIZE, devInfoPnpIdUUID },
-        GATT_PERMIT_READ,
-        0,
-        (uint8 *) devInfoPnpId
+        NULL
       }
 };
 
@@ -387,8 +221,12 @@ CONST gattServiceCBs_t devInfoCBs =
  *
  * @return  Success or Failure
  */
-bStatus_t DevInfo_AddService( void )
+bStatus_t DevInfo_AddService(char* Serial, char* ModelNr, char* MainifactureName )
 {
+  
+  GenericValue_SetString(&devInfoModelNumber, ModelNr);
+  GenericValue_SetString(&devInfoSerialNumber, Serial);
+  GenericValue_SetString(&devInfoMfrName, MainifactureName);
   // Register GATT attribute list and CBs with GATT Server App
   return GATTServApp_RegisterService( devInfoAttrTbl,
                                       GATT_NUM_ATTRS( devInfoAttrTbl ),
@@ -415,10 +253,6 @@ bStatus_t DevInfo_SetParameter( uint8 param, uint8 len, void *value )
 
   switch ( param )
   {
-     case DEVINFO_SYSTEM_ID:
-      osal_memcpy(devInfoSystemId, value, len);
-      break;
-
     default:
       ret = INVALIDPARAMETER;
       break;
@@ -446,39 +280,15 @@ bStatus_t DevInfo_GetParameter( uint8 param, void *value )
 
   switch ( param )
   {
-    case DEVINFO_SYSTEM_ID:
-      osal_memcpy(value, devInfoSystemId, sizeof(devInfoSystemId));
-      break;
-
     case DEVINFO_MODEL_NUMBER:
-      osal_memcpy(value, devInfoModelNumber, sizeof(devInfoModelNumber));
+      osal_memcpy(value, devInfoModelNumber.pValue, devInfoModelNumber.size);
       break;
     case DEVINFO_SERIAL_NUMBER:
-      osal_memcpy(value, devInfoSerialNumber, sizeof(devInfoSerialNumber));
-      break;
-
-    case DEVINFO_FIRMWARE_REV:
-      osal_memcpy(value, devInfoFirmwareRev, sizeof(devInfoFirmwareRev));
-      break;
-
-    case DEVINFO_HARDWARE_REV:
-      osal_memcpy(value, devInfoHardwareRev, sizeof(devInfoHardwareRev));
-      break;
-
-    case DEVINFO_SOFTWARE_REV:
-      osal_memcpy(value, devInfoSoftwareRev, sizeof(devInfoSoftwareRev));
+      osal_memcpy(value, devInfoSerialNumber.pValue, devInfoSerialNumber.size);
       break;
 
     case DEVINFO_MANUFACTURER_NAME:
-      osal_memcpy(value, devInfoMfrName, sizeof(devInfoMfrName));
-      break;
-
-    case DEVINFO_11073_CERT_DATA:
-      osal_memcpy(value, devInfo11073Cert, sizeof(devInfo11073Cert));
-      break;
-
-    case DEVINFO_PNP_ID:
-      osal_memcpy(value, devInfoPnpId, sizeof(devInfoPnpId));
+      osal_memcpy(value, devInfoMfrName.pValue, devInfoMfrName.size);
       break;
 
     default:
@@ -511,147 +321,63 @@ static uint8 devInfo_ReadAttrCB( uint16 connHandle, gattAttribute_t *pAttr,
 
   switch (uuid)
   {
-    case SYSTEM_ID_UUID:
-      // verify offset
-      if (offset >= sizeof(devInfoSystemId))
-      {
-        status = ATT_ERR_INVALID_OFFSET;
-      }
-      else
-      {
-        // determine read length
-        *pLen = MIN(maxLen, (sizeof(devInfoSystemId) - offset));
-
-        // copy data
-        osal_memcpy(pValue, &devInfoSystemId[offset], *pLen);
-      }
-      break;
-
     case MODEL_NUMBER_UUID:
+      if(devInfoModelNumber.status != READY)
+      {
+         status = ATT_ERR_UNLIKELY; 
+      }
       // verify offset
-      if (offset >= (sizeof(devInfoModelNumber) - 1))
+      else if (offset >= (devInfoModelNumber.size-1))
       {
         status = ATT_ERR_INVALID_OFFSET;
       }
       else
       {
         // determine read length (exclude null terminating character)
-        *pLen = MIN(maxLen, ((sizeof(devInfoModelNumber) - 1) - offset));
+        *pLen = MIN(maxLen, (devInfoModelNumber.size - 1) - offset);
 
         // copy data
-        osal_memcpy(pValue, &devInfoModelNumber[offset], *pLen);
+        osal_memcpy(pValue, &devInfoModelNumber.pValue[offset], *pLen);
       }
       break;
 
     case SERIAL_NUMBER_UUID:
+      if(devInfoSerialNumber.status != READY)
+      {
+         status = ATT_ERR_UNLIKELY; 
+      }
       // verify offset
-      if (offset >= (sizeof(devInfoSerialNumber) - 1))
+      else if (offset >= (devInfoSerialNumber.size - 1))
       {
         status = ATT_ERR_INVALID_OFFSET;
       }
       else
       {
         // determine read length (exclude null terminating character)
-        *pLen = MIN(maxLen, ((sizeof(devInfoSerialNumber) - 1) - offset));
+        *pLen = MIN(maxLen, (devInfoSerialNumber.size - 1) - offset);
 
         // copy data
-        osal_memcpy(pValue, &devInfoSerialNumber[offset], *pLen);
+        osal_memcpy(pValue, &devInfoSerialNumber.pValue[offset], *pLen);
       }
       break;
 
-    case FIRMWARE_REV_UUID:
-      // verify offset
-      if (offset >= (sizeof(devInfoFirmwareRev) - 1))
-      {
-        status = ATT_ERR_INVALID_OFFSET;
-      }
-      else
-      {
-        // determine read length (exclude null terminating character)
-        *pLen = MIN(maxLen, ((sizeof(devInfoFirmwareRev) - 1) - offset));
-        
-        // copy data
-        osal_memcpy(pValue, &devInfoFirmwareRev[offset], *pLen);
-      }
-      break;
-
-    case HARDWARE_REV_UUID:
-      // verify offset
-      if (offset >= (sizeof(devInfoHardwareRev) - 1))
-      {
-        status = ATT_ERR_INVALID_OFFSET;
-      }
-      else
-      {
-        // determine read length (exclude null terminating character)
-        *pLen = MIN(maxLen, ((sizeof(devInfoHardwareRev) - 1) - offset));
-
-        // copy data
-        osal_memcpy(pValue, &devInfoHardwareRev[offset], *pLen);
-      }
-      break;
-
-    case SOFTWARE_REV_UUID:
-      // verify offset
-      if (offset >= (sizeof(devInfoSoftwareRev) - 1))
-      {
-        status = ATT_ERR_INVALID_OFFSET;
-      }
-      else
-      {
-        // determine read length (exclude null terminating character)
-        *pLen = MIN(maxLen, ((sizeof(devInfoSoftwareRev) - 1) - offset));
-        
-        // copy data
-        osal_memcpy(pValue, &devInfoSoftwareRev[offset], *pLen);
-      }
-      break;
 
     case MANUFACTURER_NAME_UUID:
-      // verify offset
-      if (offset >= (sizeof(devInfoMfrName) - 1))
+      if(devInfoMfrName.status != READY)
+      {
+         status = ATT_ERR_UNLIKELY; 
+      }
+      else if (offset >= (devInfoMfrName.size - 1))
       {
         status = ATT_ERR_INVALID_OFFSET;
       }
       else
       {
         // determine read length (exclude null terminating character)
-        *pLen = MIN(maxLen, ((sizeof(devInfoMfrName) - 1) - offset));
+        *pLen = MIN(maxLen, (devInfoMfrName.size - 1) - offset);
         
         // copy data
-        osal_memcpy(pValue, &devInfoMfrName[offset], *pLen);
-      }
-      break;
-
-    case IEEE_11073_CERT_DATA_UUID:
-      // verify offset
-      if (offset >= sizeof(devInfo11073Cert))
-      {
-        status = ATT_ERR_INVALID_OFFSET;
-      }
-      else
-      {
-        // determine read length
-        *pLen = MIN(maxLen, (sizeof(devInfo11073Cert) - offset));
-
-        // copy data
-        osal_memcpy(pValue, &devInfo11073Cert[offset], *pLen);
-      }
-      break;
-
-    case PNP_ID_UUID:
-      // verify offset
-      if (offset >= sizeof(devInfoPnpId))
-      {
-        status = ATT_ERR_INVALID_OFFSET;
-      }
-      else
-      {
-        // determine read length
-        *pLen = MIN(maxLen, (sizeof(devInfoPnpId) - offset));
-
-        // copy data
-        osal_memcpy(pValue, &devInfoPnpId[offset], *pLen);
+        osal_memcpy(pValue, &devInfoMfrName.pValue[offset], *pLen);
       }
       break;
 

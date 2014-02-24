@@ -473,6 +473,7 @@
           <state>$PROJ_DIR$\..\..\Profiles\SimpleProfile</state>
           <state>$PROJ_DIR$\..\..\Profiles\Keys</state>
           <state>$PROJ_DIR$\..\..\Profiles\DevInfo</state>
+          <state>$PROJ_DIR$\..\Source</state>
         </option>
         <option>
           <name>CCStdIncCheck</name>
@@ -8667,12 +8668,6 @@
     <name>APP</name>
     <group>
       <name>Mangers</name>
-      <file>
-        <name>$PROJ_DIR$\..\Source\DeviceNameManger.c</name>
-      </file>
-      <file>
-        <name>$PROJ_DIR$\..\Source\DeviceNameManger.h</name>
-      </file>
       <file>
         <name>$PROJ_DIR$\..\Source\GenericValueManger.c</name>
       </file>

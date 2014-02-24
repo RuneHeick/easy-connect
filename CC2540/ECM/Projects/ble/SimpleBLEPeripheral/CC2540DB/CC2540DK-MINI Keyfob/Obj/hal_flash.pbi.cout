@@ -36,6 +36,8 @@ C:\Users\Rune\Desktop\easy-connect\CC2540\ECM\Projects\ble\SimpleBLEPeripheral\C
 -I
 C:\Users\Rune\Desktop\easy-connect\CC2540\ECM\Projects\ble\SimpleBLEPeripheral\CC2540DB\..\..\Profiles\DevInfo
 -I
+C:\Users\Rune\Desktop\easy-connect\CC2540\ECM\Projects\ble\SimpleBLEPeripheral\CC2540DB\..\Source
+-I
 C:\Program Files (x86)\IAR Systems\Embedded Workbench 6.5\8051\inc
 -I
 C:\Program Files (x86)\IAR Systems\Embedded Workbench 6.5\8051\inc\clib
@@ -73,6 +75,8 @@ C:\Users\Rune\Desktop\easy-connect\CC2540\ECM\Projects\ble\Profiles\SimpleProfil
 C:\Users\Rune\Desktop\easy-connect\CC2540\ECM\Projects\ble\Profiles\Keys
 -I
 C:\Users\Rune\Desktop\easy-connect\CC2540\ECM\Projects\ble\Profiles\DevInfo
+-I
+C:\Users\Rune\Desktop\easy-connect\CC2540\ECM\Projects\ble\SimpleBLEPeripheral\Source
 -DINT_HEAP_LEN=3072
 -DHALNODEBUG=0
 -DOSAL_CBTIMER_NUM_TASKS=1
@@ -372,8 +376,8 @@ C:\Users\Rune\Desktop\easy-connect\CC2540\ECM\Projects\ble\Profiles\DevInfo
 -D__PLAIN_INT_BITFIELD_IS_SIGNED__=1
 -D__HAS_LOCATED_DECLARATION__=1
 -D__IAR_COMPILERBASE__=593409
--D__DATE__="Feb 20 2014"
--D__TIME__="14:33:46"
+-D__DATE__="Feb 24 2014"
+-D__TIME__="15:59:29"
 -D__STDC__=1
 -D__STDC_VERSION__=199901L
 -D__STDC_HOSTED__=1
