@@ -69,7 +69,7 @@
 #include "gapbondmgr.h"
 
 #include "simpleBLEPeripheral.h"
-#include "DeviceNameManger.h"
+#include "GenericValueManger.h"
 
 #if defined FEATURE_OAD
   #include "oad.h"
@@ -148,51 +148,10 @@
  * LOCAL VARIABLES
  */
 static uint8 simpleBLEPeripheral_TaskID;   // Task ID for internal task/event processing
-
 static gaprole_States_t gapProfileState = GAPROLE_INIT;
 
 // GAP - SCAN RSP data (max size = 31 bytes)
-static uint8* scanRspData ;
-
-
-uint8 GAPManget_SetupName()
-{
-    uint8 size = 0; 
-    uint8 nameSize = deviceName_GetNameLen();
-    uint8 buffersize = 2+nameSize+9;
-    
-    if(buffersize>MAX_SCAN_RSP_SIZE)
-    {
-      nameSize -= buffersize - MAX_SCAN_RSP_SIZE; 
-      buffersize = MAX_SCAN_RSP_SIZE;
-    } 
-      
-    scanRspData = osal_mem_alloc(buffersize);
-    if(scanRspData==NULL)
-      return 0; 
-    scanRspData[size++] = nameSize+1; // 1 for index field 
-    scanRspData[size++] = GAP_ADTYPE_LOCAL_NAME_COMPLETE; // index field 
-    
-    deviceName_GetName(&scanRspData[size],buffersize,nameSize);
-    size = size + nameSize;
-    
-    //Connection Info. 
-    scanRspData[size++] = 0x05;   // length of this data
-    scanRspData[size++] = GAP_ADTYPE_SLAVE_CONN_INTERVAL_RANGE;
-    scanRspData[size++] = LO_UINT16( DEFAULT_DESIRED_MIN_CONN_INTERVAL );   // 100ms
-    scanRspData[size++] = HI_UINT16( DEFAULT_DESIRED_MIN_CONN_INTERVAL );
-    scanRspData[size++] = LO_UINT16( DEFAULT_DESIRED_MAX_CONN_INTERVAL );   // 1s
-    scanRspData[size++] = HI_UINT16( DEFAULT_DESIRED_MAX_CONN_INTERVAL );
-
-    // Tx power level
-    scanRspData[size++] = 0x02;   // length of this data
-    scanRspData[size++] = GAP_ADTYPE_POWER_LEVEL;
-    scanRspData[size++] = 0 ;     // 0dBm
-    
-    
-    return size; 
-}
-
+static GenericValue scanRspData;
 
 // GAP - Advertisement data (max size = 31 bytes, though this is
 // best kept short to conserve power while advertisting)
@@ -214,7 +173,7 @@ static uint8 advertData[] =
 };
 
 // GAP GATT Attributes
-static uint8 attDeviceName[GAP_DEVICE_NAME_LEN] = "Easy Connect Module";
+
 
 /*********************************************************************
  * LOCAL FUNCTIONS
@@ -232,7 +191,43 @@ static void simpleBLEPeripheral_HandleKeys( uint8 shift, uint8 keys );
 static char *bdAddr2Str ( uint8 *pAddr );
 #endif // (defined HAL_LCD) && (HAL_LCD == TRUE)
 
+uint8 GAPManget_SetupName(char* DeviceName)
+{
+    uint8 size = 0; 
+    uint8 nameSize = strlen(DeviceName);
+    uint8 buffersize = 2+nameSize+9;
+    
+    if(buffersize>MAX_SCAN_RSP_SIZE)
+    {
+      nameSize -= buffersize - MAX_SCAN_RSP_SIZE; 
+      buffersize = MAX_SCAN_RSP_SIZE;
+    } 
+      
+    GenericValue_CreateContainer(&scanRspData, buffersize); 
+    if(scanRspData.pValue==NULL)
+      return 0; 
+    scanRspData.pValue[size++] = nameSize+1; // 1 for index field 
+    scanRspData.pValue[size++] = GAP_ADTYPE_LOCAL_NAME_COMPLETE; // index field 
+    
+    osal_memcpy(&scanRspData.pValue[size], DeviceName, nameSize);
+    size = size + nameSize;
+    
+    //Connection Info. 
+    scanRspData.pValue[size++] = 0x05;   // length of this data
+    scanRspData.pValue[size++] = GAP_ADTYPE_SLAVE_CONN_INTERVAL_RANGE;
+    scanRspData.pValue[size++] = LO_UINT16( DEFAULT_DESIRED_MIN_CONN_INTERVAL );   // 100ms
+    scanRspData.pValue[size++] = HI_UINT16( DEFAULT_DESIRED_MIN_CONN_INTERVAL );
+    scanRspData.pValue[size++] = LO_UINT16( DEFAULT_DESIRED_MAX_CONN_INTERVAL );   // 1s
+    scanRspData.pValue[size++] = HI_UINT16( DEFAULT_DESIRED_MAX_CONN_INTERVAL );
 
+    // Tx power level
+    scanRspData.pValue[size++] = 0x02;   // length of this data
+    scanRspData.pValue[size++] = GAP_ADTYPE_POWER_LEVEL;
+    scanRspData.pValue[size++] = 0 ;     // 0dBm
+    
+    
+    return size; 
+}
 
 /*********************************************************************
  * PROFILE CALLBACKS
@@ -278,7 +273,10 @@ static simpleProfileCBs_t simpleBLEPeripheral_SimpleProfileCBs =
 void SimpleBLEPeripheral_Init( uint8 task_id )
 {
   simpleBLEPeripheral_TaskID = task_id;
-  deviceName_SetName("Rune Arbjeg Heicks Module"); 
+  
+  
+  
+  
   // Setup the GAP
   VOID GAP_SetParamValue( TGAP_CONN_PAUSE_PERIPHERAL, DEFAULT_CONN_PAUSE_PERIPHERAL );
   
@@ -303,13 +301,13 @@ void SimpleBLEPeripheral_Init( uint8 task_id )
     uint16 desired_slave_latency = DEFAULT_DESIRED_SLAVE_LATENCY;
     uint16 desired_conn_timeout = DEFAULT_DESIRED_CONN_TIMEOUT;
     
-    uint8 RspLen = GAPManget_SetupName();
+    uint8 RspLen = GAPManget_SetupName("BLE Module");
     
     // Set the GAP Role Parameters
     GAPRole_SetParameter( GAPROLE_ADVERT_ENABLED, sizeof( uint8 ), &initial_advertising_enable );
     GAPRole_SetParameter( GAPROLE_ADVERT_OFF_TIME, sizeof( uint16 ), &gapRole_AdvertOffTime );
 
-    GAPRole_SetParameter( GAPROLE_SCAN_RSP_DATA, RspLen*sizeof( uint8 ) , scanRspData );
+    GAPRole_SetParameter( GAPROLE_SCAN_RSP_DATA, RspLen*sizeof( uint8 ) , scanRspData.pValue );
     GAPRole_SetParameter( GAPROLE_ADVERT_DATA, sizeof( advertData ), advertData );
 
     GAPRole_SetParameter( GAPROLE_PARAM_UPDATE_ENABLE, sizeof( uint8 ), &enable_update_request );
@@ -320,8 +318,8 @@ void SimpleBLEPeripheral_Init( uint8 task_id )
   }
 
   // Set the GAP Characteristics
-  GGS_SetParameter( GGS_DEVICE_NAME_ATT, GAP_DEVICE_NAME_LEN, attDeviceName );
-
+  GGS_SetParameter( GGS_DEVICE_NAME_ATT, scanRspData.size-11, &scanRspData.pValue[2] );
+  
   // Set advertising interval
   {
     uint16 advInt = DEFAULT_ADVERTISING_INTERVAL;
@@ -335,9 +333,9 @@ void SimpleBLEPeripheral_Init( uint8 task_id )
   // Setup the GAP Bond Manager
   {
     uint32 passkey = 0; // passkey "000000"
-    uint8 pairMode = GAPBOND_PAIRING_MODE_NO_PAIRING;
+    uint8 pairMode = GAPBOND_PAIRING_MODE_INITIATE;
     uint8 mitm = TRUE;
-    uint8 ioCap = GAPBOND_IO_CAP_DISPLAY_ONLY;
+    uint8 ioCap = GAPBOND_IO_CAP_NO_INPUT_NO_OUTPUT;
     uint8 bonding = TRUE;
     GAPBondMgr_SetParameter( GAPBOND_DEFAULT_PASSCODE, sizeof ( uint32 ), &passkey );
     GAPBondMgr_SetParameter( GAPBOND_PAIRING_MODE, sizeof ( uint8 ), &pairMode );
@@ -347,10 +345,10 @@ void SimpleBLEPeripheral_Init( uint8 task_id )
   }
 
   // Initialize GATT attributes
-  GGS_AddService( GATT_ALL_SERVICES );            // GAP
-  GATTServApp_AddService( GATT_ALL_SERVICES );    // GATT attributes
-  DevInfo_AddService();                           // Device Information Service
-  SimpleProfile_AddService( GATT_ALL_SERVICES );  // Simple GATT Profile
+  GGS_AddService( GATT_ALL_SERVICES );              // GAP
+  GATTServApp_AddService( GATT_ALL_SERVICES );      // GATT attributes
+  DevInfo_AddService("01010101","Beta","Rune A/S"); // Device Information Service
+  SimpleProfile_AddService( GATT_ALL_SERVICES );    // Simple GATT Profile
 #if defined FEATURE_OAD
   VOID OADTarget_AddService();                    // OAD Profile
 #endif

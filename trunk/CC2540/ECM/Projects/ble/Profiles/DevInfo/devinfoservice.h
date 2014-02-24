@@ -100,7 +100,7 @@ extern "C"
  *
  */
 
-extern bStatus_t DevInfo_AddService( void );
+extern bStatus_t DevInfo_AddService(char* Serial, char* ModelNr, char* MainifactureName );
 
 /*********************************************************************
  * @fn      DevInfo_SetParameter
