@@ -1,7 +1,7 @@
 #pragma once
 
 #include "GenericValueManger.h"
-
+#include "gatt.h" 
 //Defines 
 
 
@@ -41,7 +41,9 @@ struct GenericCharacteristic
 typedef struct 
 {
   GenericValue description;
-  uint16 handel; 
+  uint16 handel;           // given when llReg is createt. is 0 for not yet compiled functions. 
+  
+  gattAttribute_t* llReg;  //used to add the profile to the ble stack. Is createt by the complie function. 
   
   GenericCharacteristic* first; 
   
@@ -60,3 +62,4 @@ bool SmartCommandsManger_addCharacteristic(SmartService* service,GenericValue* i
 
 bool SmartCommandsManger_RemoveCharacteristic(SmartService* service,GenericCharacteristic* Characteristic);
 
+bool SmartCommandsManger_CompileService(SmartService* service);
