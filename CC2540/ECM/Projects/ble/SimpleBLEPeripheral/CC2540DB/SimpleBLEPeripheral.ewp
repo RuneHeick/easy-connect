@@ -8938,6 +8938,12 @@
       <file>
         <name>$PROJ_DIR$\..\..\Profiles\EasyConnectService\SmartCommandsManger.h</name>
       </file>
+      <file>
+        <name>$PROJ_DIR$\..\..\Profiles\EasyConnectService\SmartCommandsProperties.c</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\..\..\Profiles\EasyConnectService\SmartCommandsProperties.h</name>
+      </file>
     </group>
     <file>
       <name>$PROJ_DIR$\..\..\Profiles\DevInfo\devinfoservice.c</name>
