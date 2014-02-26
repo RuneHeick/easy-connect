@@ -470,6 +470,7 @@
           <state>$PROJ_DIR$\..\..\common\cc2540</state>
           <state>$PROJ_DIR$\..\..\common\npi\npi_np</state>
           <state>$PROJ_DIR$\..\..\Profiles\Roles</state>
+          <state>$PROJ_DIR$\..\..\Profiles\EasyConnectService</state>
           <state>$PROJ_DIR$\..\..\Profiles\SimpleProfile</state>
           <state>$PROJ_DIR$\..\..\Profiles\Keys</state>
           <state>$PROJ_DIR$\..\..\Profiles\DevInfo</state>
@@ -8923,6 +8924,21 @@
   </group>
   <group>
     <name>PROFILES</name>
+    <group>
+      <name>SmartCommand</name>
+      <file>
+        <name>$PROJ_DIR$\..\..\Profiles\EasyConnectService\EasyConnectProfile.c</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\..\..\Profiles\EasyConnectService\EasyConnectProfile.h</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\..\..\Profiles\EasyConnectService\SmartCommandsManger.c</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\..\..\Profiles\EasyConnectService\SmartCommandsManger.h</name>
+      </file>
+    </group>
     <file>
       <name>$PROJ_DIR$\..\..\Profiles\DevInfo\devinfoservice.c</name>
     </file>
@@ -9005,12 +9021,6 @@
         <configuration>CC2540-OAD-Encrypted-ImgA</configuration>
         <configuration>CC2540-OAD-Encrypted-ImgB</configuration>
       </excluded>
-    </file>
-    <file>
-      <name>$PROJ_DIR$\..\..\Profiles\SimpleProfile\simpleGATTprofile.c</name>
-    </file>
-    <file>
-      <name>$PROJ_DIR$\..\..\Profiles\SimpleProfile\simpleGATTprofile.h</name>
     </file>
     <file>
       <name>$PROJ_DIR$\..\..\Profiles\Keys\simplekeys.c</name>

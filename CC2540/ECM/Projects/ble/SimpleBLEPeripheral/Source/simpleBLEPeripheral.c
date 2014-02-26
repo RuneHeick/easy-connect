@@ -58,7 +58,6 @@
 #include "gapgattserver.h"
 #include "gattservapp.h"
 #include "devinfoservice.h"
-#include "simpleGATTprofile.h"
 
 #if defined( CC2540_MINIDK )
   #include "simplekeys.h"
@@ -67,7 +66,7 @@
 #include "peripheral.h"
 
 #include "gapbondmgr.h"
-
+#include "EasyConnectProfile.h"
 #include "simpleBLEPeripheral.h"
 #include "GenericValueManger.h"
 
@@ -75,6 +74,8 @@
   #include "oad.h"
   #include "oad_target.h"
 #endif
+
+#include "simpleGATTprofile.h"
 
 /*********************************************************************
  * MACROS
@@ -168,8 +169,8 @@ static uint8 advertData[] =
   // in this peripheral
   0x03,   // length of this data
   GAP_ADTYPE_16BIT_MORE,      // some of the UUID's, but not all
-  LO_UINT16( SIMPLEPROFILE_SERV_UUID ),
-  HI_UINT16( SIMPLEPROFILE_SERV_UUID ),
+  LO_UINT16( 0 ),
+  HI_UINT16( 0 ),
 };
 
 // GAP GATT Attributes
@@ -181,7 +182,7 @@ static uint8 advertData[] =
 static void simpleBLEPeripheral_ProcessOSALMsg( osal_event_hdr_t *pMsg );
 static void peripheralStateNotificationCB( gaprole_States_t newState );
 static void performPeriodicTask( void );
-static void simpleProfileChangeCB( uint8 paramID );
+//static void simpleProfileChangeCB( uint8 paramID );
 
 #if defined( CC2540_MINIDK )
 static void simpleBLEPeripheral_HandleKeys( uint8 shift, uint8 keys );
@@ -247,11 +248,6 @@ static gapBondCBs_t simpleBLEPeripheral_BondMgrCBs =
   NULL                      // Pairing / Bonding state Callback (not used by application)
 };
 
-// Simple GATT Profile Callbacks
-static simpleProfileCBs_t simpleBLEPeripheral_SimpleProfileCBs =
-{
-  simpleProfileChangeCB    // Charactersitic value change callback
-};
 /*********************************************************************
  * PUBLIC FUNCTIONS
  */
@@ -348,23 +344,27 @@ void SimpleBLEPeripheral_Init( uint8 task_id )
   GGS_AddService( GATT_ALL_SERVICES );              // GAP
   GATTServApp_AddService( GATT_ALL_SERVICES );      // GATT attributes
   DevInfo_AddService("01010101","Beta","Rune A/S"); // Device Information Service
-  SimpleProfile_AddService( GATT_ALL_SERVICES );    // Simple GATT Profile
+  
+  SimpleProfile_AddService(GATT_ALL_SERVICES);
+  
 #if defined FEATURE_OAD
   VOID OADTarget_AddService();                    // OAD Profile
 #endif
 
   // Setup the SimpleProfile Characteristic Values
   {
+    /*
     uint8 charValue1 = 1;
     uint8 charValue2 = 2;
     uint8 charValue3 = 3;
     uint8 charValue4 = 4;
     uint8 charValue5[SIMPLEPROFILE_CHAR5_LEN] = { 1, 2, 3, 4, 5 };
-    SimpleProfile_SetParameter( SIMPLEPROFILE_CHAR1, sizeof ( uint8 ), &charValue1 );
-    SimpleProfile_SetParameter( SIMPLEPROFILE_CHAR2, sizeof ( uint8 ), &charValue2 );
-    SimpleProfile_SetParameter( SIMPLEPROFILE_CHAR3, sizeof ( uint8 ), &charValue3 );
-    SimpleProfile_SetParameter( SIMPLEPROFILE_CHAR4, sizeof ( uint8 ), &charValue4 );
-    SimpleProfile_SetParameter( SIMPLEPROFILE_CHAR5, SIMPLEPROFILE_CHAR5_LEN, charValue5 );
+    //SimpleProfile_SetParameter( SIMPLEPROFILE_CHAR1, sizeof ( uint8 ), &charValue1 );
+    //SimpleProfile_SetParameter( SIMPLEPROFILE_CHAR2, sizeof ( uint8 ), &charValue2 );
+    //SimpleProfile_SetParameter( SIMPLEPROFILE_CHAR3, sizeof ( uint8 ), &charValue3 );
+    //SimpleProfile_SetParameter( SIMPLEPROFILE_CHAR4, sizeof ( uint8 ), &charValue4 );
+    //SimpleProfile_SetParameter( SIMPLEPROFILE_CHAR5, SIMPLEPROFILE_CHAR5_LEN, charValue5 );
+    */
   }
 
 
@@ -411,8 +411,6 @@ void SimpleBLEPeripheral_Init( uint8 task_id )
 
 #endif // (defined HAL_LCD) && (HAL_LCD == TRUE)
 
-  // Register callback with SimpleGATTprofile
-  VOID SimpleProfile_RegisterAppCBs( &simpleBLEPeripheral_SimpleProfileCBs );
 
   // Enable clock divide on halt
   // This reduces active current while radio is active and CC254x MCU
@@ -740,7 +738,7 @@ static void performPeriodicTask( void )
   uint8 stat;
 
   // Call to retrieve the value of the third characteristic in the profile
-  stat = SimpleProfile_GetParameter( SIMPLEPROFILE_CHAR3, &valueToCopy);
+  //stat = SimpleProfile_GetParameter( SIMPLEPROFILE_CHAR3, &valueToCopy);
 
   if( stat == SUCCESS )
   {
@@ -750,7 +748,7 @@ static void performPeriodicTask( void )
      * a GATT client device, then a notification will be sent every time this
      * function is called.
      */
-    SimpleProfile_SetParameter( SIMPLEPROFILE_CHAR4, sizeof(uint8), &valueToCopy);
+    //SimpleProfile_SetParameter( SIMPLEPROFILE_CHAR4, sizeof(uint8), &valueToCopy);
   }
 }
 
@@ -762,7 +760,7 @@ static void performPeriodicTask( void )
  * @param   paramID - parameter ID of the value that was changed.
  *
  * @return  none
- */
+ 
 static void simpleProfileChangeCB( uint8 paramID )
 {
   uint8 newValue;
@@ -770,7 +768,7 @@ static void simpleProfileChangeCB( uint8 paramID )
   switch( paramID )
   {
     case SIMPLEPROFILE_CHAR1:
-      SimpleProfile_GetParameter( SIMPLEPROFILE_CHAR1, &newValue );
+      //SimpleProfile_GetParameter( SIMPLEPROFILE_CHAR1, &newValue );
 
       #if (defined HAL_LCD) && (HAL_LCD == TRUE)
         HalLcdWriteStringValue( "Char 1:", (uint16)(newValue), 10,  HAL_LCD_LINE_3 );
@@ -779,7 +777,7 @@ static void simpleProfileChangeCB( uint8 paramID )
       break;
 
     case SIMPLEPROFILE_CHAR3:
-      SimpleProfile_GetParameter( SIMPLEPROFILE_CHAR3, &newValue );
+      //SimpleProfile_GetParameter( SIMPLEPROFILE_CHAR3, &newValue );
 
       #if (defined HAL_LCD) && (HAL_LCD == TRUE)
         HalLcdWriteStringValue( "Char 3:", (uint16)(newValue), 10,  HAL_LCD_LINE_3 );
@@ -792,6 +790,8 @@ static void simpleProfileChangeCB( uint8 paramID )
       break;
   }
 }
+
+*/
 
 #if (defined HAL_LCD) && (HAL_LCD == TRUE)
 /*********************************************************************
