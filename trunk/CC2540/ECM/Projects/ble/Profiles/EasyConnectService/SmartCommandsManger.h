@@ -2,8 +2,9 @@
 
 #include "GenericValueManger.h"
 #include "gatt.h" 
-//Defines 
 
+//Defines 
+#define MAX_SERVICES_SUPPORTED  10
 
 
 typedef enum 
@@ -15,6 +16,14 @@ typedef enum
 
 //containing the GUI Presentation Format Descriptor
 typedef struct {uint8 format; uint8 color;} GUIPresentationFormat;
+typedef struct 
+{
+  uint8 Format;
+  uint8 Exponent;
+  uint16 Unit;
+  uint8 Namespace;
+  uint16 Description;
+}PresentationFormat;
 
 // is containing all the Characteristics and is making a list with a pointer to next item in list
 // is Null if end of list.
@@ -28,7 +37,7 @@ struct GenericCharacteristic
   
   GenericValue userDescription;
   GUIPresentationFormat guiPresentationFormat; 
-  uint8 typePresentationFormat; 
+  PresentationFormat typePresentationFormat; 
   
   GenericValue range; 
   Subscription subscribtion; 
@@ -49,6 +58,9 @@ typedef struct
 }SmartService;
 
 
+extern SmartService* SmartCommandServices[MAX_SERVICES_SUPPORTED];
+extern uint8 SmartCommandServices_Count; 
+
 //Functions 
 
 uint8 SmartCommandsManger_ElementsInService(SmartService* service); 
@@ -57,8 +69,10 @@ SmartService* SmartCommandsManger_CreateService(uint8* description);
 
 bool SmartCommandsManger_DeleteService(SmartService* service);
 
-bool SmartCommandsManger_addCharacteristic(SmartService* service,GenericValue* initialValue,uint8* description, GUIPresentationFormat guiPresentationFormat, uint8 typeFormat,uint8* range, Subscription subscription, uint8 premission);
+bool SmartCommandsManger_addCharacteristic(SmartService* service,GenericValue* initialValue,uint8* description, GUIPresentationFormat guiPresentationFormat, PresentationFormat typeFormat,uint8* range, Subscription subscription, uint8 premission);
 
 bool SmartCommandsManger_RemoveCharacteristic(SmartService* service,GenericCharacteristic* Characteristic);
 
 bool SmartCommandsManger_CompileService(SmartService* service);
+
+bool SmartCommandsManger_CompileServices();

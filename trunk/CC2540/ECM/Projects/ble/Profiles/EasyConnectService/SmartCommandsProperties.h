@@ -61,6 +61,7 @@ extern CONST uint8 subscriptionDescUUID[ATT_BT_UUID_SIZE];
 
 extern CONST uint8 descriptionStringCharUUID[ATT_BT_UUID_SIZE];
 
+extern CONST gattAttrType_t smartConnectService; 
 
 extern uint8 ReadProps ;
 extern uint8 WriteProps ;
