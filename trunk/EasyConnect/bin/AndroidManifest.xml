@@ -48,6 +48,12 @@
             android:name="iha.bachelor.smo.aba.rah.easyconnect.ConfigureModuleActivity"
             android:label="@string/title_activity_configure_module" >
         </activity>
+        <provider
+            android:name="iha.bachelor.smo.aba.rah.easyconnect.contentprovider.ProfileContentProvider"
+            android:authorities="iha.bachelor.smo.aba.rah.easyconnect.contentprovider"
+            android:exported="false">
+        </provider>
+            
     </application>
 
 </manifest>

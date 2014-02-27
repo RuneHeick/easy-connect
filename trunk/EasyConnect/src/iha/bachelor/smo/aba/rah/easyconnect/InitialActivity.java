@@ -41,7 +41,8 @@ private WifiManager wifiManager;
 			startActivity(NetworkNotAvailable);
 		}
 		else {
-			Intent NetworkAvailable = new Intent(this, CreateNewProfileActivity.class);
+			//Intent NetworkAvailable = new Intent(this, CreateNewProfileActivity.class); //this line is the correct line
+			Intent NetworkAvailable = new Intent(this, EditProfileActivity.class);
 			startActivity(NetworkAvailable);
 		}
 		
