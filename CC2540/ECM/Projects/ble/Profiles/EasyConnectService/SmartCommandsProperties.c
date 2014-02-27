@@ -4,6 +4,8 @@
  * GLOBAL VARIABLES
  */
 
+CONST gattAttrType_t smartConnectService = { ATT_BT_UUID_SIZE, smartCommandServUUID };
+
 // Easy Connect Service UUID: 0x1820
 CONST uint8 smartCommandServUUID[ATT_BT_UUID_SIZE] =
 { 
