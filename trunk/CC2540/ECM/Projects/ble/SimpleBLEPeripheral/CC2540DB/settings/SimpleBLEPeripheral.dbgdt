@@ -74,7 +74,7 @@
           
           
           
-        <item>scanRspData</item><item>scanRspData2</item><item>size</item><item>scanRspData[16]</item><item>pSrc</item><item>len</item><item>RspLen</item><item>buffersize</item><item>nameSize</item><item>size</item><item>item-&gt;status</item><item>item</item><item>DeviceName</item><item>status</item><item>size</item><item></item></expressions>
+        <item>scanRspData</item><item>scanRspData2</item><item>size</item><item>scanRspData[16]</item><item>pSrc</item><item>len</item><item>RspLen</item><item>buffersize</item><item>nameSize</item><item>size</item><item>item-&gt;status</item><item>item</item><item>DeviceName</item><item>status</item><item>size</item><item/></expressions>
         <col-names>
           
           
