@@ -20,6 +20,9 @@
   
 // Update Characteristics 
 #define UPDATE_CHARACTERISTICS_UUID             0x2A71
+   
+//Description String Characteristic
+#define DESCRIPTIONSTR_CHARACTERISTICS_UUID     0x2A72
 
 //GUI Presentation Format Descriptor
 #define  GUIPREFORMAT_DESCRIPTOR_UUID           0x2910
@@ -55,3 +58,10 @@ extern CONST uint8 guiPresentationDescUUID[ATT_BT_UUID_SIZE];
 
 //Subscription Option Descriptor
 extern CONST uint8 subscriptionDescUUID[ATT_BT_UUID_SIZE];
+
+extern CONST uint8 descriptionStringCharUUID[ATT_BT_UUID_SIZE];
+
+
+extern uint8 ReadProps ;
+extern uint8 WriteProps ;
+extern uint8 ReadWriteProps;

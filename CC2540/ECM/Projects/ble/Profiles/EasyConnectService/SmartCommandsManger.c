@@ -16,7 +16,9 @@
 #define DESC_SELF_COUNT                               1
 
 static void Local_RemoveCharacteristic(GenericCharacteristic* Characteristic);
-static void Local_CreateInfo(SmartService* service, gattAttribute_t* att, uint8* index);
+static void Local_CreateInfo(SmartService* service, gattAttribute_t* att, uint8* index, GenericCharacteristic* chara );
+static void Local_Insert(gattAttribute_t* att, gattAttrType_t type, uint8 permissions, uint8 * pValue);
+static uint8* GetReadAddress(uint8 readwrite);
 
 uint8 SmartCommandsManger_ElementsInService(SmartService* service)
 {
@@ -50,7 +52,6 @@ SmartService* SmartCommandsManger_CreateService(uint8* description)
   if(returnvalue!=NULL)
   {
     succses = GenericValue_SetString(&returnvalue->description, description);
-    returnvalue->handel = 0; 
     returnvalue->llReg = NULL; 
     returnvalue->first = NULL; 
   }
@@ -68,7 +69,7 @@ bool SmartCommandsManger_DeleteService(SmartService* service)
   return false; 
 }
 
-bool SmartCommandsManger_addCharacteristic(SmartService* service,GenericValue* initialValue,uint8* description, GUIPresentationFormat guiPresentationFormat, uint8 typeFormat,uint8* range, Subscription subscription)
+bool SmartCommandsManger_addCharacteristic(SmartService* service,GenericValue* initialValue,uint8* description, GUIPresentationFormat guiPresentationFormat, uint8 typeFormat,uint8* range, Subscription subscription, uint8 premission)
 {
   if(service->llReg!=NULL)
   {
@@ -77,7 +78,7 @@ bool SmartCommandsManger_addCharacteristic(SmartService* service,GenericValue* i
     if(chare == NULL && initialValue->status==READY) 
       return false; 
     
-    chare->handel = 0; 
+    chare->premission = premission; 
     chare->guiPresentationFormat = guiPresentationFormat; 
     chare->subscribtion = subscription; 
     chare->typePresentationFormat = typeFormat;
@@ -158,7 +159,7 @@ bool SmartCommandsManger_RemoveCharacteristic(SmartService* service,GenericChara
 bool SmartCommandsManger_CompileService(SmartService* service)
 {
   uint8 numberOfItems = SmartCommandsManger_ElementsInService(service);
-  uint8 index; 
+  uint8 index = 0; 
   
   if(service->llReg != NULL)
     osal_mem_free(service->llReg);
@@ -167,9 +168,13 @@ bool SmartCommandsManger_CompileService(SmartService* service)
   if(service->llReg == NULL)
     return false; 
   
+  GenericCharacteristic* chara = service->first;
+  Local_CreateInfo(service, service->llReg, &index, NULL);
+  
   for(index=0; index<numberOfItems;index++)
   {
-      Local_CreateInfo(service, &service->llReg[index], &index);
+      Local_CreateInfo(service, service->llReg, &index, chara);
+      chara = chara->nextitem;
   }
  
   return true; 
@@ -182,17 +187,70 @@ static void Local_RemoveCharacteristic(GenericCharacteristic* characteristic)
     osal_mem_free(characteristic);
 }
 
-static void Local_CreateInfo(SmartService* service, gattAttribute_t* att, uint8* index)
+static void Local_CreateInfo(SmartService* service, gattAttribute_t* att, uint8* index, GenericCharacteristic* chara )
 {
     if( *index == 0)
     {
-        (*att).type = (gattAttrType_t){ ATT_BT_UUID_SIZE, primaryServiceUUID };
-        (*att).permissions = GATT_PERMIT_READ;
-        (*att).handle = 0;
-        *(uint8*)&(*att).pValue = (uint8 *)&smartCommandServUUID
-        att++;
-        index++; 
-        //use memcopy tomorrow
+      Local_Insert(&att[*index++],(gattAttrType_t){ ATT_BT_UUID_SIZE, primaryServiceUUID },GATT_PERMIT_READ,(uint8 *)&smartCommandServUUID); // service start;
+      
+      Local_Insert(&att[*index++],(gattAttrType_t){ ATT_BT_UUID_SIZE, characterUUID },GATT_PERMIT_AUTHEN_READ,&ReadProps); //Description String Declaration    
+      Local_Insert(&att[*index++],(gattAttrType_t){ ATT_BT_UUID_SIZE, descriptionStringCharUUID },GATT_PERMIT_AUTHEN_READ,service->description.pValue); //Description String Value
+      
+      Local_Insert(&att[*index++],(gattAttrType_t){ ATT_BT_UUID_SIZE, characterUUID },GATT_PERMIT_AUTHEN_READ,&ReadWriteProps); //Description String Declaration    
+      Local_Insert(&att[*index],(gattAttrType_t){ ATT_BT_UUID_SIZE, updateCharUUID },GATT_PERMIT_AUTHEN_READ|GATT_PERMIT_AUTHEN_WRITE,NULL); //Description String Value
+      
+    }
+    else if(chara!=NULL)
+    {
+      Local_Insert(&att[*index++],(gattAttrType_t){ ATT_BT_UUID_SIZE, characterUUID },GATT_PERMIT_AUTHEN_READ,GetReadAddress(chara->premission)); //char Declaration
+      Local_Insert(&att[*index++],(gattAttrType_t){ ATT_BT_UUID_SIZE, genericValuecharUUID },chara->premission,(uint8*)chara->value); //Value;
+      
+      Local_Insert(&att[*index++],(gattAttrType_t){ ATT_BT_UUID_SIZE, charUserDescUUID },GATT_PERMIT_AUTHEN_READ ,chara->userDescription.pValue); //char description
+      Local_Insert(&att[*index++],(gattAttrType_t){ ATT_BT_UUID_SIZE, guiPresentationDescUUID },GATT_PERMIT_AUTHEN_READ ,(uint8*)&chara->guiPresentationFormat); //char description
+      Local_Insert(&att[*index],(gattAttrType_t){ ATT_BT_UUID_SIZE, charFormatUUID },GATT_PERMIT_AUTHEN_READ ,(uint8*)&chara->typePresentationFormat); //char description
+      
+      if(chara->range.status == READY)
+      {
+        *index++;
+        Local_Insert(&att[*index],(gattAttrType_t){ ATT_BT_UUID_SIZE, validRangeUUID },GATT_PERMIT_AUTHEN_READ ,(uint8*)&chara->range); //char description
+      }
+      if(chara->subscribtion == NONE)
+      {
+        *index++;
+        Local_Insert(&att[*index],(gattAttrType_t){ ATT_BT_UUID_SIZE, subscriptionDescUUID },GATT_PERMIT_AUTHEN_READ ,(uint8*)&chara->subscribtion); //char description
+      }
+        
     }
     
+    
+    
+}
+
+static uint8* GetReadAddress(uint8 readwrite)
+{
+  switch(readwrite)
+  {
+    case GATT_PERMIT_AUTHEN_READ|GATT_PERMIT_AUTHEN_WRITE:
+    case GATT_PERMIT_READ|GATT_PERMIT_WRITE:
+      return &ReadWriteProps;
+    case GATT_PERMIT_AUTHEN_WRITE:
+    case GATT_PERMIT_WRITE:
+      return &WriteProps;
+    default:
+      return &ReadProps;
+  }
+}
+
+
+static void Local_Insert(gattAttribute_t* att, gattAttrType_t type, uint8 permissions, uint8 * pValue)
+{
+    struct attAttribute_t item = 
+    {
+      type,
+      permissions,
+      0,
+      pValue
+    };
+    
+    osal_memcpy(att, &item, sizeof(struct attAttribute_t));
 }

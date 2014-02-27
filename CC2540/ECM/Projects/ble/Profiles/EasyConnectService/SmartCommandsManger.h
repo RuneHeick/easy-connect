@@ -24,7 +24,7 @@ typedef struct GenericCharacteristic GenericCharacteristic;
 struct GenericCharacteristic  
 {
   GenericValue* value; 
-  uint16 handel;
+  uint8  premission; 
   
   GenericValue userDescription;
   GUIPresentationFormat guiPresentationFormat; 
@@ -41,8 +41,7 @@ struct GenericCharacteristic
 typedef struct 
 {
   GenericValue description;
-  uint16 handel;           // given when llReg is createt. is 0 for not yet compiled functions. 
-  
+         
   gattAttribute_t* llReg;  //used to add the profile to the ble stack. Is createt by the complie function. 
   
   GenericCharacteristic* first; 
@@ -58,7 +57,7 @@ SmartService* SmartCommandsManger_CreateService(uint8* description);
 
 bool SmartCommandsManger_DeleteService(SmartService* service);
 
-bool SmartCommandsManger_addCharacteristic(SmartService* service,GenericValue* initialValue,uint8* description, GUIPresentationFormat guiPresentationFormat, uint8 typeFormat,uint8* range, Subscription subscription);
+bool SmartCommandsManger_addCharacteristic(SmartService* service,GenericValue* initialValue,uint8* description, GUIPresentationFormat guiPresentationFormat, uint8 typeFormat,uint8* range, Subscription subscription, uint8 premission);
 
 bool SmartCommandsManger_RemoveCharacteristic(SmartService* service,GenericCharacteristic* Characteristic);
 
