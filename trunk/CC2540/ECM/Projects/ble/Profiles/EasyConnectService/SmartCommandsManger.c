@@ -23,6 +23,7 @@
 SmartService* SmartCommandServices[MAX_SERVICES_SUPPORTED]; 
 uint8 SmartCommandServices_Count = 0; 
 
+UpdateHandle* HandelsToUpdate = NULL;   //Dynamicly allocating, will grow in size, but not decrease. 
 
 /*********************************************************************
  * LOCAL VARIABLES
@@ -32,6 +33,7 @@ static void Local_RemoveCharacteristic(GenericCharacteristic* Characteristic);
 static uint8 Local_CreateInfo(SmartService* service, gattAttribute_t* att, uint8 index, GenericCharacteristic* chara );
 static void Local_Insert(gattAttribute_t* att, gattAttrType_t type, uint8 permissions, uint8 * pValue);
 static uint8* GetReadAddress(uint8 readwrite);
+static bool SmartCommandsManger_CompileService(SmartService* service);
 
 
 
@@ -184,12 +186,37 @@ bool SmartCommandsManger_CompileServices()
   for(;index<SmartCommandServices_Count;index++)
   {
     if(!SmartCommandsManger_CompileService(SmartCommandServices[index]))
-      return false; 
+      return false;     
   }
+  
+  if(HandelsToUpdate==NULL)
+  {
+      UpdateHandle* tempUpdate = osal_mem_alloc(sizeof(UpdateHandle));
+      HandelsToUpdate = tempUpdate;
+      if(HandelsToUpdate==NULL)
+        return false; 
+      
+      tempUpdate->handle=0;
+      tempUpdate->next = NULL; 
+      
+      for(index=1; index<UPDATE_START_COUNT;index++)
+      {
+        UpdateHandle* temp2update = osal_mem_alloc(sizeof(UpdateHandle));
+        if(HandelsToUpdate==NULL)
+          break; 
+        
+        tempUpdate->next = temp2update;
+        tempUpdate = temp2update;
+        
+        tempUpdate->handle=0;
+        tempUpdate->next = NULL;  
+      }
+  }
+  
   return true; 
 }
 
-bool SmartCommandsManger_CompileService(SmartService* service)
+static bool SmartCommandsManger_CompileService(SmartService* service)
 {
   uint8 numberOfItems = SmartCommandsManger_ElementsInService(service);
   uint8 index = 0; 
