@@ -39,7 +39,7 @@ static bool SmartCommandsManger_CompileService(SmartService* service);
 
 uint8 SmartCommandsManger_ElementsInService(SmartService* service)
 {
-  uint8 count = SERVICE_SELF_COUNT+CHAR_SELF_COUNT+CHAR_SELF_COUNT; //the service and the description and the Update 
+  uint8 count = SERVICE_SELF_COUNT+CHAR_SELF_COUNT+CHAR_SELF_COUNT+DESC_SELF_COUNT; //the service and the description and the Update 
   GenericCharacteristic* temp = service->first; 
   
   while(temp!=NULL)
@@ -202,7 +202,7 @@ bool SmartCommandsManger_CompileServices()
       for(index=1; index<UPDATE_START_COUNT;index++)
       {
         UpdateHandle* temp2update = osal_mem_alloc(sizeof(UpdateHandle));
-        if(HandelsToUpdate==NULL)
+        if(temp2update==NULL)
           break; 
         
         tempUpdate->next = temp2update;
@@ -215,6 +215,55 @@ bool SmartCommandsManger_CompileServices()
   
   return true; 
 }
+
+void SmartCommandsManger_AddHandleToUpdate(uint16 handel)
+{
+  UpdateHandle* tempValue = HandelsToUpdate;
+  
+  while(tempValue->handle != 0 && tempValue->next != NULL)
+  {
+    tempValue = tempValue->next;
+  }
+  
+  if(tempValue->handle==0)
+  {
+    tempValue->handle = handel;
+  }
+  else if(tempValue->next == NULL)
+  {
+    UpdateHandle* newItem = osal_mem_alloc(sizeof(UpdateHandle));
+    if(newItem!=NULL)
+    {
+      tempValue->next = newItem;
+      newItem->handle = handel;
+    }
+  }
+  
+}
+
+uint8 SmartCommandsManger_GetUpdate(uint8* ptr, uint8 maxsize)
+{
+  UpdateHandle* tempValue = HandelsToUpdate;
+  uint8 count = 0; 
+  
+  for(;count<maxsize && tempValue->handle != 0 && tempValue->next != NULL;count+=sizeof(uint16))
+  {
+    osal_memcpy(&ptr[count],&tempValue->handle,sizeof(uint16));
+    tempValue = tempValue->next;
+  }
+  
+  tempValue = HandelsToUpdate;
+  tempValue->handle = 0; 
+  
+  while(tempValue->next != NULL)
+  {
+    tempValue = tempValue->next;
+    tempValue->handle = 0; 
+  }
+  
+  return count;
+}
+
 
 static bool SmartCommandsManger_CompileService(SmartService* service)
 {
@@ -258,7 +307,8 @@ static uint8 Local_CreateInfo(SmartService* service, gattAttribute_t* att, uint8
       Local_Insert(&att[index++],(gattAttrType_t){ ATT_BT_UUID_SIZE, descriptionStringCharUUID },GATT_PERMIT_READ,service->description.pValue); //Description String Value
       
       Local_Insert(&att[index++],(gattAttrType_t){ ATT_BT_UUID_SIZE, characterUUID },GATT_PERMIT_READ,&ReadWriteProps); //Description String Declaration    
-      Local_Insert(&att[index],(gattAttrType_t){ ATT_BT_UUID_SIZE, updateCharUUID },GATT_PERMIT_READ|GATT_PERMIT_WRITE,NULL); //Description String Value
+      Local_Insert(&att[index++],(gattAttrType_t){ ATT_BT_UUID_SIZE, updateCharUUID },GATT_PERMIT_READ|GATT_PERMIT_WRITE,NULL); //Description String Value
+      Local_Insert(&att[index],(gattAttrType_t){ ATT_BT_UUID_SIZE, clientCharCfgUUID },GATT_PERMIT_READ|GATT_PERMIT_WRITE, (uint8 *)UpdateConfig); //Description String Value
       
     }
     else if(chara!=NULL)

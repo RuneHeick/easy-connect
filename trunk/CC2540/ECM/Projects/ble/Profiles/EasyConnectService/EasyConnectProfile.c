@@ -82,7 +82,21 @@ static simpleProfileCBs_t *simpleProfile_AppCBs = NULL;
 /*********************************************************************
  * Profile Attributes - variables
  */
+
+
+//  Each client has its own
+// instantiation of the Client Characteristic Configuration. Reads of the
+// Client Characteristic Configuration only shows the configuration for
+// that client and writes only affect the configuration of that client.
+
+gattCharCfg_t UpdateConfig[GATT_MAX_NUM_CONN];
+
+
+
 /*
+
+
+
 // Simple Profile Service attribute
 static CONST gattAttrType_t simpleProfileService = { ATT_BT_UUID_SIZE, simpleProfileServUUID };
 
@@ -277,27 +291,17 @@ bStatus_t SimpleProfile_AddService( uint32 services )
   uint8 status = SUCCESS;
 
   // Initialize Client Characteristic Configuration attributes
-  //GATTServApp_InitCharCfg( INVALID_CONNHANDLE, simpleProfileChar4Config );
+  GATTServApp_InitCharCfg( INVALID_CONNHANDLE, UpdateConfig );
 
   // Register with Link DB to receive link status change callback
-  //VOID linkDB_Register( simpleProfile_HandleConnStatusCB );  
-  /*
-  if ( services & SIMPLEPROFILE_SERVICE )
-  {
-    // Register GATT attribute list and CBs with GATT Server App
-    status = GATTServApp_RegisterService( simpleProfileAttrTbl, 
-                                          GATT_NUM_ATTRS( simpleProfileAttrTbl ),
-                                          &simpleProfileCBs );
-  }
-  */
-  
-  
+  VOID linkDB_Register( simpleProfile_HandleConnStatusCB );  
+    
   Testservice = SmartCommandsManger_CreateService("Lav Kaffe"); 
   GenericValue_SetString(&DataTest,"TEST"); 
   SmartCommandsManger_addCharacteristic(Testservice,&DataTest,"Antal kopper",(GUIPresentationFormat){00,00},(PresentationFormat){1,2,3,4,5},NULL,NONE,GATT_PERMIT_READ|GATT_PERMIT_WRITE);
   
   
-  SmartCommandsManger_addCharacteristic(Testservice,&DataTest,"Bonner",(GUIPresentationFormat){00,00},(PresentationFormat){7,4,5,6,5},"TESTTEST",YES,GATT_PERMIT_READ);
+  SmartCommandsManger_addCharacteristic(Testservice,&DataTest,"Bonner",(GUIPresentationFormat){00,00},(PresentationFormat){7,4,5,6,5},"TESTTEST",YES,GATT_PERMIT_READ|GATT_PERMIT_WRITE);
   
   
   
@@ -307,7 +311,6 @@ bStatus_t SimpleProfile_AddService( uint32 services )
   status = GATTServApp_RegisterService( Testservice->llReg, 
                                           SmartCommandsManger_ElementsInService(Testservice),
                                           &simpleProfileCBs );  
-  
   
   
   return ( status );
@@ -582,7 +585,7 @@ static uint8 simpleProfile_ReadAttrCB( uint16 connHandle, gattAttribute_t *pAttr
           }
         }
       case UPDATE_CHARACTERISTICS_UUID:
-        *pLen = 0;
+        *pLen = SmartCommandsManger_GetUpdate(pValue, maxLen);
         break;
         
       default:
@@ -651,7 +654,11 @@ static bStatus_t simpleProfile_WriteAttrCB( uint16 connHandle, gattAttribute_t *
         
         break;
 
-      case UPDATE_CHARACTERISTICS_UUID:     
+      case GATT_CLIENT_CHAR_CFG_UUID:
+        status = GATTServApp_ProcessCCCWriteReq( connHandle, pAttr, pValue, len,
+                                                 offset, GATT_CLIENT_CFG_INDICATE);
+        break;
+        
       default:
         // Should never get here! (characteristics 2 and 4 do not have write permissions)
         status = ATT_ERR_ATTR_NOT_FOUND;
@@ -687,7 +694,7 @@ static void simpleProfile_HandleConnStatusCB( uint16 connHandle, uint8 changeTyp
          ( ( changeType == LINKDB_STATUS_UPDATE_STATEFLAGS ) && 
            ( !linkDB_Up( connHandle ) ) ) )
     { 
-      //GATTServApp_InitCharCfg( connHandle, simpleProfileChar4Config );
+      GATTServApp_InitCharCfg( connHandle, UpdateConfig );
     }
   }
 }
@@ -695,3 +702,13 @@ static void simpleProfile_HandleConnStatusCB( uint16 connHandle, uint8 changeTyp
 
 /*********************************************************************
 *********************************************************************/
+
+
+void simpleProfile_CCCUpdate()
+{
+  GATTServApp_ProcessCharCfg( UpdateConfig, NULL, FALSE,
+                                    Testservice->llReg, SmartCommandsManger_ElementsInService(Testservice),
+                                    INVALID_TASK_ID );
+}
+
+

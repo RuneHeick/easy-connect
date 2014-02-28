@@ -105,7 +105,7 @@ typedef struct
 } simpleProfileCBs_t;
 
 
-
+extern gattCharCfg_t UpdateConfig[GATT_MAX_NUM_CONN];
 
 /*********************************************************************
  * API FUNCTIONS 
@@ -153,6 +153,10 @@ extern bStatus_t SimpleProfile_SetParameter( uint8 param, uint8 len, void *value
  */
 extern bStatus_t SimpleProfile_GetParameter( uint8 param, void *value );
 
+
+
+
+void simpleProfile_CCCUpdate(); 
 
 /*********************************************************************
 *********************************************************************/

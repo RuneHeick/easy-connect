@@ -740,6 +740,7 @@ static void performPeriodicTask( void )
   // Call to retrieve the value of the third characteristic in the profile
   //stat = SimpleProfile_GetParameter( SIMPLEPROFILE_CHAR3, &valueToCopy);
 
+  simpleProfile_CCCUpdate();
   if( stat == SUCCESS )
   {
     /*

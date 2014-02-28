@@ -82,3 +82,7 @@ bool SmartCommandsManger_addCharacteristic(SmartService* service,GenericValue* i
 bool SmartCommandsManger_RemoveCharacteristic(SmartService* service,GenericCharacteristic* Characteristic);
 
 bool SmartCommandsManger_CompileServices();
+
+uint8 SmartCommandsManger_GetUpdate(uint8* ptr, uint8 maxsize);
+
+void SmartCommandsManger_AddHandleToUpdate(uint16 handel);
