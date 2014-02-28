@@ -5,6 +5,7 @@
 
 //Defines 
 #define MAX_SERVICES_SUPPORTED  10
+#define UPDATE_START_COUNT      3
 
 
 typedef enum 
@@ -57,10 +58,17 @@ typedef struct
   
 }SmartService;
 
+typedef struct updateHandleContainor UpdateHandle;
+
+struct updateHandleContainor 
+{
+  uint16 handle; 
+  UpdateHandle* next;
+};
 
 extern SmartService* SmartCommandServices[MAX_SERVICES_SUPPORTED];
 extern uint8 SmartCommandServices_Count; 
-
+extern UpdateHandle* HandelsToUpdate;
 //Functions 
 
 uint8 SmartCommandsManger_ElementsInService(SmartService* service); 
@@ -72,7 +80,5 @@ bool SmartCommandsManger_DeleteService(SmartService* service);
 bool SmartCommandsManger_addCharacteristic(SmartService* service,GenericValue* initialValue,uint8* description, GUIPresentationFormat guiPresentationFormat, PresentationFormat typeFormat,uint8* range, Subscription subscription, uint8 premission);
 
 bool SmartCommandsManger_RemoveCharacteristic(SmartService* service,GenericCharacteristic* Characteristic);
-
-bool SmartCommandsManger_CompileService(SmartService* service);
 
 bool SmartCommandsManger_CompileServices();
