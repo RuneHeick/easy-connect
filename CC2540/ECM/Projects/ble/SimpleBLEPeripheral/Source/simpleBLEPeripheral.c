@@ -86,7 +86,7 @@
  */
 
 // How often to perform periodic event
-#define SBP_PERIODIC_EVT_PERIOD                   5000
+#define SBP_PERIODIC_EVT_PERIOD                   15000
 
 // What is the advertising interval when device is discoverable (units of 625us, 160=100ms)
 #define DEFAULT_ADVERTISING_INTERVAL          160
@@ -740,7 +740,7 @@ static void performPeriodicTask( void )
   // Call to retrieve the value of the third characteristic in the profile
   //stat = SimpleProfile_GetParameter( SIMPLEPROFILE_CHAR3, &valueToCopy);
 
-  simpleProfile_CCCUpdate();
+  SimpleProfile_SetParameter(0x0105,2,"H");
   if( stat == SUCCESS )
   {
     /*

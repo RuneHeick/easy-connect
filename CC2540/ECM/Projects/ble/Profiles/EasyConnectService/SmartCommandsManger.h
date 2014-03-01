@@ -77,7 +77,7 @@ SmartService* SmartCommandsManger_CreateService(uint8* description);
 
 bool SmartCommandsManger_DeleteService(SmartService* service);
 
-bool SmartCommandsManger_addCharacteristic(SmartService* service,GenericValue* initialValue,uint8* description, GUIPresentationFormat guiPresentationFormat, PresentationFormat typeFormat,uint8* range, Subscription subscription, uint8 premission);
+uint16 SmartCommandsManger_addCharacteristic(SmartService* service,GenericValue* initialValue,uint8* description, GUIPresentationFormat guiPresentationFormat, PresentationFormat typeFormat,uint8* range, Subscription subscription, uint8 premission);
 
 bool SmartCommandsManger_RemoveCharacteristic(SmartService* service,GenericCharacteristic* Characteristic);
 
@@ -86,3 +86,7 @@ bool SmartCommandsManger_CompileServices();
 uint8 SmartCommandsManger_GetUpdate(uint8* ptr, uint8 maxsize);
 
 void SmartCommandsManger_AddHandleToUpdate(uint16 handel);
+
+GenericValue* GetCharacteristic(uint8 service,uint8 characteristic);
+
+uint16 GetCharacteristicHandel(uint8 service,uint8 characteristic);

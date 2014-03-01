@@ -9,7 +9,7 @@ TriggerName=main
 LimitSize=0
 ByteLimit=50
 [DebugChecksum]
-Checksum=-1643454179
+Checksum=-806623588
 [CallStack]
 ShowArgs=0
 [Disassembly]
@@ -19,19 +19,22 @@ Fmt0=struct attAttribute_t-handle	3	0
 [watch_formats]
 Fmt0={W}0:NameLength	3	0
 Fmt1={W}0:RspLen	3	0
-Fmt2={W}0:buffersize	3	0
-Fmt3={W}0:count	3	0
-Fmt4={W}0:index	3	0
-Fmt5={W}0:nameSize	3	0
-Fmt6={W}0:numberOfItems	3	0
-Fmt7={W}0:scanRspSize	3	0
-Fmt8={W}0:size	3	0
+Fmt2={W}0:addr	4	0
+Fmt3={W}0:buffersize	3	0
+Fmt4={W}0:count	3	0
+Fmt5={W}0:handel	4	0
+Fmt6={W}0:index	3	0
+Fmt7={W}0:nameSize	3	0
+Fmt8={W}0:numberOfItems	3	0
+Fmt9={W}0:scanRspSize	3	0
+Fmt10={W}0:size	3	0
 [Breakpoints]
 Bp0=_ "STD_CODE" "{$PROJ_DIR$\..\Source\GenericValueManger.h}.17.1" 0 0 0 0 "" 0 ""
 Bp1=_ "STD_CODE" "LogicalCode:0x2F7B3" 0 0 0 0 "" 0 ""
 Bp2=_ "STD_CODE" "{$PROJ_DIR$\..\..\Profiles\SimpleProfile\simpleGATTprofile.c}.391.3" 0 0 0 0 "" 0 ""
 Bp3=_ "STD_CODE" "{$PROJ_DIR$\..\..\Profiles\SimpleProfile\simpleGATTprofile.c}.568.1" 0 0 0 0 "" 0 ""
-Count=4
+Bp4=_ "STD_CODE" "{$PROJ_DIR$\..\..\Profiles\EasyConnectService\SmartCommandsManger.c}.312.17" 0 0 0 0 "" 0 ""
+Count=5
 [ChipconEmu]
 Stop timers on halt=0
 Leave target running=1
