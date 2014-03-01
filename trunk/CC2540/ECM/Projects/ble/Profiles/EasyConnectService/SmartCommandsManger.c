@@ -93,14 +93,15 @@ bool SmartCommandsManger_DeleteService(SmartService* service)
   return false; 
 }
 
-bool SmartCommandsManger_addCharacteristic(SmartService* service,GenericValue* initialValue,uint8* description, GUIPresentationFormat guiPresentationFormat, PresentationFormat typeFormat,uint8* range, Subscription subscription, uint8 premission)
+uint16 SmartCommandsManger_addCharacteristic(SmartService* service,GenericValue* initialValue,uint8* description, GUIPresentationFormat guiPresentationFormat, PresentationFormat typeFormat,uint8* range, Subscription subscription, uint8 premission)
 {
   if(service->llReg==NULL)
   {
+    uint8 address = 1; 
     GenericCharacteristic* chare = osal_mem_alloc(sizeof(GenericCharacteristic));
     bool succses = true; 
     if(chare == NULL || initialValue->status!=READY) 
-      return false; 
+      return 0; 
     
     chare->premission = premission; 
     chare->guiPresentationFormat = guiPresentationFormat; 
@@ -123,21 +124,36 @@ bool SmartCommandsManger_addCharacteristic(SmartService* service,GenericValue* i
     else
     {
       if(service->first==NULL)
+      {
         service->first = chare; 
+      }
       else
       {
-        GenericCharacteristic* temp = service->first; 
+        GenericCharacteristic* temp = service->first;
+        address++;
         while(temp->nextitem != NULL)
         {
-          temp = temp->nextitem; 
+          temp = temp->nextitem;
+          address++;
         }
         temp->nextitem = chare; 
       }
     }
-    
-    return succses;
+    if(succses)
+    {
+      uint8 servicecount = 0; 
+      for(;servicecount<SmartCommandServices_Count;servicecount++)
+      {
+        if(SmartCommandServices[servicecount]== service)
+        {
+          return BUILD_UINT16(address,++servicecount);
+        }
+      }
+    }
+    else
+      return 0;
   }
-  return false; 
+  return 0; 
 }
 
 bool SmartCommandsManger_RemoveCharacteristic(SmartService* service,GenericCharacteristic* characteristic)
@@ -220,7 +236,7 @@ void SmartCommandsManger_AddHandleToUpdate(uint16 handel)
 {
   UpdateHandle* tempValue = HandelsToUpdate;
   
-  while(tempValue->handle != 0 && tempValue->next != NULL)
+  while(tempValue->handle != 0 && tempValue->handle != handel && tempValue->next != NULL)
   {
     tempValue = tempValue->next;
   }
@@ -236,6 +252,7 @@ void SmartCommandsManger_AddHandleToUpdate(uint16 handel)
     {
       tempValue->next = newItem;
       newItem->handle = handel;
+      newItem->next = NULL; 
     }
   }
   
@@ -264,6 +281,65 @@ uint8 SmartCommandsManger_GetUpdate(uint8* ptr, uint8 maxsize)
   return count;
 }
 
+
+GenericValue* GetCharacteristic(uint8 service,uint8 characteristic)
+{
+  uint8 count = 1; 
+  
+  if(service>SmartCommandServices_Count)
+    return NULL;
+  
+  
+  SmartService* servicePtr = SmartCommandServices[service-1];
+  GenericCharacteristic* chara = servicePtr->first;
+  
+  if(chara==NULL)
+    return NULL; 
+  
+  for(;count==characteristic;count++)
+  {
+    chara = chara->nextitem;
+    if(chara == NULL)
+      return NULL;
+  }
+  
+  return chara->value;
+}
+
+
+uint16 GetCharacteristicHandel(uint8 service,uint8 characteristic)
+{
+  SmartService* servicePtr = SmartCommandServices[service-1];
+  if(servicePtr != NULL && servicePtr->llReg != NULL)
+  {
+    uint8 count = SERVICE_SELF_COUNT+CHAR_SELF_COUNT+CHAR_SELF_COUNT+DESC_SELF_COUNT; //the service and the description and the Update 
+    uint8 addrCount = 1; 
+    GenericCharacteristic* temp = servicePtr->first; 
+    
+    while(temp!=NULL)
+    {
+      if(addrCount==characteristic)
+        return servicePtr->llReg[++count].handle;
+      
+      count += CHAR_SELF_COUNT+(DESC_SELF_COUNT*GENERICCHAR_MANDATORY_DESCRIPTORS_COUNT); // Contains a Characteristic and have 3 mandatory Decriptors. 
+      
+      if(temp->range.status != NOT_INIT)
+      {
+        count+=DESC_SELF_COUNT;                          //have optinal descriptor
+      }
+      
+      if(temp->subscribtion != NONE)
+      {
+        count+=DESC_SELF_COUNT;                          //have optinal descriptor
+      }
+      
+      temp = temp->nextitem;
+      addrCount++;
+    }
+  }
+  
+  return 0; 
+}
 
 static bool SmartCommandsManger_CompileService(SmartService* service)
 {

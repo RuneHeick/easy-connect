@@ -29,15 +29,7 @@
   
 //Subscription Option Descriptor
 #define  SUPSCRIPTIONOPTION_DESCRIPTOR_UUID     0x2911
-  
-//Characteristic Presentation Format Descriptor
-#define  PRESENTATIONFORMAT_DESCRIPTOR_UUID     0x2904
-  
-//Client Characteristic Configuration Descriptor
-#define  CCC_DESCRIPTOR_UUID                    0x2902
 
-//Characteristic User Description Descriptor
-#define USERDESCRIPTION_DESCRIPTOR_UUID         0x2901
   
 // Simple Keys Profile Services bit fields
 #define SIMPLEPROFILE_SERVICE_UUID              0x00000001
