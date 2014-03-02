@@ -41,6 +41,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="MessageBusUnitTest.cs" />
+    <Compile Include="MockMessage.cs" />
+    <Compile Include="MockMessageBusFunctionPointer.cs" />
+    <Compile Include="MockSubscriber.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
