@@ -10,6 +10,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ecru_kernel", "ecru_kernel\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "logging", "logging\logging.csproj", "{F14A6673-B599-4C8B-A0F9-FBC115329966}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MessageBus.Test", "MessageBus.Test\MessageBus.Test.csproj", "{2AD56EBF-59DE-408C-8654-A2D0E250DF7B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MessageBus", "MessageBus\MessageBus.csproj", "{06A20AA7-7A83-419B-9308-A96A20876A2A}"
+EndProject
 Global
 	GlobalSection(SubversionScc) = preSolution
 		Svn-Managed = True
@@ -30,6 +34,14 @@ Global
 		{F14A6673-B599-4C8B-A0F9-FBC115329966}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F14A6673-B599-4C8B-A0F9-FBC115329966}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F14A6673-B599-4C8B-A0F9-FBC115329966}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2AD56EBF-59DE-408C-8654-A2D0E250DF7B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2AD56EBF-59DE-408C-8654-A2D0E250DF7B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2AD56EBF-59DE-408C-8654-A2D0E250DF7B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2AD56EBF-59DE-408C-8654-A2D0E250DF7B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{06A20AA7-7A83-419B-9308-A96A20876A2A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{06A20AA7-7A83-419B-9308-A96A20876A2A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{06A20AA7-7A83-419B-9308-A96A20876A2A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{06A20AA7-7A83-419B-9308-A96A20876A2A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

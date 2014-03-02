@@ -90,7 +90,7 @@ namespace logging
                 throw new Exception("SD card (directory) not found");
             }
 
-            string directoryPath = SDCardDirectory + Path.DirectorySeparatorChar + trimmedDIrectoryPath;
+            var directoryPath = SDCardDirectory + Path.DirectorySeparatorChar + trimmedDIrectoryPath;
 
             if (!Directory.Exists(directoryPath))
             {
@@ -113,7 +113,7 @@ namespace logging
         {
             if (addDateTime)
             {
-                DateTime currenTime = DateTime.Now;
+                var currenTime = DateTime.Now;
                 message = "[" + currenTime + ":" + currenTime.Millisecond + "]" + message;
             }
             Debug.Print(message);
@@ -154,8 +154,8 @@ namespace logging
         #region Public Methods
         public void LogCustom(params object[] strings)
         {
-            string message = string.Empty;
-            for (int i = 0; i < strings.Length; i++)
+            var message = string.Empty;
+            for (var i = 0; i < strings.Length; i++)
             {
                 message = message + strings[i].ToString() + " ";
             }
