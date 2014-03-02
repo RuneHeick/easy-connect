@@ -96,16 +96,14 @@ namespace MessageBus
 
         public static bool Publish(TMessage message)
         {
-
             var subscribers = Subscriptions[message] as ArrayList;
 
-            foreach (var subscriber in subscribers)
+            if (subscribers == null) return true;
+            foreach ( TMessageHandler subscriber in subscribers)
             {
-                
+                subscriber.Handle(message);
             }
-
+            return true;
         }
-
-
     }
 }
