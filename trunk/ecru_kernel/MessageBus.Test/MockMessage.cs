@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MessageBus
+namespace MessageBus.Test
 {
-    public interface TMessage
+    class MockMessage : TMessage
     {
 
     }

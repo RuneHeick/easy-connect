@@ -9,7 +9,7 @@ namespace MessageBus
 {
     public interface ISubscriber
     {
-        Dictionary<TMessage, Action<TMessage>> Handlers { get; }
-
+        TMessage Message { get; }
+        TMessageHandler FunctionPointer { get; }
     }
 }

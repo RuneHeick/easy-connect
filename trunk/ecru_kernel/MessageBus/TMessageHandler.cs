@@ -6,8 +6,8 @@ using System.Threading.Tasks;
 
 namespace MessageBus
 {
-    public interface TMessage
+    public interface TMessageHandler
     {
-
+        void Handle(TMessage message);
     }
 }
