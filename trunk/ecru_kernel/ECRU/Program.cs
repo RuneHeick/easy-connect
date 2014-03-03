@@ -3,10 +3,13 @@ using Microsoft.SPOT;
 
 namespace ECRU
 {
+    /// <summary>
+    /// ECRU kernel
+    /// </summary>
     public class Program
     {
         /// <summary>
-        /// Booter for ECRU kernel
+        /// Main Launches the ECRU kernel
         /// </summary>
         public static void Main()
         {

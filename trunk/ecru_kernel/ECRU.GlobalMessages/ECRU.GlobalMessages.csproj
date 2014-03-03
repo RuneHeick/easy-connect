@@ -1,13 +1,13 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
-    <AssemblyName>EventBus</AssemblyName>
+    <AssemblyName>ECRU.GlobalMessages</AssemblyName>
     <OutputType>Library</OutputType>
-    <RootNamespace>EventBus</RootNamespace>
+    <RootNamespace>ECRU.GlobalMessages</RootNamespace>
     <ProjectTypeGuids>{b69e3092-b931-443c-abe7-7e7b65f2a37f};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <ProductVersion>9.0.21022</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{A161B854-6858-4A85-B70D-B949F042B2D4}</ProjectGuid>
+    <ProjectGuid>{E1377658-878B-4BA4-B781-E79B71F327F4}</ProjectGuid>
     <TargetFrameworkVersion>v4.3</TargetFrameworkVersion>
     <NetMfTargetsBaseDir Condition="'$(NetMfTargetsBaseDir)'==''">$(MSBuildExtensionsPath32)\Microsoft\.NET Micro Framework\</NetMfTargetsBaseDir>
   </PropertyGroup>
@@ -30,17 +30,17 @@
   </PropertyGroup>
   <Import Project="$(NetMfTargetsBaseDir)$(TargetFrameworkVersion)\CSharp.Targets" />
   <ItemGroup>
-    <Compile Include="ISubscriber.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="EventBus.cs" />
-    <Compile Include="TMessage.cs" />
-    <Compile Include="TMessageHandler.cs" />
+    <Compile Include="Reset.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="Microsoft.SPOT.Native">
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <None Include="ClassDiagram1.cd" />
+    <ProjectReference Include="..\ECRU.EventBus\ECRU.EventBus.csproj">
+      <Project>{A161B854-6858-4A85-B70D-B949F042B2D4}</Project>
+      <Name>ECRU.EventBus</Name>
+    </ProjectReference>
   </ItemGroup>
 </Project>

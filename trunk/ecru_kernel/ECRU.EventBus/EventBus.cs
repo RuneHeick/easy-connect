@@ -94,13 +94,17 @@ namespace ECRU.EventBus
             }
         }
 
+        /// <summary>
+        ///     Publish TMessage to subscribers. This method uses the current thread.
+        /// </summary>
+        /// <param name="message"></param>
         public static void Publish(TMessage message)
         {
             lock (Lock)
             {
                 var subscribers = Subscriptions[message] as ArrayList;
 
-                if (subscribers == null) return true;
+                if (subscribers == null) return;
                 foreach (TMessageHandler subscriber in subscribers)
                 {
                     subscriber.Handle(message);
