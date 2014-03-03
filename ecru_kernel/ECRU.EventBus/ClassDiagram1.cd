@@ -8,21 +8,25 @@
     </TypeIdentifier>
   </Class>
   <Interface Name="ECRU.EventBus.ISubscriber">
-    <Position X="4.75" Y="0.5" Width="2.75" />
+    <Position X="5" Y="0.5" Width="2.5" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAIAAAAAA=</HashCode>
       <FileName>ISubscriber.cs</FileName>
     </TypeIdentifier>
+    <ShowAsAssociation>
+      <Property Name="FunctionPointer" />
+      <Property Name="Message" />
+    </ShowAsAssociation>
   </Interface>
   <Interface Name="ECRU.EventBus.TMessage">
-    <Position X="4.75" Y="2" Width="1.5" />
+    <Position X="6.75" Y="2" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAA=</HashCode>
       <FileName>TMessage.cs</FileName>
     </TypeIdentifier>
   </Interface>
   <Interface Name="ECRU.EventBus.TMessageHandler">
-    <Position X="6.5" Y="2" Width="2.25" />
+    <Position X="4" Y="2" Width="2.25" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIAAAAAAAAAAAA=</HashCode>
       <FileName>TMessageHandler.cs</FileName>
