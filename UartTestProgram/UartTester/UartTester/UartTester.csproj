@@ -53,6 +53,44 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="BindingConverter.cs" />
+    <Compile Include="Commands\Command.cs" />
+    <Compile Include="Commands\ModelNrView.xaml.cs">
+      <DependentUpon>ModelNrView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Commands\ManifactureView.xaml.cs">
+      <DependentUpon>ManifactureView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Commands\ModelNumberCommand.cs" />
+    <Compile Include="Commands\ManifactureName.cs" />
+    <Compile Include="Commands\SerialNoView.xaml.cs">
+      <DependentUpon>SerialNoView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Commands\DeviceNameView.xaml.cs">
+      <DependentUpon>DeviceNameView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Commands\SerialNoCommand.cs" />
+    <Compile Include="Commands\DeviceNameCommand.cs" />
+    <Compile Include="SerialCommand.cs" />
+    <Compile Include="View\overviewView.xaml.cs">
+      <DependentUpon>overviewView.xaml</DependentUpon>
+    </Compile>
+    <Page Include="Commands\ModelNrView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Commands\ManifactureView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Commands\SerialNoView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Commands\DeviceNameView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Helper\Console.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -80,6 +118,10 @@
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Page Include="View\overviewView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs">
