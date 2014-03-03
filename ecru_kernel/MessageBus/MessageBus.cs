@@ -27,7 +27,8 @@ namespace MessageBus
         {
 
             if (subscriber.Message == null) throw new ArgumentNullException("subscriber.Message");
-            var message = subscriber.Message;
+            var message = subscriber.Message.Type;
+
 
             if (subscriber.FunctionPointer == null) throw new ArgumentNullException("subscriber.FunctionPointer");
             var functionPointer = subscriber.FunctionPointer;
@@ -66,7 +67,7 @@ namespace MessageBus
         {
 
             if (subscriber.Message == null) throw new ArgumentNullException("subscriber.Message");
-            var message = subscriber.Message;
+            var message = subscriber.Message.Type;
 
             if (subscriber.FunctionPointer == null) throw new ArgumentNullException("subscriber.FunctionPointer");
             var functionPointer = subscriber.FunctionPointer;

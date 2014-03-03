@@ -42,7 +42,7 @@ namespace MessageBus.Test
         [Test]
         public void AddSubscriber_NoMessageBusFunctionPointerToMessageBus_ThrowArgumentNullException()
         {
-            var sub = new MockSubscriber(new MockMessage(), null);
+            var sub = new MockSubscriber(new MockMessage("test"), null);
 
             try
             {
@@ -57,7 +57,7 @@ namespace MessageBus.Test
         [Test]
         public void AddSubscriberToMessageBus_ReturnTrue()
         {
-            var sub = new MockSubscriber(new MockMessage(), new MockMessageBusFunctionPointer());
+            var sub = new MockSubscriber(new MockMessage("test"), new MockMessageBusFunctionPointer());
 
             Assert.IsTrue(MessageBus.Subscribe(sub));
 
@@ -66,7 +66,7 @@ namespace MessageBus.Test
         [Test]
         public void AddSubscribers_SameMessageToMessageBus_ReturnTrue()
         {
-            var message = new MockMessage();
+            var message = new MockMessage("test");
             var sub1 = new MockSubscriber(message, new MockMessageBusFunctionPointer());
             var sub2 = new MockSubscriber(message, new MockMessageBusFunctionPointer());
 
@@ -78,7 +78,7 @@ namespace MessageBus.Test
         [Test]
         public void RemoveNotSubscribedSubscriber_ThrowArgumentException()
         {
-            var sub = new MockSubscriber(new MockMessage(), new MockMessageBusFunctionPointer());
+            var sub = new MockSubscriber(new MockMessage("test"), new MockMessageBusFunctionPointer());
 
             try
             {
@@ -109,7 +109,7 @@ namespace MessageBus.Test
         [Test]
         public void RemoveSubscriber_NoMessageBusFunctionPointerToMessageBus_ThrowArgumentNullException()
         {
-            var sub = new MockSubscriber(new MockMessage(), null);
+            var sub = new MockSubscriber(new MockMessage("test"), null);
 
             try
             {
@@ -124,7 +124,7 @@ namespace MessageBus.Test
         [Test]
         public void RemoveSubscriber_AddedThenRemovedFromMessageBus_ReturnTrue()
         {
-            var sub = new MockSubscriber(new MockMessage(), new MockMessageBusFunctionPointer());
+            var sub = new MockSubscriber(new MockMessage("test"), new MockMessageBusFunctionPointer());
 
             MessageBus.Subscribe(sub);
 
