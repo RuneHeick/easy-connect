@@ -8,6 +8,6 @@ namespace MessageBus
 {
     public interface TMessage
     {
-
+        string Type { get; }
     }
 }

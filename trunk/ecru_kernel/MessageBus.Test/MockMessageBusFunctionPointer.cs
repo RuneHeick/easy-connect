@@ -8,5 +8,9 @@ namespace MessageBus.Test
 {
     class MockMessageBusFunctionPointer : TMessageHandler
     {
+        public void Handle(TMessage message)
+        {
+            throw new NotImplementedException();
+        }
     }
 }
