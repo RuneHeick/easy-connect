@@ -3,16 +3,13 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
 VisualStudioVersion = 12.0.30110.0
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ecru_kernel", "ecru_kernel\ecru_kernel.csproj", "{D1EFA9D6-C2D5-4C75-8A37-748B5AD9C576}"
-	ProjectSection(ProjectDependencies) = postProject
-		{F14A6673-B599-4C8B-A0F9-FBC115329966} = {F14A6673-B599-4C8B-A0F9-FBC115329966}
-	EndProjectSection
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "logging", "logging\logging.csproj", "{F14A6673-B599-4C8B-A0F9-FBC115329966}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MessageBus.Test", "MessageBus.Test\MessageBus.Test.csproj", "{2AD56EBF-59DE-408C-8654-A2D0E250DF7B}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ECRU.EventBus.Test", "ECRU.EventBus.Test\ECRU.EventBus.Test.csproj", "{9A19AF0B-B14E-4244-8066-B7AB46E5B9CC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MessageBus", "MessageBus\MessageBus.csproj", "{06A20AA7-7A83-419B-9308-A96A20876A2A}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ECRU", "ECRU\ECRU.csproj", "{D1EFA9D6-C2D5-4C75-8A37-748B5AD9C576}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ECRU.EventBus", "ECRU.EventBus\ECRU.EventBus.csproj", "{A161B854-6858-4A85-B70D-B949F042B2D4}"
 EndProject
 Global
 	GlobalSection(SubversionScc) = preSolution
@@ -24,24 +21,24 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{F14A6673-B599-4C8B-A0F9-FBC115329966}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F14A6673-B599-4C8B-A0F9-FBC115329966}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F14A6673-B599-4C8B-A0F9-FBC115329966}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F14A6673-B599-4C8B-A0F9-FBC115329966}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9A19AF0B-B14E-4244-8066-B7AB46E5B9CC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9A19AF0B-B14E-4244-8066-B7AB46E5B9CC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9A19AF0B-B14E-4244-8066-B7AB46E5B9CC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9A19AF0B-B14E-4244-8066-B7AB46E5B9CC}.Release|Any CPU.Build.0 = Release|Any CPU
 		{D1EFA9D6-C2D5-4C75-8A37-748B5AD9C576}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{D1EFA9D6-C2D5-4C75-8A37-748B5AD9C576}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D1EFA9D6-C2D5-4C75-8A37-748B5AD9C576}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
 		{D1EFA9D6-C2D5-4C75-8A37-748B5AD9C576}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D1EFA9D6-C2D5-4C75-8A37-748B5AD9C576}.Release|Any CPU.Build.0 = Release|Any CPU
 		{D1EFA9D6-C2D5-4C75-8A37-748B5AD9C576}.Release|Any CPU.Deploy.0 = Release|Any CPU
-		{F14A6673-B599-4C8B-A0F9-FBC115329966}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{F14A6673-B599-4C8B-A0F9-FBC115329966}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{F14A6673-B599-4C8B-A0F9-FBC115329966}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{F14A6673-B599-4C8B-A0F9-FBC115329966}.Release|Any CPU.Build.0 = Release|Any CPU
-		{2AD56EBF-59DE-408C-8654-A2D0E250DF7B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{2AD56EBF-59DE-408C-8654-A2D0E250DF7B}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{2AD56EBF-59DE-408C-8654-A2D0E250DF7B}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{2AD56EBF-59DE-408C-8654-A2D0E250DF7B}.Release|Any CPU.Build.0 = Release|Any CPU
-		{06A20AA7-7A83-419B-9308-A96A20876A2A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{06A20AA7-7A83-419B-9308-A96A20876A2A}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{06A20AA7-7A83-419B-9308-A96A20876A2A}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{06A20AA7-7A83-419B-9308-A96A20876A2A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A161B854-6858-4A85-B70D-B949F042B2D4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A161B854-6858-4A85-B70D-B949F042B2D4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A161B854-6858-4A85-B70D-B949F042B2D4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A161B854-6858-4A85-B70D-B949F042B2D4}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
