@@ -1,8 +1,24 @@
 ﻿<Application x:Class="UartTester.App"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:c="clr-namespace:UartTester.Commands"
              StartupUri="View/MainWindow.xaml">
     <Application.Resources>
-         
+        <DataTemplate DataType="{x:Type c:DeviceNameCommand}">
+            <c:DeviceNameView /> 
+        </DataTemplate>
+
+        <DataTemplate DataType="{x:Type c:SerialNoCommand}">
+            <c:SerialNoView />
+        </DataTemplate>
+
+        <DataTemplate DataType="{x:Type c:ManifactureNameCommand}">
+            <c:ManifactureView />
+        </DataTemplate>
+
+        <DataTemplate DataType="{x:Type c:ModelNumberCommand}">
+            <c:ModelNrView />
+        </DataTemplate>
+
     </Application.Resources>
 </Application>
