@@ -296,7 +296,7 @@ GenericValue* GetCharacteristic(uint8 service,uint8 characteristic)
   if(chara==NULL)
     return NULL; 
   
-  for(;count==characteristic;count++)
+  for(;count=!characteristic;count++)
   {
     chara = chara->nextitem;
     if(chara == NULL)

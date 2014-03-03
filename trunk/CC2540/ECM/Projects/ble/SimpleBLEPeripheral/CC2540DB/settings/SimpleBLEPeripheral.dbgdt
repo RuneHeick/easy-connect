@@ -19,7 +19,7 @@
           
           
           
-        <Column0>293</Column0><Column1>27</Column1><Column2>27</Column2><Column3>27</Column3></ColumnWidths>
+        <Column0>259</Column0><Column1>27</Column1><Column2>27</Column2><Column3>27</Column3></ColumnWidths>
       </Workspace>
       <Disassembly>
         <col-names>
@@ -179,7 +179,7 @@
             <Factory>Workspace</Factory>
             <Session>
               
-            <NodeDict><ExpandedNode>SimpleBLEPeripheral</ExpandedNode><ExpandedNode>SimpleBLEPeripheral/APP</ExpandedNode><ExpandedNode>SimpleBLEPeripheral/APP/Mangers</ExpandedNode><ExpandedNode>SimpleBLEPeripheral/HAL</ExpandedNode><ExpandedNode>SimpleBLEPeripheral/Output</ExpandedNode><ExpandedNode>SimpleBLEPeripheral/PROFILES</ExpandedNode><ExpandedNode>SimpleBLEPeripheral/PROFILES/SmartCommand</ExpandedNode></NodeDict></Session>
+            <NodeDict><ExpandedNode>SimpleBLEPeripheral</ExpandedNode><ExpandedNode>SimpleBLEPeripheral/APP</ExpandedNode><ExpandedNode>SimpleBLEPeripheral/APP/Mangers</ExpandedNode><ExpandedNode>SimpleBLEPeripheral/HAL</ExpandedNode><ExpandedNode>SimpleBLEPeripheral/HAL/Target</ExpandedNode><ExpandedNode>SimpleBLEPeripheral/HAL/Target/CC2540EB</ExpandedNode><ExpandedNode>SimpleBLEPeripheral/HAL/Target/CC2540EB/Config</ExpandedNode><ExpandedNode>SimpleBLEPeripheral/HAL/Target/CC2540EB/Drivers</ExpandedNode><ExpandedNode>SimpleBLEPeripheral/HAL/Target/CC2540EB/Includes</ExpandedNode><ExpandedNode>SimpleBLEPeripheral/HAL/Target/UART</ExpandedNode><ExpandedNode>SimpleBLEPeripheral/Output</ExpandedNode><ExpandedNode>SimpleBLEPeripheral/PROFILES</ExpandedNode><ExpandedNode>SimpleBLEPeripheral/PROFILES/SmartCommand</ExpandedNode></NodeDict></Session>
           </Tab>
         </Tabs>
         
@@ -196,7 +196,7 @@
       
       
       
-    <Top><Row0><Sizes><Toolbar-039620f8><key>iaridepm.enu1</key></Toolbar-039620f8><Toolbar-0d22a748><key>debuggergui.enu1</key></Toolbar-0d22a748></Sizes></Row0><Row1><Sizes/></Row1></Top><Left><Row0><Sizes><Wnd1><Rect><Top>-2</Top><Left>-2</Left><Bottom>359</Bottom><Right>384</Right><x>-2</x><y>-2</y><xscreen>154</xscreen><yscreen>77</yscreen><sizeHorzCX>139619</sizeHorzCX><sizeHorzCY>115442</sizeHorzCY><sizeVertCX>349955</sizeVertCX><sizeVertCY>541229</sizeVertCY></Rect></Wnd1></Sizes></Row0></Left><Right><Row0><Sizes><Wnd3><Rect><Top>-2</Top><Left>-2</Left><Bottom>359</Bottom><Right>37</Right><x>-2</x><y>-2</y><xscreen>351</xscreen><yscreen>146</yscreen><sizeHorzCX>318223</sizeHorzCX><sizeHorzCY>218891</sizeHorzCY><sizeVertCX>35358</sizeVertCX><sizeVertCY>541229</sizeVertCY></Rect></Wnd3></Sizes></Row0><Row1><Sizes><Wnd4><Rect><Top>-2</Top><Left>35</Left><Bottom>359</Bottom><Right>345</Right><x>35</x><y>-2</y><xscreen>200</xscreen><yscreen>200</yscreen><sizeHorzCX>181324</sizeHorzCX><sizeHorzCY>299850</sizeHorzCY><sizeVertCX>281052</sizeVertCX><sizeVertCY>541229</sizeVertCY></Rect></Wnd4></Sizes></Row1></Right><Bottom><Row0><Sizes><Wnd0><Rect><Top>-2</Top><Left>-2</Left><Bottom>263</Bottom><Right>1105</Right><x>-2</x><y>-2</y><xscreen>1107</xscreen><yscreen>265</yscreen><sizeHorzCX>1003626</sizeHorzCX><sizeHorzCY>397301</sizeHorzCY><sizeVertCX>139619</sizeVertCX><sizeVertCY>115442</sizeVertCY></Rect></Wnd0></Sizes></Row0></Bottom><Float><Sizes/></Float></Positions>
+    <Top><Row0><Sizes><Toolbar-01203818><key>iaridepm.enu1</key></Toolbar-01203818><Toolbar-0998bd88><key>debuggergui.enu1</key></Toolbar-0998bd88></Sizes></Row0><Row1><Sizes/></Row1></Top><Left><Row0><Sizes><Wnd1><Rect><Top>-2</Top><Left>-2</Left><Bottom>579</Bottom><Right>350</Right><x>-2</x><y>-2</y><xscreen>215</xscreen><yscreen>91</yscreen><sizeHorzCX>167969</sizeHorzCX><sizeHorzCY>97535</sizeHorzCY><sizeVertCX>275000</sizeVertCX><sizeVertCY>622722</sizeVertCY></Rect></Wnd1></Sizes></Row0></Left><Right><Row0><Sizes><Wnd3><Rect><Top>-2</Top><Left>-2</Left><Bottom>579</Bottom><Right>38</Right><x>-2</x><y>-2</y><xscreen>488</xscreen><yscreen>171</yscreen><sizeHorzCX>381250</sizeHorzCX><sizeHorzCY>183280</sizeHorzCY><sizeVertCX>31250</sizeVertCX><sizeVertCY>622722</sizeVertCY></Rect></Wnd3></Sizes></Row0><Row1><Sizes><Wnd4><Rect><Top>-2</Top><Left>36</Left><Bottom>579</Bottom><Right>379</Right><x>36</x><y>-2</y><xscreen>278</xscreen><yscreen>235</yscreen><sizeHorzCX>217188</sizeHorzCX><sizeHorzCY>251876</sizeHorzCY><sizeVertCX>267969</sizeVertCX><sizeVertCY>622722</sizeVertCY></Rect></Wnd4></Sizes></Row1></Right><Bottom><Row0><Sizes><Wnd0><Rect><Top>-2</Top><Left>-2</Left><Bottom>309</Bottom><Right>1282</Right><x>-2</x><y>-2</y><xscreen>1284</xscreen><yscreen>311</yscreen><sizeHorzCX>1003125</sizeHorzCX><sizeHorzCY>333333</sizeHorzCY><sizeVertCX>167969</sizeVertCX><sizeVertCY>97535</sizeVertCY></Rect></Wnd0></Sizes></Row0></Bottom><Float><Sizes/></Float></Positions>
   </Desktop>
 </Project>
 
