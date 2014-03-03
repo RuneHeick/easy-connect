@@ -94,7 +94,7 @@ namespace ECRU.EventBus
             }
         }
 
-        public static bool Publish(TMessage message)
+        public static void Publish(TMessage message)
         {
             lock (Lock)
             {
@@ -106,7 +106,6 @@ namespace ECRU.EventBus
                     subscriber.Handle(message);
                 }
             }
-            return true;
         }
     }
 }
