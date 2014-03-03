@@ -55,7 +55,6 @@ extern "C"
 #include "hal_mcu.h"
 #include "hal_defs.h"
 #include "hal_types.h"
-#include "usb_board_cfg.h"
 
 /*******************************************************************************
  * CONSTANTS

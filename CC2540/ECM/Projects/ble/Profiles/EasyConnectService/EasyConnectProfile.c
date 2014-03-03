@@ -130,6 +130,21 @@ CONST gattServiceCBs_t simpleProfileCBs =
  * @return  Success or Failure
  */
 static GenericValue DataTest;
+static GenericValue DataTest1;
+static GenericValue DataTest2;
+static GenericValue DataTest3;
+static GenericValue DataTest4;
+
+static GenericValue DataTest12;
+static GenericValue DataTest22;
+static GenericValue DataTest32;
+static GenericValue DataTest42;
+
+
+static GenericValue DataTest13;
+static GenericValue DataTest23;
+static GenericValue DataTest33;
+static GenericValue DataTest43;
 
 bStatus_t SimpleProfile_AddService( uint32 services )
 {
@@ -142,21 +157,81 @@ bStatus_t SimpleProfile_AddService( uint32 services )
   VOID linkDB_Register( simpleProfile_HandleConnStatusCB );  
     
   SmartService* Testservice = SmartCommandsManger_CreateService("Lav Kaffe"); 
-  GenericValue_SetString(&DataTest,"TEST"); 
-  SmartCommandsManger_addCharacteristic(Testservice,&DataTest,"Antal kopper",(GUIPresentationFormat){00,00},(PresentationFormat){1,2,3,4,5},NULL,NONE,GATT_PERMIT_READ|GATT_PERMIT_WRITE);
-  SmartCommandsManger_addCharacteristic(Testservice,&DataTest,"Bonner",(GUIPresentationFormat){00,00},(PresentationFormat){7,4,5,6,5},"TESTTEST",YES,GATT_PERMIT_READ|GATT_PERMIT_WRITE);
-  SmartCommandsManger_addCharacteristic(Testservice,&DataTest,"Bonner",(GUIPresentationFormat){00,00},(PresentationFormat){7,4,5,6,5},"TESTTEST",YES,GATT_PERMIT_READ|GATT_PERMIT_WRITE);
-  SmartCommandsManger_addCharacteristic(Testservice,&DataTest,"Bonner",(GUIPresentationFormat){00,00},(PresentationFormat){7,4,5,6,5},"TESTTEST",YES,GATT_PERMIT_READ|GATT_PERMIT_WRITE);
-  addr = SmartCommandsManger_addCharacteristic(Testservice,&DataTest,"Bonner",(GUIPresentationFormat){00,00},(PresentationFormat){7,4,5,6,5},"TESTTEST",YES,GATT_PERMIT_READ|GATT_PERMIT_WRITE);
+ 
+  GenericValue_SetString(&DataTest,"FIRE"); 
+  GenericValue_SetString(&DataTest1,"HEJ MED DIG"); 
+  GenericValue_SetString(&DataTest2,"FIRE"); 
+  GenericValue_SetString(&DataTest3,"HEJ MED DIG"); 
+  GenericValue_SetString(&DataTest4,"11:12"); 
+   
+  GenericValue_SetString(&DataTest12,"HEJ MED DIG"); 
+  GenericValue_SetString(&DataTest22,"HEJ MED DIG"); 
+  GenericValue_SetString(&DataTest32,"HEJ MED DIG"); 
+  GenericValue_SetString(&DataTest42,"11HEJ MED DIG12"); 
   
+  GenericValue_SetString(&DataTest13,"HEJ MED DIG"); 
+  GenericValue_SetString(&DataTest23,"HEJ MED DIG"); 
+  GenericValue_SetString(&DataTest33,"HEJ MED DIG"); 
+  GenericValue_SetString(&DataTest43,"HEJ MED DIG"); 
+            
+  SmartCommandsManger_addCharacteristic(Testservice,&DataTest,"Antal kopper",(GUIPresentationFormat){00,00},(PresentationFormat){1,2,3,4,5},NULL,NONE,GATT_PERMIT_READ|GATT_PERMIT_WRITE);
+  SmartCommandsManger_addCharacteristic(Testservice,&DataTest1,"Bønner",(GUIPresentationFormat){00,00},(PresentationFormat){7,4,5,6,5},"TESTTEST",YES,GATT_PERMIT_READ|GATT_PERMIT_WRITE);
+  
+  SmartService* Testservice2 = SmartCommandsManger_CreateService("Lav Kaffe på Tid"); 
+  SmartCommandsManger_addCharacteristic(Testservice2,&DataTest2,"Antal Kopper",(GUIPresentationFormat){00,00},(PresentationFormat){7,4,5,6,5},"TESTTEST",YES,GATT_PERMIT_READ|GATT_PERMIT_WRITE);
+  SmartCommandsManger_addCharacteristic(Testservice2,&DataTest3,"Bønner",(GUIPresentationFormat){00,00},(PresentationFormat){7,4,5,6,5},"TESTTEST",YES,GATT_PERMIT_READ|GATT_PERMIT_WRITE);
+  SmartCommandsManger_addCharacteristic(Testservice2,&DataTest4,"Tid",(GUIPresentationFormat){00,00},(PresentationFormat){7,4,5,6,5},"TESTTEST",YES,GATT_PERMIT_READ|GATT_PERMIT_WRITE);
+  
+  SmartService* Testservice3 = SmartCommandsManger_CreateService("Lav Kaffe på Tid"); 
+  SmartCommandsManger_addCharacteristic(Testservice3,&DataTest2,"Antal Kopper",(GUIPresentationFormat){00,00},(PresentationFormat){7,4,5,6,5},"TESTTEST",YES,GATT_PERMIT_READ|GATT_PERMIT_WRITE);
+  SmartCommandsManger_addCharacteristic(Testservice3,&DataTest3,"Bønner",(GUIPresentationFormat){00,00},(PresentationFormat){7,4,5,6,5},"TESTTEST",YES,GATT_PERMIT_READ|GATT_PERMIT_WRITE);
+  SmartCommandsManger_addCharacteristic(Testservice3,&DataTest4,"Tid",(GUIPresentationFormat){00,00},(PresentationFormat){7,4,5,6,5},"TESTTEST",YES,GATT_PERMIT_READ|GATT_PERMIT_WRITE);
+  
+  
+  
+  SmartService* Testservice4 = SmartCommandsManger_CreateService("Lav Kaffe på Tid"); 
+  SmartCommandsManger_addCharacteristic(Testservice4,&DataTest2,"Antal Kopper",(GUIPresentationFormat){00,00},(PresentationFormat){7,4,5,6,5},"TESTTEST",YES,GATT_PERMIT_READ|GATT_PERMIT_WRITE);
+  SmartCommandsManger_addCharacteristic(Testservice4,&DataTest3,"Bønner",(GUIPresentationFormat){00,00},(PresentationFormat){7,4,5,6,5},"TESTTEST",YES,GATT_PERMIT_READ|GATT_PERMIT_WRITE);
+  SmartCommandsManger_addCharacteristic(Testservice4,&DataTest4,"Tid",(GUIPresentationFormat){00,00},(PresentationFormat){7,4,5,6,5},"TESTTEST",YES,GATT_PERMIT_READ|GATT_PERMIT_WRITE);
+  
+  SmartService* Testservice5 = SmartCommandsManger_CreateService("Lav Kaffe på Tid"); 
+  SmartCommandsManger_addCharacteristic(Testservice5,&DataTest2,"Antal Kopper",(GUIPresentationFormat){00,00},(PresentationFormat){7,4,5,6,5},"TESTTEST",YES,GATT_PERMIT_READ|GATT_PERMIT_WRITE);
+  SmartCommandsManger_addCharacteristic(Testservice5,&DataTest3,"Bønner",(GUIPresentationFormat){00,00},(PresentationFormat){7,4,5,6,5},"TESTTEST",YES,GATT_PERMIT_READ|GATT_PERMIT_WRITE);
+  SmartCommandsManger_addCharacteristic(Testservice5,&DataTest4,"Tid",(GUIPresentationFormat){00,00},(PresentationFormat){7,4,5,6,5},"TESTTEST",YES,GATT_PERMIT_READ|GATT_PERMIT_WRITE);
+  
+  SmartService* Testservice6 = SmartCommandsManger_CreateService("Lav Kaffe på Tid"); 
+  SmartCommandsManger_addCharacteristic(Testservice6,&DataTest2,"Antal Kopper",(GUIPresentationFormat){00,00},(PresentationFormat){7,4,5,6,5},"TESTTEST",YES,GATT_PERMIT_READ|GATT_PERMIT_WRITE);
+  SmartCommandsManger_addCharacteristic(Testservice6,&DataTest3,"Bønner",(GUIPresentationFormat){00,00},(PresentationFormat){7,4,5,6,5},"TESTTEST",YES,GATT_PERMIT_READ|GATT_PERMIT_WRITE);
+  SmartCommandsManger_addCharacteristic(Testservice6,&DataTest4,"Tid",(GUIPresentationFormat){00,00},(PresentationFormat){7,4,5,6,5},"TESTTEST",YES,GATT_PERMIT_READ|GATT_PERMIT_WRITE);
   
   SmartCommandsManger_CompileServices();
   
   
   status = GATTServApp_RegisterService( Testservice->llReg, 
                                           SmartCommandsManger_ElementsInService(Testservice),
-                                          &simpleProfileCBs );  
+                                          &simpleProfileCBs );
   
+  status = GATTServApp_RegisterService( Testservice2->llReg, 
+                                          SmartCommandsManger_ElementsInService(Testservice2),
+                                          &simpleProfileCBs );
+  
+    status = GATTServApp_RegisterService( Testservice3->llReg, 
+                                          SmartCommandsManger_ElementsInService(Testservice3),
+                                          &simpleProfileCBs );
+    
+      
+    status = GATTServApp_RegisterService( Testservice4->llReg, 
+                                          SmartCommandsManger_ElementsInService(Testservice4),
+                                          &simpleProfileCBs );
+    
+        status = GATTServApp_RegisterService( Testservice5->llReg, 
+                                          SmartCommandsManger_ElementsInService(Testservice5),
+                                          &simpleProfileCBs );
+        
+            
+        status = GATTServApp_RegisterService( Testservice6->llReg, 
+                                          SmartCommandsManger_ElementsInService(Testservice6),
+                                          &simpleProfileCBs );
   
   return ( status );
 }

@@ -282,6 +282,10 @@
           <state>OSAL_CBTIMER_NUM_TASKS=1</state>
           <state>HAL_AES_DMA=TRUE</state>
           <state>HAL_DMA=TRUE</state>
+          <state>HAL_UART</state>
+          <state>HAL_UART_DMA=1</state>
+          <state>HAL_UART_ISR=0</state>
+          <state>HCI_UART_BR=4</state>
         </option>
         <option>
           <name>CCPreprocFile</name>
@@ -460,6 +464,10 @@
           <state>$PROJ_DIR$\..\..\include</state>
           <state>$PROJ_DIR$\..\..\..\..\Components\hal\include</state>
           <state>$PROJ_DIR$\..\..\..\..\Components\hal\target\CC2540EB</state>
+          <state>$PROJ_DIR$\..\..\..\..\Components\hal\target\CC2540EB\usb\library\cc2540</state>
+          <state>$PROJ_DIR$\..\..\..\..\Components\hal\target\CC2540EB\usb\library\usb</state>
+          <state>$PROJ_DIR$\..\..\..\..\Components\hal\target\CC2540EB\usb\library</state>
+          <state>$PROJ_DIR$\..\..\..\..\Components\hal\target\CC2540EB\usb\class_cdc</state>
           <state>$PROJ_DIR$\..\..\..\..\Components\osal\include</state>
           <state>$PROJ_DIR$\..\..\..\..\Components\services\saddr</state>
           <state>$PROJ_DIR$\..\..\..\..\Components\ble\include</state>
@@ -8749,7 +8757,7 @@
         <group>
           <name>Config</name>
           <file>
-            <name>$PROJ_DIR$\..\..\..\..\Components\hal\target\CC2540EB\hal_board_cfg.h</name>
+            <name>$PROJ_DIR$\..\..\..\..\Components\hal\target\CC2540USB\hal_board_cfg.h</name>
           </file>
         </group>
         <group>

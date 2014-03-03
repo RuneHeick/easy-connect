@@ -9,7 +9,7 @@ TriggerName=main
 LimitSize=0
 ByteLimit=50
 [DebugChecksum]
-Checksum=-806623588
+Checksum=1464932846
 [CallStack]
 ShowArgs=0
 [Disassembly]
@@ -34,7 +34,8 @@ Bp1=_ "STD_CODE" "LogicalCode:0x2F7B3" 0 0 0 0 "" 0 ""
 Bp2=_ "STD_CODE" "{$PROJ_DIR$\..\..\Profiles\SimpleProfile\simpleGATTprofile.c}.391.3" 0 0 0 0 "" 0 ""
 Bp3=_ "STD_CODE" "{$PROJ_DIR$\..\..\Profiles\SimpleProfile\simpleGATTprofile.c}.568.1" 0 0 0 0 "" 0 ""
 Bp4=_ "STD_CODE" "{$PROJ_DIR$\..\..\Profiles\EasyConnectService\SmartCommandsManger.c}.312.17" 0 0 0 0 "" 0 ""
-Count=5
+Bp5=_ "STD_CODE" "{$PROJ_DIR$\..\Source\simpleBLEPeripheral.c}.307.1" 1 0 0 0 "" 0 ""
+Count=6
 [ChipconEmu]
 Stop timers on halt=0
 Leave target running=1
