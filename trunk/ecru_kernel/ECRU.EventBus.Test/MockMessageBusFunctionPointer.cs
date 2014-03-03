@@ -1,9 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace MessageBus.Test
+namespace ECRU.EventBus.Test
 {
     public class MockMessageBusFunctionPointer : TMessageHandler
     {

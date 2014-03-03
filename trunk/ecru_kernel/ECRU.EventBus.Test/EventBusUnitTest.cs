@@ -1,17 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Runtime.InteropServices;
-using System.Runtime.Remoting.Messaging;
-using System.Text;
-using System.Threading.Tasks;
+using System;
 using NUnit.Framework;
-using MessageBus;
+using NUnit;
 
-
-namespace MessageBus.Test
+namespace ECRU.EventBus.Test
 {
     [TestFixture]
-    public class MessageBusUnitTest
+    public class EventBusUnitTest
     {
         [Test]
         public void Senario_Input_ExResult()
@@ -30,11 +24,10 @@ namespace MessageBus.Test
 
             try
             {
-                MessageBus.Subscribe(sub);
+                EventBus.Subscribe(sub);
             }
             catch (ArgumentNullException)
             {
-
             }
         }
 
@@ -45,11 +38,10 @@ namespace MessageBus.Test
 
             try
             {
-                MessageBus.Subscribe(sub);
+                EventBus.Subscribe(sub);
             }
             catch (ArgumentNullException)
             {
-
             }
         }
 
@@ -58,8 +50,7 @@ namespace MessageBus.Test
         {
             var sub = new MockSubscriber(new MockMessage("test"), new MockMessageBusFunctionPointer());
 
-            Assert.IsTrue(MessageBus.Subscribe(sub));
-
+            Assert.IsTrue(EventBus.Subscribe(sub));
         }
 
         [Test]
@@ -69,9 +60,8 @@ namespace MessageBus.Test
             var sub1 = new MockSubscriber(message, new MockMessageBusFunctionPointer());
             var sub2 = new MockSubscriber(message, new MockMessageBusFunctionPointer());
 
-            MessageBus.Subscribe(sub1);
-            Assert.IsTrue(MessageBus.Subscribe(sub2));
-
+            EventBus.Subscribe(sub1);
+            Assert.IsTrue(EventBus.Subscribe(sub2));
         }
 
         [Test]
@@ -81,13 +71,11 @@ namespace MessageBus.Test
 
             try
             {
-                MessageBus.Unsubscribe(sub);
+                EventBus.Unsubscribe(sub);
             }
             catch (ArgumentException)
             {
-                
             }
-            
         }
 
         [Test]
@@ -97,11 +85,10 @@ namespace MessageBus.Test
 
             try
             {
-                MessageBus.Unsubscribe(sub);
+                EventBus.Unsubscribe(sub);
             }
             catch (ArgumentNullException)
             {
-
             }
         }
 
@@ -112,11 +99,10 @@ namespace MessageBus.Test
 
             try
             {
-                MessageBus.Unsubscribe(sub);
+                EventBus.Unsubscribe(sub);
             }
             catch (ArgumentNullException)
             {
-
             }
         }
 
@@ -125,9 +111,9 @@ namespace MessageBus.Test
         {
             var sub = new MockSubscriber(new MockMessage("test"), new MockMessageBusFunctionPointer());
 
-            MessageBus.Subscribe(sub);
+            EventBus.Subscribe(sub);
 
-            Assert.IsTrue(MessageBus.Unsubscribe(sub));
+            Assert.IsTrue(EventBus.Unsubscribe(sub));
         }
     }
 }

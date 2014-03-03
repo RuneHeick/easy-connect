@@ -1,38 +1,34 @@
 ﻿using System;
 using System.Collections;
-using System.Diagnostics;
-using System.Runtime.Remoting.Messaging;
-using System.Text;
-using System.Threading.Tasks;
+using Microsoft.SPOT;
 
-namespace MessageBus
+namespace ECRU.EventBus
 {
     /// <summary>
-    /// The MessageBus class implements the Publisher/Subscriber design pattern. The class is threadsafe and does not spawn new threads. 
+    ///     The EventBus class implements the Publisher/Subscriber design pattern. The class is threadsafe and does not spawn
+    ///     new threads.
     /// </summary>
-    public static class MessageBus
+    public class EventBus
     {
-
         private static readonly Hashtable Subscriptions = new Hashtable();
         private static readonly Object Lock = new object();
 
         /// <summary>
-        /// Subscribe will add the subscriber to the Subscriptions hashtable.
+        ///     Subscribe will add the subscriber to the Subscriptions hashtable.
         /// </summary>
         /// <param name="subscriber"></param>
         /// <exception cref="ArgumentNullException"></exception>
         /// <returns>This method returns a bool.</returns>
         public static bool Subscribe(ISubscriber subscriber)
         {
-
             if (subscriber.Message == null) throw new ArgumentNullException("subscriber.Message");
-            var message = subscriber.Message.Type;
+            string message = subscriber.Message.Type;
 
 
             if (subscriber.FunctionPointer == null) throw new ArgumentNullException("subscriber.FunctionPointer");
-            var functionPointer = subscriber.FunctionPointer;
+            TMessageHandler functionPointer = subscriber.FunctionPointer;
 
-            if (Subscriptions.ContainsKey(message))
+            if (Subscriptions.Contains(message))
             {
                 Debug.Print("MessageBus - Message in subscriptions");
                 lock (Lock)
@@ -49,14 +45,14 @@ namespace MessageBus
             Debug.Print("MessageBus - Message not subscriptions");
             lock (Lock)
             {
-                var list = new ArrayList { functionPointer };
+                var list = new ArrayList {functionPointer};
                 Subscriptions.Add(message, list);
             }
             return true;
         }
 
         /// <summary>
-        /// Unsubscribe will remove the subscriber from the Subscriptions hashtable.
+        ///     Unsubscribe will remove the subscriber from the Subscriptions hashtable.
         /// </summary>
         /// <param name="subscriber"></param>
         /// <exception cref="ArgumentNullException"></exception>
@@ -64,14 +60,13 @@ namespace MessageBus
         /// <returns>This method returns a bool.</returns>
         public static bool Unsubscribe(ISubscriber subscriber)
         {
-
             if (subscriber.Message == null) throw new ArgumentNullException("subscriber.Message");
-            var message = subscriber.Message.Type;
+            string message = subscriber.Message.Type;
 
             if (subscriber.FunctionPointer == null) throw new ArgumentNullException("subscriber.FunctionPointer");
-            var functionPointer = subscriber.FunctionPointer;
+            TMessageHandler functionPointer = subscriber.FunctionPointer;
 
-            if (!Subscriptions.ContainsKey(message))
+            if (!Subscriptions.Contains(message))
             {
                 throw new ArgumentException("message not in subscriptions");
             }
