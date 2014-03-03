@@ -40,4 +40,7 @@
     <Reference Include="Microsoft.SPOT.Native">
     </Reference>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="ECRU.EventBus.cd" />
+  </ItemGroup>
 </Project>
