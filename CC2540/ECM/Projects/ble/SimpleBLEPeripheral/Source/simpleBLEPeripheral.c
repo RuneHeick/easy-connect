@@ -132,46 +132,6 @@
 
 
 
-
-//-----------------------
-
-/* UART port */
-#if !defined NPI_UART_PORT
-
-#if ((defined HAL_UART_SPI) && (HAL_UART_SPI != 0)) // FOR SPI
-#if (HAL_UART_SPI == 2)  
-#define NPI_UART_PORT                  HAL_UART_PORT_1
-#else
-#define NPI_UART_PORT                  HAL_UART_PORT_0
-#endif
-#else // FOR UART
-#if ((defined HAL_UART_DMA) && (HAL_UART_DMA  == 1))
-#define NPI_UART_PORT                  HAL_UART_PORT_0
-#elif ((defined HAL_UART_DMA) && (HAL_UART_DMA  == 2))
-#define NPI_UART_PORT                  HAL_UART_PORT_1
-#else
-#define NPI_UART_PORT                  HAL_UART_PORT_0
-#endif
-#endif // Endif for HAL_UART_SPI/DMA 
-#endif //Endif for NPI_UART_PORT
-
-#if !defined( NPI_UART_FC )
-#define NPI_UART_FC                    TRUE
-#endif // !NPI_UART_FC
-
-#define NPI_UART_FC_THRESHOLD          48
-#define NPI_UART_RX_BUF_SIZE           128
-#define NPI_UART_TX_BUF_SIZE           128
-#define NPI_UART_IDLE_TIMEOUT          6
-#define NPI_UART_INT_ENABLE            TRUE
-
-#if !defined( NPI_UART_BR )
-#define NPI_UART_BR                    HAL_UART_BR_115200
-#endif // !NPI_UART_BR
-
-
-
-
 /*********************************************************************
  * TYPEDEFS
  */
@@ -292,19 +252,10 @@ static gapBondCBs_t simpleBLEPeripheral_BondMgrCBs =
 };
 
 
-halUARTCfg_t uartConfig; 
-
 /*********************************************************************
  * PUBLIC FUNCTIONS
  */
 
-
-uint8 buffer[128];
-void cSerialPacketParser( uint8 port, uint8 events )
-{
-  uint8 len = Hal_UART_RxBufLen(0);
-  HalUARTRead(0,buffer,len);
-}
 
 /*********************************************************************
  * @fn      SimpleBLEPeripheral_Init
@@ -323,22 +274,6 @@ void cSerialPacketParser( uint8 port, uint8 events )
 void SimpleBLEPeripheral_Init( uint8 task_id )
 {
   simpleBLEPeripheral_TaskID = task_id;
-  
-  HalUARTInit();
-  
-  // configure UART
-  uartConfig.configured           = TRUE;
-  uartConfig.baudRate             = NPI_UART_BR;
-  uartConfig.flowControl          = NPI_UART_FC;
-  uartConfig.flowControlThreshold = NPI_UART_FC_THRESHOLD;
-  uartConfig.rx.maxBufSize        = NPI_UART_RX_BUF_SIZE;
-  uartConfig.tx.maxBufSize        = NPI_UART_TX_BUF_SIZE;
-  uartConfig.idleTimeout          = NPI_UART_IDLE_TIMEOUT;
-  uartConfig.intEnable            = NPI_UART_INT_ENABLE;
-  uartConfig.callBackFunc         = (halUARTCBack_t)cSerialPacketParser;
-  
-  
-  HalUARTOpen(0, &uartConfig);
   
   // Setup the GAP
   VOID GAP_SetParamValue( TGAP_CONN_PAUSE_PERIPHERAL, DEFAULT_CONN_PAUSE_PERIPHERAL );
