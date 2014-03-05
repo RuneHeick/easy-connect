@@ -72,6 +72,9 @@
     <Compile Include="Commands\SerialNoCommand.cs" />
     <Compile Include="Commands\DeviceNameCommand.cs" />
     <Compile Include="SerialCommand.cs" />
+    <Compile Include="View\MainTab.xaml.cs">
+      <DependentUpon>MainTab.xaml</DependentUpon>
+    </Compile>
     <Compile Include="View\overviewView.xaml.cs">
       <DependentUpon>overviewView.xaml</DependentUpon>
     </Compile>
@@ -92,6 +95,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Helper\Console.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="View\MainTab.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

@@ -17,5 +17,7 @@
             <Button Margin="5">Send</Button>
             <TextBox Margin="5" />
         </DockPanel>
+        
+        
     </Grid>
 </UserControl>
