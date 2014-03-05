@@ -8696,6 +8696,12 @@
     <file>
       <name>$PROJ_DIR$\..\Source\SimpleBLEPeripheral_Main.c</name>
     </file>
+    <file>
+      <name>$PROJ_DIR$\..\Source\Uart.c</name>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\Source\Uart.h</name>
+    </file>
   </group>
   <group>
     <name>HAL</name>

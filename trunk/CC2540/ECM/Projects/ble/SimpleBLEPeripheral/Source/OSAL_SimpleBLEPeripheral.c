@@ -77,6 +77,8 @@
 /* Application */
 #include "simpleBLEPeripheral.h"
 
+#include "Uart.h"
+
 /*********************************************************************
  * GLOBAL VARIABLES
  */
@@ -157,7 +159,10 @@ void osalInitTasks( void )
   GATTServApp_Init( taskID++ );
 
   /* Application */
-  SimpleBLEPeripheral_Init( taskID );
+  SimpleBLEPeripheral_Init( taskID++ );
+  
+  
+  Uart_Init(taskID++);
 }
 
 /*********************************************************************
