@@ -120,8 +120,12 @@ namespace UartTester.ViewModel
         private void serialCustomSendCommandExecute(object p)
         {
             List<byte> list = ((new HexStringConverter()).ConvertBack(p,typeof(List<byte>),null,null)) as List<byte>;
-            if (list != null && list.Count>4)
-                serialSendCommandExecute(new SerialCommand(list));
+            if (list != null && list.Count > 4)
+            {
+                SerialCommand cmd = new SerialCommand(list);
+                cmd.Update();
+                serialSendCommandExecute(cmd);
+            }
             else
                 MessageBox.Show("Packet not Send"); 
         }

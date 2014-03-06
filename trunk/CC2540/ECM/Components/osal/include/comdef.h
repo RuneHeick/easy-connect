@@ -126,6 +126,8 @@ typedef uint32  uint24;
  */
 
 #define KEY_CHANGE                0xC0    // Key Events
+#define UART_RQ                   0xD0    // Key Events
+
 
 // OSAL System Message IDs/Events Reserved for applications (user applications)
 // 0xE0 – 0xFC

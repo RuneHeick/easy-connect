@@ -99,17 +99,19 @@ namespace UartTester
             if (buffer.Count == 0)
             {
                 buffer.Add(resived[0]);
+                buffer.Add(resived[1]);
+                --bytetoread;
                 byte[] temp = new byte[--bytetoread];
                 if (temp != null)
                 {
-                    Array.Copy(resived, 1, temp, 0, bytetoread);
+                    Array.Copy(resived, 2, temp, 0, bytetoread);
                     resived = temp;
                 }
             }
 
             if (buffer.Count > 0)
             {
-                int len = (buffer[0] & 0x7F)+1;
+                int len = (buffer[1] & 0x7F)+1;
 
                 if (len >= buffer.Count + bytetoread)
                 {
