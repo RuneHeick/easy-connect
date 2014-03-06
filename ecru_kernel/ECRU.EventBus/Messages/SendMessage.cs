@@ -2,7 +2,7 @@ using ECRU.EventBus;
 
 namespace ECRU.EventBus.Messages
 {
-    class SendMessage : TMessage
+    public class SendMessage : TMessage
     {
         private const string _type = "ECRU.Netd.Messages.SendMessage";
 

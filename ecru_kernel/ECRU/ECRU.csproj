@@ -53,5 +53,13 @@
       <Project>{A161B854-6858-4A85-B70D-B949F042B2D4}</Project>
       <Name>ECRU.EventBus</Name>
     </ProjectReference>
+    <ProjectReference Include="..\ECRU.netd\ECRU.netd.csproj">
+      <Project>{CC50D845-8A55-4787-81F4-16793837A047}</Project>
+      <Name>ECRU.netd</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\ECRU.SD\ECRU.SD.csproj">
+      <Project>{D1BDF817-59B5-442F-BCF1-FA668658E823}</Project>
+      <Name>ECRU.SD</Name>
+    </ProjectReference>
   </ItemGroup>
 </Project>

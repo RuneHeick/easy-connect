@@ -1,10 +1,11 @@
 using System;
+using System.Collections;
 using ECRU.EventBus;
 using Microsoft.SPOT;
 
 namespace ECRU.EventBus.Messages
 {
-    class NetworkProfileConfigMessage : TMessage
+    public class NetworkProfileConfigMessage : TMessage
     {
         private const string _type = "ECRU.Netd.Messages.NetworkProfileConfigMessage";
 

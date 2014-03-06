@@ -31,7 +31,6 @@
   <Import Project="$(NetMfTargetsBaseDir)$(TargetFrameworkVersion)\CSharp.Targets" />
   <ItemGroup>
     <Compile Include="Handlers\GetNetworkProfilMessageHandler.cs" />
-    <Compile Include="Messages\GetNetworkProfilMessage.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SD.cs" />
   </ItemGroup>

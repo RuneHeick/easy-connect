@@ -2,9 +2,9 @@ using System;
 using ECRU.EventBus;
 using Microsoft.SPOT;
 
-namespace ECRU.SD.Messages
+namespace ECRU.EventBus.Messages
 {
-    class GetNetworkProfilMessage : TMessage
+    public class GetNetworkProfilMessage : TMessage
     {
         public GetNetworkProfilMessage(string configFilePath)
         {
