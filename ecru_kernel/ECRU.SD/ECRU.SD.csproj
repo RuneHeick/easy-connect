@@ -30,6 +30,7 @@
   </PropertyGroup>
   <Import Project="$(NetMfTargetsBaseDir)$(TargetFrameworkVersion)\CSharp.Targets" />
   <ItemGroup>
+    <Compile Include="Handlers\GetNetworkProfilMessageHandler.cs" />
     <Compile Include="Messages\GetNetworkProfilMessage.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SD.cs" />
@@ -37,10 +38,9 @@
   <ItemGroup>
     <Reference Include="Microsoft.SPOT.Native">
     </Reference>
+    <Reference Include="System.IO" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Handlers\" />
-  </ItemGroup>
+  <ItemGroup />
   <ItemGroup>
     <ProjectReference Include="..\ECRU.EventBus\ECRU.EventBus.csproj">
       <Project>{A161B854-6858-4A85-B70D-B949F042B2D4}</Project>

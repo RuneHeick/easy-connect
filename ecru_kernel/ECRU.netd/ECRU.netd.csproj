@@ -32,10 +32,8 @@
   <ItemGroup>
     <Compile Include="Handlers\NetworkProfileConfigMessageHandler.cs" />
     <Compile Include="Handlers\ResetHandler.cs" />
-    <Compile Include="Messages\NetworkProfileConfigMessage.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Netd.cs" />
-    <Compile Include="Messages\SendMessage.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="Microsoft.SPOT.Native">
@@ -45,10 +43,6 @@
     <ProjectReference Include="..\ECRU.EventBus\ECRU.EventBus.csproj">
       <Project>{A161B854-6858-4A85-B70D-B949F042B2D4}</Project>
       <Name>ECRU.EventBus</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\ECRU.GlobalMessages\ECRU.GlobalMessages.csproj">
-      <Project>{E1377658-878B-4BA4-B781-E79B71F327F4}</Project>
-      <Name>ECRU.GlobalMessages</Name>
     </ProjectReference>
   </ItemGroup>
 </Project>

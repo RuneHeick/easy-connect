@@ -2,7 +2,7 @@ using System;
 using ECRU.EventBus;
 using Microsoft.SPOT;
 
-namespace ECRU.netd.Messages
+namespace ECRU.EventBus.Messages
 {
     class NetworkProfileConfigMessage : TMessage
     {

@@ -1,6 +1,6 @@
 using ECRU.EventBus;
 
-namespace ECRU.netd.Messages
+namespace ECRU.EventBus.Messages
 {
     class SendMessage : TMessage
     {

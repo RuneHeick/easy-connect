@@ -1,6 +1,7 @@
 using System;
 using ECRU.EventBus;
 using ECRU.netd.Messages;
+using ECRU.SD.Messages;
 using Microsoft.SPOT;
 
 namespace ECRU.netd.Handlers
@@ -10,7 +11,7 @@ namespace ECRU.netd.Handlers
         public void Handle(TMessage message)
         {
             var _message = message as NetworkProfileConfigMessage;
-
+            
             //HANDLE IT!
         }
     }
