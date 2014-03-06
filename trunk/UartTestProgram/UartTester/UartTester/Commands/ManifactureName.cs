@@ -10,17 +10,31 @@ namespace UartTester.Commands
     {
         const byte MainCommand = 1;
 
-        public string ManifactureName { get; set; }
-
-        public byte[] ManifactureNameByte
+        public string manifactureName;
+        public string ManifactureName
         {
             get
             {
+                return manifactureName;
+            }
+            set
+            {
+                manifactureName = value;
+                OnPropertyChanged("ManifactureName");
+            }
+        }
+
+        override public byte[] Payload
+        {
+            get
+            {
+                if (ManifactureName == null) return null; 
                 return Encoding.UTF8.GetBytes(ManifactureName);
             }
             set
             {
                 ManifactureName = Encoding.UTF8.GetString(value);
+                OnPropertyChanged("Payload");
             }
         }
 

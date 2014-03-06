@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows;
 using System.Windows.Input;
 using UartTester.Commands;
 
@@ -21,8 +22,12 @@ namespace UartTester.ViewModel
         {
             set
             {
+                if(selectedMainCommand!=null)
+                    selectedMainCommand.PropertyChanged -= selectedMainCommand_PropertyChanged;
                 selectedMainCommand = value;
+                selectedMainCommand.PropertyChanged += selectedMainCommand_PropertyChanged;
                 OnPropertyChanged("SelectedMainCommand");
+                OnPropertyChanged("serialCommandFromSelected");
             }
             get
             {
@@ -35,14 +40,34 @@ namespace UartTester.ViewModel
         {
             set
             {
+                if (selectedSubCommand != null)
+                    selectedSubCommand.PropertyChanged -= selectedMainCommand_PropertyChanged;
                 selectedSubCommand = value;
+                if (selectedSubCommand != null)
+                    selectedSubCommand.PropertyChanged += selectedMainCommand_PropertyChanged;
                 OnPropertyChanged("SelectedSubCommand");
+                OnPropertyChanged("serialCommandFromSelected");
             }
             get
             {
                 return selectedSubCommand;
             }
         }
+
+        private SerialCommand serialCommandFromSelected = new SerialCommand();
+        public SerialCommand SerialCommandFromSelected
+        {
+            get
+            {
+                serialCommandFromSelected.MainCommand = SelectedMainCommand.Number;
+                serialCommandFromSelected.SubCommand = SelectedSubCommand == null ? 0 : SelectedSubCommand.Number;
+                serialCommandFromSelected.Payload = SelectedSubCommand == null ? SelectedMainCommand.Payload : SelectedSubCommand.Payload;
+                return serialCommandFromSelected;
+            }
+        }
+
+        public SerialViewModel SerialSetup { get; set; }
+
 
         public enum MainCommandsValue
         {
@@ -54,15 +79,57 @@ namespace UartTester.ViewModel
 
         public MainViewModel()
         {
+            SerialSetup = new SerialViewModel(); 
             MainCommands = new ObservableCollection<Command>();
-
-            Command[] setupSubCommands = new Command[] { new DeviceNameCommand(), new ManifactureNameCommand(), new ModelNumberCommand(), new SerialNoCommand(), new Command(5, "Smart Function"), new Command(6, "Value"), new Command(7, "Ranges") };
+            serialCommandFromSelected = new SerialCommand(); 
+            Command[] setupSubCommands = new Command[] { new DeviceNameCommand(), new ManifactureNameCommand(), new ModelNumberCommand(), new SerialNoCommand(), new SmartFunftionCommand(), new GenericValueCommand(), new Command(7, "Ranges") };
             MainCommands.Add(new Command(1, "Setup", setupSubCommands.ToList())); 
             MainCommands.Add(new Command(2,"Clear"));
             MainCommands.Add(new Command(3, "Read"));
             MainCommands.Add(new Command(4, "Write")); 
         }
-        
+
+        void selectedMainCommand_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+        {
+            OnPropertyChanged("SerialCommandFromSelected");
+        }
+
+
+        private RelayCommand serialSendCommand;
+        public ICommand SerialSendCommand
+        {
+            get
+            {
+                if (serialSendCommand == null)
+                    serialSendCommand = new RelayCommand((p) => serialSendCommandExecute(p));
+                return serialSendCommand;
+            }
+        }
+
+        private RelayCommand serialCustomSendCommand;
+        public ICommand SerialCustomSendCommand
+        {
+            get
+            {
+                if (serialCustomSendCommand == null)
+                    serialCustomSendCommand = new RelayCommand((p) => serialCustomSendCommandExecute(p));
+                return serialCustomSendCommand;
+            }
+        }
+
+        private void serialCustomSendCommandExecute(object p)
+        {
+            List<byte> list = ((new HexStringConverter()).ConvertBack(p,typeof(List<byte>),null,null)) as List<byte>;
+            if (list != null && list.Count>4)
+                serialSendCommandExecute(new SerialCommand(list));
+            else
+                MessageBox.Show("Packet not Send"); 
+        }
+
+        private void serialSendCommandExecute(object p)
+        {
+            SerialViewModel.Serial.SendCommand((p as SerialCommand));
+        }
 
 
 
