@@ -7,17 +7,6 @@
       <FileName>EventBus.cs</FileName>
     </TypeIdentifier>
   </Class>
-  <Interface Name="ECRU.EventBus.ISubscriber">
-    <Position X="5" Y="0.5" Width="2.5" />
-    <TypeIdentifier>
-      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAIAAAAAA=</HashCode>
-      <FileName>ISubscriber.cs</FileName>
-    </TypeIdentifier>
-    <ShowAsAssociation>
-      <Property Name="FunctionPointer" />
-      <Property Name="Message" />
-    </ShowAsAssociation>
-  </Interface>
   <Interface Name="ECRU.EventBus.TMessage">
     <Position X="6.75" Y="2" Width="1.5" />
     <TypeIdentifier>

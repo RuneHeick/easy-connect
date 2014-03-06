@@ -9,7 +9,8 @@ namespace ECRU.netd.Handlers
     {
         public void Handle(TMessage message)
         {
-            //reset stuff
+            Reset _message = message as Reset;
+            if (_message == null) throw new ArgumentNullException("_message");
         }
     }
 }

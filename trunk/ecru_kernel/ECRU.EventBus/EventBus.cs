@@ -16,27 +16,26 @@ namespace ECRU.EventBus
         /// <summary>
         ///     Subscribe will add the subscriber to the Subscriptions hashtable.
         /// </summary>
-        /// <param name="subscriber"></param>
+        /// <param name="message"></param>
+        /// <param name="messageHandler"></param>
         /// <exception cref="ArgumentNullException"></exception>
         /// <returns>This method returns a bool.</returns>
-        public static bool Subscribe(ISubscriber subscriber)
+        public static bool Subscribe(TMessage message, TMessageHandler messageHandler)
         {
-            if (subscriber.Message == null) throw new ArgumentNullException("subscriber.Message");
-            string message = subscriber.Message.Type;
+            if (message == null) throw new ArgumentNullException("subscriber.Message");
+            var type = message.Type;
 
+            if (messageHandler == null) throw new ArgumentNullException("subscriber.FunctionPointer");
 
-            if (subscriber.FunctionPointer == null) throw new ArgumentNullException("subscriber.FunctionPointer");
-            TMessageHandler functionPointer = subscriber.FunctionPointer;
-
-            if (Subscriptions.Contains(message))
+            if (Subscriptions.Contains(type))
             {
                 Debug.Print("MessageBus - Message in subscriptions");
                 lock (Lock)
                 {
-                    var list = Subscriptions[message] as ArrayList;
+                    var list = Subscriptions[type] as ArrayList;
                     if (list != null)
                     {
-                        ((ArrayList) Subscriptions[message]).Add(functionPointer);
+                        ((ArrayList)Subscriptions[type]).Add(messageHandler);
                     }
                 }
                 return true;
@@ -45,8 +44,8 @@ namespace ECRU.EventBus
             Debug.Print("MessageBus - Message not subscriptions");
             lock (Lock)
             {
-                var list = new ArrayList {functionPointer};
-                Subscriptions.Add(message, list);
+                var list = new ArrayList { messageHandler };
+                Subscriptions.Add(type, list);
             }
             return true;
         }
@@ -54,19 +53,19 @@ namespace ECRU.EventBus
         /// <summary>
         ///     Unsubscribe will remove the subscriber from the Subscriptions hashtable.
         /// </summary>
-        /// <param name="subscriber"></param>
+        /// <param name="message"></param>
+        /// <param name="messageHandler"></param>
         /// <exception cref="ArgumentNullException"></exception>
         /// <exception cref="ArgumentException"></exception>
         /// <returns>This method returns a bool.</returns>
-        public static bool Unsubscribe(ISubscriber subscriber)
+        public static bool Unsubscribe(TMessage message, TMessageHandler messageHandler)
         {
-            if (subscriber.Message == null) throw new ArgumentNullException("subscriber.Message");
-            string message = subscriber.Message.Type;
+            if (message == null) throw new ArgumentNullException("subscriber.Message");
+            var type = message.Type;
 
-            if (subscriber.FunctionPointer == null) throw new ArgumentNullException("subscriber.FunctionPointer");
-            TMessageHandler functionPointer = subscriber.FunctionPointer;
+            if (messageHandler == null) throw new ArgumentNullException("subscriber.FunctionPointer");
 
-            if (!Subscriptions.Contains(message))
+            if (!Subscriptions.Contains(type))
             {
                 throw new ArgumentException("message not in subscriptions");
             }
@@ -74,20 +73,20 @@ namespace ECRU.EventBus
             Debug.Print("MessageBus - Message in subscriptions");
             lock (Lock)
             {
-                var list = Subscriptions[message] as ArrayList;
+                var list = Subscriptions[type] as ArrayList;
                 if (list == null)
                 {
                     throw new ArgumentException("FunctionPointer list is empty");
                 }
-                list.Remove(functionPointer);
+                list.Remove(messageHandler);
 
                 if (list.Count.Equals(0))
                 {
-                    Subscriptions.Remove(message);
+                    Subscriptions.Remove(type);
                 }
                 else
                 {
-                    Subscriptions[message] = list;
+                    Subscriptions[type] = list;
                 }
 
                 return true;
