@@ -26,7 +26,7 @@ namespace UartTester
         {
             get
             {
-                return ((int)Packet[0] & 0x80) == 0x80; 
+                return ((int)Packet[1] & 0x80) == 0x80; 
             }
         }
 
@@ -34,11 +34,11 @@ namespace UartTester
         {
             get
             {
-                return (int)Packet[0] & 0x7F;
+                return (int)Packet[1] & 0x7F;
             }
             set
             {
-                Packet[0] = (byte)((Packet[0] & 0x80) | value);
+                Packet[1] = (byte)((Packet[1] & 0x80) | value);
             }
         }
 
@@ -47,11 +47,11 @@ namespace UartTester
         {
             get
             {
-                return ((int)Packet[1] & 0xF0)>>4;
+                return ((int)Packet[2] & 0xF0)>>4;
             }
             set
             {
-                Packet[1] = (byte)((Packet[1] & 0x0F) | (value << 4 & 0xF0));
+                Packet[2] = (byte)((Packet[2] & 0x0F) | (value << 4 & 0xF0));
             }
         }
 
@@ -60,11 +60,11 @@ namespace UartTester
         {
             get
             {
-                return ((int)Packet[1] & 0x0F);
+                return ((int)Packet[2] & 0x0F);
             }
             set
             {
-                Packet[1] = (byte)((Packet[1] & 0xF0) | (value & 0x0F));
+                Packet[2] = (byte)((Packet[2] & 0xF0) | (value & 0x0F));
             }
         }
 
@@ -72,7 +72,8 @@ namespace UartTester
         {
             get
             {
-                byte[] pack = new byte[packet.Count - 2];
+                byte[] pack = new byte[Packet.Count - 2];
+                Array.Copy(Packet.ToArray(), pack, packet.Count - 2);
                 ushort crc = CalcCrc(pack);
                 return (ushort)((Packet[Packet.Count - 2] << 8) + Packet[Packet.Count - 1]) == crc;
             }
@@ -89,14 +90,15 @@ namespace UartTester
         {
             get
             {
-                byte[] retpacket = new byte[Packet.Count-4];
-                Array.Copy(Packet.ToArray(), retpacket, Packet.Count - 4);
+                byte[] retpacket = new byte[Packet.Count-5];
+                Array.Copy(Packet.ToArray(),2, retpacket,0, Packet.Count - 5);
                 return retpacket;
             }
             set
             {
-                byte[] startAndCmd = new byte[] { Packet[0], Packet[1] };
+                byte[] startAndCmd = new byte[] { Packet[1], Packet[2] };
                 Packet.Clear();
+                Packet.Add(0xEC);
                 Packet.AddRange(startAndCmd);
                 if(value!=null)
                     Packet.AddRange(value);
@@ -109,6 +111,7 @@ namespace UartTester
         public SerialCommand()
         {
             Packet = new List<byte>();
+            Packet.Add(0xEC); //start
             Packet.Add(00); //start
             Packet.Add(00); //command
             Packet.Add(00); // crc
@@ -121,7 +124,7 @@ namespace UartTester
         {
             Length = Packet.Count - 1;
             byte[] pack = new byte[packet.Count-2];
-            Array.Copy(pack.ToArray(), pack, pack.Length);
+            Array.Copy(Packet.ToArray(), pack, pack.Length);
             ushort Crc = CalcCrc(pack);
             Packet[Packet.Count - 2] = (byte)(Crc >> 8);
             Packet[Packet.Count - 1] = (byte)(Crc);

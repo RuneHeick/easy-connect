@@ -99,7 +99,9 @@ const pTaskEventHandlerFn tasksArr[] =
   GAPRole_ProcessEvent,                                             // task 8
   GAPBondMgr_ProcessEvent,                                          // task 9
   GATTServApp_ProcessEvent,                                         // task 10
-  SimpleBLEPeripheral_ProcessEvent                                  // task 11
+  SimpleBLEPeripheral_ProcessEvent,
+  Uart_ProcessEvent
+  // task 12
 };
 
 const uint8 tasksCnt = sizeof( tasksArr ) / sizeof( tasksArr[0] );

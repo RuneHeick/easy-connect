@@ -78,6 +78,7 @@
 #endif
 
 #include "simpleGATTprofile.h"
+#include "Uart.h"
 
 /*********************************************************************
  * MACROS
@@ -743,6 +744,7 @@ static void performPeriodicTask( void )
   //stat = SimpleProfile_GetParameter( SIMPLEPROFILE_CHAR3, &valueToCopy);
 
   SimpleProfile_SetParameter(0x0101,2,"H");
+  //Uart_Send("Hej", 3, 0x11, NULL);
   if( stat == SUCCESS )
   {
     /*
