@@ -11,6 +11,7 @@
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="3*" />
+            <RowDefinition Height="auto" />
             <RowDefinition Height="*" MinHeight="150" />
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
@@ -18,7 +19,10 @@
             <ColumnDefinition Width="2*" />
         </Grid.ColumnDefinitions>
         
-        <view:overviewView Grid.Row="1" Grid.ColumnSpan="2"/>
+        <view:overviewView Grid.Row="2" Grid.ColumnSpan="2"/>
+        
+        <GridSplitter  Grid.ColumnSpan="2" ResizeDirection="Rows" Grid.Row="1" Width="auto" Height="5" VerticalAlignment="Stretch" HorizontalAlignment="Stretch"/> 
+                       
         <TabControl Grid.ColumnSpan="2">
             <TabItem Header="Commands">
                 <view:MainTab />
@@ -26,6 +30,10 @@
             <TabItem Header="Item">
                 
             </TabItem>
+            <TabItem Header="Setup">
+                <ContentControl Content="{Binding SerialSetup}"></ContentControl>
+            </TabItem>
+            
         </TabControl>
 
         

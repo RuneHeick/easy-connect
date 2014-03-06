@@ -55,6 +55,14 @@
     </ApplicationDefinition>
     <Compile Include="BindingConverter.cs" />
     <Compile Include="Commands\Command.cs" />
+    <Compile Include="Commands\GenericValueView.xaml.cs">
+      <DependentUpon>GenericValueView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Commands\SmartFuncrionView.xaml.cs">
+      <DependentUpon>SmartFuncrionView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Commands\GenericValueCommand.cs" />
+    <Compile Include="Commands\SmartFunctionCommand.cs" />
     <Compile Include="Commands\ModelNrView.xaml.cs">
       <DependentUpon>ModelNrView.xaml</DependentUpon>
     </Compile>
@@ -71,13 +79,28 @@
     </Compile>
     <Compile Include="Commands\SerialNoCommand.cs" />
     <Compile Include="Commands\DeviceNameCommand.cs" />
+    <Compile Include="GPIOConverter.cs" />
+    <Compile Include="HexStringConverter.cs" />
     <Compile Include="SerialCommand.cs" />
+    <Compile Include="SerialInterface.cs" />
+    <Compile Include="ViewModel\SerialViewModel.cs" />
     <Compile Include="View\MainTab.xaml.cs">
       <DependentUpon>MainTab.xaml</DependentUpon>
     </Compile>
     <Compile Include="View\overviewView.xaml.cs">
       <DependentUpon>overviewView.xaml</DependentUpon>
     </Compile>
+    <Compile Include="View\SerialTab.xaml.cs">
+      <DependentUpon>SerialTab.xaml</DependentUpon>
+    </Compile>
+    <Page Include="Commands\GenericValueView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Commands\SmartFuncrionView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
     <Page Include="Commands\ModelNrView.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -126,6 +149,10 @@
       <SubType>Code</SubType>
     </Compile>
     <Page Include="View\overviewView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="View\SerialTab.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

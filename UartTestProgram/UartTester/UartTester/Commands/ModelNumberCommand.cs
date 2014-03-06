@@ -10,17 +10,31 @@ namespace UartTester.Commands
     {
         const byte MainCommand = 1;
 
-        public string ModelNumber { get; set; }
-
-        public byte[] ModelNumberByte
+        private string modelNumber;
+        public string ModelNumber
         {
             get
             {
+                return modelNumber;
+            }
+            set
+            {
+                modelNumber = value;
+                OnPropertyChanged("ModelNumber");
+            }
+        }
+
+        override public byte[] Payload
+        {
+            get
+            {
+                if (ModelNumber == null) return null; 
                 return Encoding.UTF8.GetBytes(ModelNumber);
             }
             set
             {
                 ModelNumber = Encoding.UTF8.GetString(value);
+                OnPropertyChanged("Payload");
             }
         }
 

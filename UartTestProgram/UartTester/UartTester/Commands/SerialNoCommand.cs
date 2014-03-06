@@ -10,17 +10,31 @@ namespace UartTester.Commands
     {
         const byte MainCommand = 1;
 
-        public string Serial { get; set; }
-
-        public byte[] SerialByte
+        private string serial; 
+        public string Serial
         {
             get
             {
+                return serial;
+            }
+            set
+            {
+                serial = value;
+                OnPropertyChanged("Serial");
+            }
+        }
+
+        override public byte[] Payload
+        {
+            get
+            {
+                if (Serial == null) return null; 
                 return Encoding.UTF8.GetBytes(Serial);
             }
             set
             {
                 Serial = Encoding.UTF8.GetString(value);
+                OnPropertyChanged("Payload");
             }
         }
 

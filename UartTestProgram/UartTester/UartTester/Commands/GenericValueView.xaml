@@ -1,0 +1,113 @@
+﻿<UserControl x:Class="UartTester.Commands.GenericValueView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:System="clr-namespace:System;assembly=mscorlib"
+             xmlns:StyleAlias="clr-namespace:UartTester.Commands"
+             xmlns:local="clr-namespace:UartTester"
+             mc:Ignorable="d" 
+             d:DesignHeight="200" d:DesignWidth="400">
+    <UserControl.Resources>
+        <ObjectDataProvider x:Key="dataFromEnum" MethodName="GetValues"
+                            ObjectType="{x:Type System:Enum}">
+            <ObjectDataProvider.MethodParameters>
+                <x:Type TypeName="StyleAlias:PresentationFormat"/>
+            </ObjectDataProvider.MethodParameters>
+        </ObjectDataProvider>
+
+        <ObjectDataProvider x:Key="GuiFormatEnum" MethodName="GetValues"
+                            ObjectType="{x:Type System:Enum}">
+            <ObjectDataProvider.MethodParameters>
+                <x:Type TypeName="StyleAlias:GUIFormat"/>
+            </ObjectDataProvider.MethodParameters>
+        </ObjectDataProvider>
+
+        <ObjectDataProvider x:Key="GuiColorEnum" MethodName="GetValues"
+                            ObjectType="{x:Type System:Enum}">
+            <ObjectDataProvider.MethodParameters>
+                <x:Type TypeName="StyleAlias:GuiColor"/>
+            </ObjectDataProvider.MethodParameters>
+        </ObjectDataProvider>
+
+    </UserControl.Resources>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="20" />
+            <RowDefinition Height="auto" />
+            <RowDefinition Height="20" />
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="auto" />
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="auto" />
+        </Grid.ColumnDefinitions>
+        
+        <StackPanel Grid.Row="1">
+            <StackPanel Orientation="Horizontal">
+                <CheckBox Content="Subcription" Margin="5" IsChecked="{Binding Subscription}"/>
+                <CheckBox Content="Read" Margin="5" IsChecked="{Binding Read}"/>
+                <CheckBox Content="Write" Margin="5" IsChecked="{Binding Write}"/>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Margin="5" >Format:</TextBlock>
+                <ComboBox Margin="5" MinWidth="100" ItemsSource="{Binding Source={StaticResource dataFromEnum}}" SelectedItem="{Binding Path=Format}"/>
+            </StackPanel>
+            
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Margin="5" >GUI Format:</TextBlock>
+                <ComboBox Margin="5" MinWidth="100" ItemsSource="{Binding Source={StaticResource GuiFormatEnum}}" SelectedItem="{Binding Path=GUI}"/>
+                <TextBlock Margin="5" >Color:</TextBlock>
+                <ComboBox Margin="5" MinWidth="50" ItemsSource="{Binding Source={StaticResource GuiColorEnum}}" SelectedItem="{Binding Path=GUIcolor}"/>
+            </StackPanel>
+
+            <TextBlock Margin="5" >GPIO:</TextBlock>
+            <StackPanel Orientation="Horizontal">
+                <CheckBox x:Name="test" Content="1" Margin="5" 
+                          local:CheckBoxFlagsBehaviour.Mask="1" 
+                          local:CheckBoxFlagsBehaviour.IsChecked="{Binding Path=IsChecked, RelativeSource={RelativeSource Self}}" 
+                          local:CheckBoxFlagsBehaviour.Value="{Binding GPIO}" />
+
+                <CheckBox Content="2" Margin="5"  
+                          local:CheckBoxFlagsBehaviour.Mask="2" 
+                          local:CheckBoxFlagsBehaviour.IsChecked="{Binding Path=IsChecked, RelativeSource={RelativeSource Self}}" 
+                          local:CheckBoxFlagsBehaviour.Value="{Binding GPIO}" />
+                <CheckBox Content="3" Margin="5" 
+                          local:CheckBoxFlagsBehaviour.Mask="4" 
+                          local:CheckBoxFlagsBehaviour.IsChecked="{Binding Path=IsChecked, RelativeSource={RelativeSource Self}}" 
+                          local:CheckBoxFlagsBehaviour.Value="{Binding GPIO}" />
+                <CheckBox Content="4" Margin="5" 
+                          local:CheckBoxFlagsBehaviour.Mask="8" 
+                          local:CheckBoxFlagsBehaviour.IsChecked="{Binding Path=IsChecked, RelativeSource={RelativeSource Self}}" 
+                          local:CheckBoxFlagsBehaviour.Value="{Binding GPIO}" />
+                <CheckBox Content="5" Margin="5" 
+                          local:CheckBoxFlagsBehaviour.Mask="16" 
+                          local:CheckBoxFlagsBehaviour.IsChecked="{Binding Path=IsChecked, RelativeSource={RelativeSource Self}}" 
+                          local:CheckBoxFlagsBehaviour.Value="{Binding GPIO}" />
+                <CheckBox Content="6" Margin="5" 
+                          local:CheckBoxFlagsBehaviour.Mask="32" 
+                          local:CheckBoxFlagsBehaviour.IsChecked="{Binding Path=IsChecked, RelativeSource={RelativeSource Self}}" 
+                          local:CheckBoxFlagsBehaviour.Value="{Binding GPIO}" />
+                <CheckBox Content="7" Margin="5" 
+                          local:CheckBoxFlagsBehaviour.Mask="64" 
+                          local:CheckBoxFlagsBehaviour.IsChecked="{Binding Path=IsChecked, RelativeSource={RelativeSource Self}}" 
+                          local:CheckBoxFlagsBehaviour.Value="{Binding GPIO}" />
+                <CheckBox Content="8" Margin="5" 
+                          local:CheckBoxFlagsBehaviour.Mask="128" 
+                          local:CheckBoxFlagsBehaviour.IsChecked="{Binding Path=IsChecked, RelativeSource={RelativeSource Self}}" 
+                          local:CheckBoxFlagsBehaviour.Value="{Binding GPIO}" />
+            </StackPanel>
+            <DockPanel>
+                <TextBlock Margin="5" >Description:</TextBlock>
+                <TextBox Margin="5" Text="{Binding Description, UpdateSourceTrigger=PropertyChanged}"> </TextBox>
+            </DockPanel>
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Margin="5">Max String Size</TextBlock>
+                <TextBox  Margin="5" Width="50" Text="{Binding MaxSize, UpdateSourceTrigger=PropertyChanged}"></TextBox>
+                <TextBlock Margin="5">(Max 255 charecters)</TextBlock>
+            </StackPanel>
+        </StackPanel>
+        
+        
+    </Grid>
+</UserControl>

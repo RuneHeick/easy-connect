@@ -21,11 +21,6 @@ namespace UartTester
             }
         }
 
-        public string Name { get; private set; }
-        public string Description { get; private set; }
-
-        public SerialCommand Reply { get; set; }
-
         // start byte 
         public bool IsResponse 
         {
@@ -73,13 +68,13 @@ namespace UartTester
             }
         }
 
-        bool IsCrcOK
+        public bool IsCrcOK
         {
             get
             {
                 byte[] pack = new byte[packet.Count - 2];
-                Array.Copy(pack.ToArray(), pack, pack.Length);
-                return (ushort)(Packet[Packet.Count - 2] << 8 + Packet[Packet.Count - 1]) == CalcCrc(pack);
+                ushort crc = CalcCrc(pack);
+                return (ushort)((Packet[Packet.Count - 2] << 8) + Packet[Packet.Count - 1]) == crc;
             }
         }
 
@@ -88,6 +83,27 @@ namespace UartTester
             Packet = packet;
             if (Packet.Count < 4)
                 throw new InvalidOperationException("to short"); 
+        }
+
+        public byte[] Payload
+        {
+            get
+            {
+                byte[] retpacket = new byte[Packet.Count-4];
+                Array.Copy(Packet.ToArray(), retpacket, Packet.Count - 4);
+                return retpacket;
+            }
+            set
+            {
+                byte[] startAndCmd = new byte[] { Packet[0], Packet[1] };
+                Packet.Clear();
+                Packet.AddRange(startAndCmd);
+                if(value!=null)
+                    Packet.AddRange(value);
+                Packet.Add(00);
+                Packet.Add(00);
+                Update();
+            }
         }
 
         public SerialCommand()

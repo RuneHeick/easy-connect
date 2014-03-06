@@ -23,18 +23,21 @@ namespace UartTester.Commands
                     deviceName = value;
                 else
                     throw new FormatException("to long");
+                OnPropertyChanged("DeviceName");
             }
         }
 
-        public byte[] DeviceNameByte
+        override public byte[] Payload
         {
             get
             {
+                if (DeviceName == null) return null;
                 return Encoding.UTF8.GetBytes(DeviceName);
             }
             set
             {
                 DeviceName = Encoding.UTF8.GetString(value);
+                OnPropertyChanged("Payload");
             }
         }
 
