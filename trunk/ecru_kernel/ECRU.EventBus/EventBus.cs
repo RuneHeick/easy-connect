@@ -8,7 +8,7 @@ namespace ECRU.EventBus
     ///     The EventBus class implements the Publisher/Subscriber design pattern. The class is threadsafe and does not spawn
     ///     new threads.
     /// </summary>
-    public class EventBus
+    public static class EventBus
     {
         private static readonly Hashtable Subscriptions = new Hashtable();
         private static readonly Object Lock = new object();
@@ -101,7 +101,7 @@ namespace ECRU.EventBus
         {
             lock (Lock)
             {
-                var subscribers = Subscriptions[message] as ArrayList;
+                var subscribers = Subscriptions[message.Type] as ArrayList;
 
                 if (subscribers == null) return;
                 foreach (TMessageHandler subscriber in subscribers)

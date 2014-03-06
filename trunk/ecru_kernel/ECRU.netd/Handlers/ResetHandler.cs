@@ -1,15 +1,16 @@
 using System;
 using ECRU.EventBus;
-using ECRU.GlobalMessages;
+using ECRU.EventBus.Messages;
 using Microsoft.SPOT;
 
 namespace ECRU.netd.Handlers
 {
     class ResetHandler : TMessageHandler
     {
+        Reset _message;
         public void Handle(TMessage message)
         {
-            Reset _message = message as Reset;
+            _message = message as Reset;
             if (_message == null) throw new ArgumentNullException("_message");
         }
     }
