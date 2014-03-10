@@ -85,8 +85,44 @@ void Uart_Init( uint8 task_id )
   
 }
 
+
+bool Uart_Subscribe(uint8 tarskId,uint8 Command)
+{
+  uint8 index;
+  for(index=0;index<UART_MAX_SUBCRIPTIONS;index++)
+  {
+    if(Uart_Subscriptions[index].id == 0)
+    {
+      Uart_Subscriptions[index].command = Command; 
+      Uart_Subscriptions[index].id = tarskId;
+      return true; 
+    }
+  }
+  return false;
+}
+
+bool Uart_Unsubscribe(uint8 tarskId,uint8 Command)
+{
+  uint8 index;
+  for(index=0;index<UART_MAX_SUBCRIPTIONS;index++)
+  {
+    if(Uart_Subscriptions[index].id == tarskId && Uart_Subscriptions[index].command == Command)
+    {
+      Uart_Subscriptions[index].command = 0; 
+      Uart_Subscriptions[index].id = 0; 
+      return true; 
+    }
+  }
+  return false;
+}
+
+PayloadBuffer Uart_getRXpayload()
+{
+  return (PayloadBuffer){&bufferRX.buffer[3],bufferRX.count-3-2 };  
+}
+
 /*
- * Task Event Processor for the BLE Application
+ * Task Event Processor 
  */
 
 uint16 Uart_ProcessEvent( uint8 task_id, uint16 events )
@@ -216,17 +252,17 @@ bool Uart_Send_Response(uint8* buffer, uint8 len)
  
     Uart_ClearPendingResponse();
     if(&bufferTX.buffer[3]!=buffer && len>0)
-      osal_memcpy(&bufferTX.buffer[3],buffer,len); 
-    
-    crc = CalcCrc(bufferTX.buffer,len+3);
-    
-    bufferTX.buffer[3+len] =  (uint8)(crc>>8); 
-    bufferTX.buffer[3+len+1] =(uint8)(crc); 
+      osal_memcpy(&bufferTX.buffer[3],buffer,len);  
     
     bufferTX.buffer[0] = 0xEC; 
     bufferTX.buffer[1] = 0x80 | len+2+2; 
     bufferTX.buffer[2] = bufferRX.buffer[2];
     bufferTX.count = 3+2+len;
+    
+    crc = CalcCrc(bufferTX.buffer,len+3);
+    
+    bufferTX.buffer[3+len] =  (uint8)(crc>>8); 
+    bufferTX.buffer[3+len+1] =(uint8)(crc);
     
     Uart_TransmitBuffer();
     bufferRX.count = 0; 
@@ -256,15 +292,17 @@ bool Uart_Send(uint8* buffer, uint8 len, uint8 command, CallBackFunction func)
     if(&bufferTX.buffer[3]!=buffer && len>0)
       osal_memcpy(&bufferTX.buffer[3],buffer,len); 
     
-    crc = CalcCrc(bufferTX.buffer,len+3);
-    
-    bufferTX.buffer[3+len] =  (uint8)(crc>>8); 
-    bufferTX.buffer[3+len+1] =(uint8)(crc); 
     
     bufferTX.buffer[0] = 0xEC; 
     bufferTX.buffer[1] = len+2+2; 
     bufferTX.buffer[2] = command;
     bufferTX.count = 3+2+len;
+    
+    crc = CalcCrc(bufferTX.buffer,len+3);
+    
+    bufferTX.buffer[3+len] =  (uint8)(crc>>8); 
+    bufferTX.buffer[3+len+1] =(uint8)(crc); 
+    
     osal_set_event(Uart_TaskID,UART_TRANSMITTING_EVENT);
     
     return true; 
@@ -306,7 +344,6 @@ static void cSerialPacketParser( uint8 port, uint8 events )
     
   }
 }
-
 
 static void ReadFromUart(uint8 port)
 {
@@ -352,7 +389,6 @@ static void ReadFromUart(uint8 port)
   }
   
 }
-
 
 static unsigned short update_crc(unsigned short crc, char c) 
 {

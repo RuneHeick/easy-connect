@@ -62,7 +62,7 @@ uint8 SmartCommandsManger_ElementsInService(SmartService* service)
   return count;
 }
 
-SmartService* SmartCommandsManger_CreateService(uint8* description)
+SmartService* SmartCommandsManger_CreateService(uint8* description, uint8 len)
 {
   if(SmartCommandServices_Count>=MAX_SERVICES_SUPPORTED )
     return NULL;
@@ -71,7 +71,7 @@ SmartService* SmartCommandsManger_CreateService(uint8* description)
   SmartService* returnvalue = osal_mem_alloc(sizeof(SmartService));
   if(returnvalue!=NULL)
   {
-    succses = GenericValue_SetString(&returnvalue->description, description);
+    succses = GenericValue_SetValue(&returnvalue->description, description, len);
     returnvalue->llReg = NULL; 
     returnvalue->first = NULL; 
   }
@@ -93,8 +93,15 @@ bool SmartCommandsManger_DeleteService(SmartService* service)
   return false; 
 }
 
-uint16 SmartCommandsManger_addCharacteristic(SmartService* service,GenericValue* initialValue,uint8* description, GUIPresentationFormat guiPresentationFormat, PresentationFormat typeFormat,uint8* range, Subscription subscription, uint8 premission)
+uint16 SmartCommandsManger_addCharacteristic(GenericValue* initialValue,uint8* description, GUIPresentationFormat guiPresentationFormat, PresentationFormat typeFormat,uint8* range, Subscription subscription, uint8 premission)
 {
+  SmartService* service; 
+  
+  if(SmartCommandServices_Count==0)
+      return 0; 
+    
+  service = SmartCommandServices[SmartCommandServices_Count-1];
+    
   if(service->llReg==NULL)
   {
     uint8 address = 1; 

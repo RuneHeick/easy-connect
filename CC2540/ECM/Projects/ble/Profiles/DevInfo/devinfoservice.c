@@ -221,12 +221,9 @@ CONST gattServiceCBs_t devInfoCBs =
  *
  * @return  Success or Failure
  */
-bStatus_t DevInfo_AddService(char* Serial, char* ModelNr, char* MainifactureName )
+bStatus_t DevInfo_AddService()
 {
   
-  GenericValue_SetString(&devInfoModelNumber, ModelNr);
-  GenericValue_SetString(&devInfoSerialNumber, Serial);
-  GenericValue_SetString(&devInfoMfrName, MainifactureName);
   // Register GATT attribute list and CBs with GATT Server App
   return GATTServApp_RegisterService( devInfoAttrTbl,
                                       GATT_NUM_ATTRS( devInfoAttrTbl ),
@@ -253,6 +250,35 @@ bStatus_t DevInfo_SetParameter( uint8 param, uint8 len, void *value )
 
   switch ( param )
   {
+    
+  case DEVINFO_MODEL_NUMBER:
+    if(devInfoModelNumber.status == NOT_INIT && GenericValue_SetValue(&devInfoModelNumber, value, len));
+    else 
+    {
+      if(devInfoModelNumber.size == len && 0==memcmp(devInfoModelNumber.pValue, value,len)) 
+        return SUCCESS;
+      return FAILURE;
+    }
+    break;
+  case DEVINFO_SERIAL_NUMBER:
+    if(devInfoSerialNumber.status == NOT_INIT && GenericValue_SetValue(&devInfoSerialNumber, value, len));
+    else 
+    {
+      if(devInfoSerialNumber.size == len && 0==memcmp(devInfoSerialNumber.pValue, value,len)) 
+        return SUCCESS;
+      return FAILURE;
+    }
+    break;
+  case DEVINFO_MANUFACTURER_NAME:
+    if(devInfoMfrName.status == NOT_INIT && GenericValue_SetValue(&devInfoMfrName, value, len));
+    else 
+    {
+      if(devInfoMfrName.size == len && 0==memcmp(devInfoMfrName.pValue, value,len)) 
+        return SUCCESS;
+      return FAILURE;
+    }
+    break;
+    
     default:
       ret = INVALIDPARAMETER;
       break;

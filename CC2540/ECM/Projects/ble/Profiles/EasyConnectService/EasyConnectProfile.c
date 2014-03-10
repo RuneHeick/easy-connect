@@ -156,7 +156,7 @@ bStatus_t SimpleProfile_AddService( uint32 services )
   // Register with Link DB to receive link status change callback
   VOID linkDB_Register( simpleProfile_HandleConnStatusCB );  
     
-  SmartService* Testservice = SmartCommandsManger_CreateService("Lav Kaffe"); 
+  SmartService* Testservice = SmartCommandsManger_CreateService("Lav Kaffe",9); 
  
   GenericValue_SetString(&DataTest,"FIRE"); 
   GenericValue_SetString(&DataTest1,"HEJ MED DIG"); 
@@ -174,13 +174,13 @@ bStatus_t SimpleProfile_AddService( uint32 services )
   GenericValue_SetString(&DataTest33,"HEJ MED DIG"); 
   GenericValue_SetString(&DataTest43,"HEJ MED DIG"); 
             
-  SmartCommandsManger_addCharacteristic(Testservice,&DataTest,"Antal kopper",(GUIPresentationFormat){00,00},(PresentationFormat){1,2,3,4,5},NULL,NONE,GATT_PERMIT_READ|GATT_PERMIT_WRITE);
-  SmartCommandsManger_addCharacteristic(Testservice,&DataTest1,"Bonner",(GUIPresentationFormat){00,00},(PresentationFormat){7,4,5,6,5},"TESTTEST",YES,GATT_PERMIT_READ|GATT_PERMIT_WRITE);
+  SmartCommandsManger_addCharacteristic(&DataTest,"Antal kopper",(GUIPresentationFormat){00,00},(PresentationFormat){1,2,3,4,5},NULL,NONE,GATT_PERMIT_READ|GATT_PERMIT_WRITE);
+  SmartCommandsManger_addCharacteristic(&DataTest1,"Bonner",(GUIPresentationFormat){00,00},(PresentationFormat){7,4,5,6,5},"TESTTEST",YES,GATT_PERMIT_READ|GATT_PERMIT_WRITE);
   
-  SmartService* Testservice2 = SmartCommandsManger_CreateService("Lav Kaffe pa Tid"); 
-  SmartCommandsManger_addCharacteristic(Testservice2,&DataTest2,"Antal Kopper",(GUIPresentationFormat){00,00},(PresentationFormat){7,4,5,6,5},"TESTTEST",YES,GATT_PERMIT_READ|GATT_PERMIT_WRITE);
-  SmartCommandsManger_addCharacteristic(Testservice2,&DataTest3,"Bonner",(GUIPresentationFormat){00,00},(PresentationFormat){7,4,5,6,5},"TESTTEST",YES,GATT_PERMIT_READ|GATT_PERMIT_WRITE);
-  SmartCommandsManger_addCharacteristic(Testservice2,&DataTest4,"Tid",(GUIPresentationFormat){00,00},(PresentationFormat){7,4,5,6,5},"TESTTEST",YES,GATT_PERMIT_READ|GATT_PERMIT_WRITE);
+  SmartService* Testservice2 = SmartCommandsManger_CreateService("Lav Kaffe pa Tid",10); 
+  SmartCommandsManger_addCharacteristic(&DataTest2,"Antal Kopper",(GUIPresentationFormat){00,00},(PresentationFormat){7,4,5,6,5},"TESTTEST",YES,GATT_PERMIT_READ|GATT_PERMIT_WRITE);
+  SmartCommandsManger_addCharacteristic(&DataTest3,"Bonner",(GUIPresentationFormat){00,00},(PresentationFormat){7,4,5,6,5},"TESTTEST",YES,GATT_PERMIT_READ|GATT_PERMIT_WRITE);
+  SmartCommandsManger_addCharacteristic(&DataTest4,"Tid",(GUIPresentationFormat){00,00},(PresentationFormat){7,4,5,6,5},"TESTTEST",YES,GATT_PERMIT_READ|GATT_PERMIT_WRITE);
   
   SmartCommandsManger_CompileServices();
   

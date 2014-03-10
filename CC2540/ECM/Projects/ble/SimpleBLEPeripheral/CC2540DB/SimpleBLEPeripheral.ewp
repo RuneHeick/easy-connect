@@ -8684,6 +8684,27 @@
         <name>$PROJ_DIR$\..\Source\GenericValueManger.h</name>
       </file>
     </group>
+    <group>
+      <name>StateMachine</name>
+      <file>
+        <name>$PROJ_DIR$\..\Source\InitState.c</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\..\Source\InitState.h</name>
+      </file>
+    </group>
+    <group>
+      <name>Util</name>
+      <file>
+        <name>$PROJ_DIR$\..\Source\State.h</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\..\Source\Uart.c</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\..\Source\Uart.h</name>
+      </file>
+    </group>
     <file>
       <name>$PROJ_DIR$\..\Source\OSAL_SimpleBLEPeripheral.c</name>
     </file>
@@ -8695,12 +8716,6 @@
     </file>
     <file>
       <name>$PROJ_DIR$\..\Source\SimpleBLEPeripheral_Main.c</name>
-    </file>
-    <file>
-      <name>$PROJ_DIR$\..\Source\Uart.c</name>
-    </file>
-    <file>
-      <name>$PROJ_DIR$\..\Source\Uart.h</name>
     </file>
   </group>
   <group>
