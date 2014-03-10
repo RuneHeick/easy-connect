@@ -59,8 +59,12 @@ extern "C"
 #define SBP_PERIODIC_EVT                                  0x0002
 
 /*********************************************************************
- * MACROS
+ * Vars
  */
+   
+extern gapRolesCBs_t simpleBLEPeripheral_PeripheralCBs;
+extern gapBondCBs_t simpleBLEPeripheral_BondMgrCBs;
+
 
 /*********************************************************************
  * FUNCTIONS

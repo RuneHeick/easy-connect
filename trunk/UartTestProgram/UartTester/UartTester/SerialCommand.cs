@@ -91,7 +91,7 @@ namespace UartTester
             get
             {
                 byte[] retpacket = new byte[Packet.Count-5];
-                Array.Copy(Packet.ToArray(),2, retpacket,0, Packet.Count - 5);
+                Array.Copy(Packet.ToArray(),3, retpacket,0, Packet.Count - 5);
                 return retpacket;
             }
             set

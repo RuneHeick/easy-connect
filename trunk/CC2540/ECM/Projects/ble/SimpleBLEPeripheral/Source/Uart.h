@@ -13,6 +13,23 @@
 #define RETRY_COUNT 3
 #define UART_MAX_SUBCRIPTIONS 10
 
+
+
+/*****************Command types***************************/
+
+#define COMMAND_DEVICENAME      0x11
+#define COMMAND_MANIFACTURE     0x12
+#define COMMAND_MODELNR         0x13
+#define COMMAND_SERIALNR        0x14
+#define COMMAND_SMARTFUNCTION   0x15
+#define COMMAND_GENRICVALUE     0x16
+#define COMMAND_REANGES         0x17
+
+
+
+
+
+
 typedef enum 
 {
   Ready,
@@ -46,7 +63,11 @@ typedef struct
   uint8 id; 
 }RequestBank; 
 
-
+typedef struct
+{
+  uint8* bufferPtr; 
+  uint8 count; 
+}PayloadBuffer;
 
 typedef struct 
 {
@@ -72,3 +93,9 @@ extern uint16 Uart_ProcessEvent( uint8 task_id, uint16 events );
 extern bool Uart_Send(uint8* buffer, uint8 len, uint8 command, CallBackFunction func);
 
 extern bool Uart_Send_Response(uint8* buffer, uint8 len);
+
+bool Uart_Subscribe(uint8 tarskId,uint8 command);
+
+bool Uart_Unsubscribe(uint8 tarskId,uint8 command);
+
+PayloadBuffer Uart_getRXpayload();

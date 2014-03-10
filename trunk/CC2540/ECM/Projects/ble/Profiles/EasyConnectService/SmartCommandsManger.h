@@ -73,11 +73,11 @@ extern UpdateHandle* HandelsToUpdate;
 
 uint8 SmartCommandsManger_ElementsInService(SmartService* service); 
 
-SmartService* SmartCommandsManger_CreateService(uint8* description);
+SmartService* SmartCommandsManger_CreateService(uint8* description, uint8 len);
 
 bool SmartCommandsManger_DeleteService(SmartService* service);
 
-uint16 SmartCommandsManger_addCharacteristic(SmartService* service,GenericValue* initialValue,uint8* description, GUIPresentationFormat guiPresentationFormat, PresentationFormat typeFormat,uint8* range, Subscription subscription, uint8 premission);
+uint16 SmartCommandsManger_addCharacteristic(GenericValue* initialValue,uint8* description, GUIPresentationFormat guiPresentationFormat, PresentationFormat typeFormat,uint8* range, Subscription subscription, uint8 premission);
 
 bool SmartCommandsManger_RemoveCharacteristic(SmartService* service,GenericCharacteristic* Characteristic);
 
