@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace UartTester.Commands
 {
-    class GenericValueCommand:Command
+    public class GenericValueCommand:Command
     {
         const byte MainCommand = 1;
 
@@ -63,6 +63,7 @@ namespace UartTester.Commands
             {
                 format = value;
                 OnPropertyChanged("Format");
+                OnPropertyChanged("MaxSize");
             }
         }
 
@@ -108,16 +109,18 @@ namespace UartTester.Commands
             }
         }
 
-        private byte maxSize;
         public byte MaxSize
         {
             get
             {
-                return maxSize;
+                if (Format == null)
+                    return 0; 
+                return Format.ByteSize == null ? (byte)0 : Format.ByteSize.Value;
             }
             set
             {
-                maxSize = value;
+                if (Format == null) return;
+                Format.ByteSize = value;
                 OnPropertyChanged("MaxSize");
             }
         }
@@ -152,11 +155,11 @@ namespace UartTester.Commands
 
                     List<byte> packet = new List<byte>();
                     packet.Add(reWrSub);
-                    packet.Add((byte)Format);
+                    packet.Add(Format.Value);
+                    packet.Add(MaxSize);
                     packet.Add((byte)GUI);
                     packet.Add((byte)GUIcolor);
                     packet.Add(GPIO);
-                    packet.Add(MaxSize);
                     packet.AddRange(descript);
 
                     return packet.ToArray();
@@ -174,12 +177,13 @@ namespace UartTester.Commands
                     Read = Convert.ToBoolean((value[0] & 0x2) >> 1);
                     Write = Convert.ToBoolean((value[0] & 0x1));
 
-                    Format = (PresentationFormat)value[1];
+                    Format.Value = value[1];
 
                     GUI = (GUIFormat) value[2];
-                    GUIcolor= (GuiColor) value[3];
-                    GPIO = value[4];
-                    MaxSize = value[5];
+                    MaxSize = value[3];
+                    GUIcolor= (GuiColor) value[4];
+                    GPIO = value[5];
+                    
                     byte[] descrip = new byte[value.Length - 6];
                     Array.Copy(value, 6, descrip, 0, value.Length - 6);
                     Description = Encoding.UTF8.GetString(descrip);
@@ -195,38 +199,63 @@ namespace UartTester.Commands
 
     }
 
-    public enum PresentationFormat
+    public class PresentationFormat
     {
-        Reserved = 0,
-        Boolean = 1,
-        unsigned2_bit = 2,
-        unsigned4_bit = 3,
-        unsigned8_bit = 4,
-        unsigned12_bit = 5,
-        unsigned16_bit = 6,
-        unsigned24_bit = 7,
-        unsigned32_bit = 8,
-        unsigned48_bit = 9,
-        unsigned64_bit = 10,
-        unsigned128_bit = 12,
-        signed8_bit = 13,
-        signed12_bit = 14,
-        signed16_bit = 15,
-        signed24_bit = 16,
-        signed32_bit = 17,
-        signed48_bit = 18,
-        signed64_bit = 19,
-        signed128_bit = 20,
-        bitfloating_32 = 21,
-        bitfloating_64 = 22,
-        bitSFLOAT_16 = 23,
-        bitFLOAT_32 = 24,
-        IEEE_20601format = 25,
-        UTF_8string = 26,
-        UTF_16string = 27
+        public string Name {get; private set;}
+        public byte Value {get; set;}
+        public byte? ByteSize {get; set;}
+
+        public PresentationFormat()
+        {
+        }
+
+        public PresentationFormat(string Name, byte Value, byte? ByteSize)
+        {
+            this.Name = Name;
+            this.ByteSize = ByteSize;
+            this.Value = Value; 
+        }
+
+        public static PresentationFormat[] Items
+        {
+            get
+            {
+                return new PresentationFormat[]
+                {
+                    new PresentationFormat("Boolean",1,1),
+                    new PresentationFormat("unsigned2_bit",2,1),
+                    new PresentationFormat("unsigned4_bit",3,1),
+                    new PresentationFormat("unsigned8_bit",4,1),
+                    new PresentationFormat("unsigned12_bit",5,2),
+                    new PresentationFormat("unsigned16_bit",6,2),
+                    new PresentationFormat("unsigned24_bit",7,3),
+                    new PresentationFormat("unsigned32_bit",8,4),
+                    new PresentationFormat("unsigned48_bit",9,6),
+                    new PresentationFormat("unsigned64_bit",10,4),
+                    new PresentationFormat("unsigned128_bit",11,16),
+                    new PresentationFormat("signed8_bit",12,1),
+                    new PresentationFormat("signed12_bit",13,2),
+                    new PresentationFormat("signed16_bit",14,2),
+                    new PresentationFormat("signed24_bit",15,3),
+                    new PresentationFormat("signed32_bit",16,4),
+                    new PresentationFormat("signed48_bit",17,6),
+                    new PresentationFormat("signed64_bit",18,8),
+                    new PresentationFormat("signed128_bit",19,16),
+                    new PresentationFormat("bitfloating_32",20,4),
+                    new PresentationFormat("bitfloating_64",21,8),
+                    new PresentationFormat("bitSFLOAT_16",22,2),
+                    new PresentationFormat("bitFLOAT_32",23,4),
+                    new PresentationFormat("IEEE_20601format",24,4),
+                    new PresentationFormat("UTF_8string",25,null),
+                    new PresentationFormat("UTF_16string",26,null)
+                };
+            }
+        }
+
     }
 
-    enum GUIFormat
+
+    public enum GUIFormat
     {
         Lable = 1,
         Field = 2,
@@ -238,7 +267,7 @@ namespace UartTester.Commands
         Time_Date = 8
     }
 
-    enum GuiColor
+    public enum GuiColor
     {
         White = 1,
         Silver = 2,

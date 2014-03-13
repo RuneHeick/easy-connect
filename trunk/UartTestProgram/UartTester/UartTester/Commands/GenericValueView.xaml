@@ -9,12 +9,7 @@
              mc:Ignorable="d" 
              d:DesignHeight="200" d:DesignWidth="400">
     <UserControl.Resources>
-        <ObjectDataProvider x:Key="dataFromEnum" MethodName="GetValues"
-                            ObjectType="{x:Type System:Enum}">
-            <ObjectDataProvider.MethodParameters>
-                <x:Type TypeName="StyleAlias:PresentationFormat"/>
-            </ObjectDataProvider.MethodParameters>
-        </ObjectDataProvider>
+        <StyleAlias:PresentationFormat x:Key="FormatList" />
 
         <ObjectDataProvider x:Key="GuiFormatEnum" MethodName="GetValues"
                             ObjectType="{x:Type System:Enum}">
@@ -51,7 +46,13 @@
             </StackPanel>
             <StackPanel Orientation="Horizontal">
                 <TextBlock Margin="5" >Format:</TextBlock>
-                <ComboBox Margin="5" MinWidth="100" ItemsSource="{Binding Source={StaticResource dataFromEnum}}" SelectedItem="{Binding Path=Format}"/>
+                <ComboBox Margin="5" MinWidth="100" ItemsSource="{Binding Source={StaticResource FormatList}, Path=Items}" SelectedValue="{Binding Format, Mode=OneWayToSource}">
+                    <ComboBox.ItemTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding Name}"/>
+                        </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                </ComboBox>
             </StackPanel>
             
             <StackPanel Orientation="Horizontal">

@@ -28,7 +28,7 @@
                 <view:MainTab />
             </TabItem>
             <TabItem Header="Item">
-                
+                <ContentControl Content="{Binding Items}"></ContentControl>
             </TabItem>
             <TabItem Header="Setup">
                 <ContentControl Content="{Binding SerialSetup}"></ContentControl>

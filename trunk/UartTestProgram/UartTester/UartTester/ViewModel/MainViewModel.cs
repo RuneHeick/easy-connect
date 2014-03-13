@@ -17,6 +17,8 @@ namespace UartTester.ViewModel
         public ObservableCollection<Command> MainCommands { get; set; }
         public ObservableCollection<string> SubCommands { get; set; }
 
+        public ItemsViewModel Items { get; set;  }
+
         private Command selectedMainCommand;
         public Command SelectedMainCommand
         {
@@ -79,6 +81,7 @@ namespace UartTester.ViewModel
 
         public MainViewModel()
         {
+            Items = new ItemsViewModel(); 
             SerialSetup = new SerialViewModel(); 
             MainCommands = new ObservableCollection<Command>();
             serialCommandFromSelected = new SerialCommand(); 
@@ -105,6 +108,19 @@ namespace UartTester.ViewModel
                 return serialSendCommand;
             }
         }
+
+
+        private RelayCommand addToItemsCommand;
+        public ICommand AddToItemsCommand
+        {
+            get
+            {
+                if (addToItemsCommand == null)
+                    addToItemsCommand = new RelayCommand((p) => addToItemsCommandExecute(p));
+                return addToItemsCommand;
+            }
+        }
+
 
         private RelayCommand serialCustomSendCommand;
         public ICommand SerialCustomSendCommand
@@ -133,6 +149,11 @@ namespace UartTester.ViewModel
         private void serialSendCommandExecute(object p)
         {
             SerialViewModel.Serial.SendCommand((p as SerialCommand));
+        }
+
+        private void addToItemsCommandExecute(object p)
+        {
+            Items.Add((p as SerialCommand));
         }
 
 

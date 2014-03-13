@@ -237,6 +237,14 @@ void InitState_Enter(uint8 tarskID)
   Uart_Subscribe(tarskID,0x14);
   Uart_Subscribe(tarskID,COMMAND_SMARTFUNCTION);
   
+  if(IsInit==false)
+  {
+    GAPManget_SetupName("TEST",4);
+    SimpleBLEPeripheral_SwitchState(0);
+    IsInit = true; 
+  }
+  
+  
 }
 
 void InitState_Exit()
