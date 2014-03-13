@@ -8473,21 +8473,24 @@
   </configuration>
   <group>
     <name>APP</name>
-    <file>
-      <name>$PROJ_DIR$\..\Source\gatt_profile_uuid.h</name>
-    </file>
-    <file>
-      <name>$PROJ_DIR$\..\Source\GenericValueManger.c</name>
-    </file>
-    <file>
-      <name>$PROJ_DIR$\..\Source\GenericValueManger.h</name>
-    </file>
-    <file>
-      <name>$PROJ_DIR$\..\Source\InitState.c</name>
-    </file>
-    <file>
-      <name>$PROJ_DIR$\..\Source\InitState.h</name>
-    </file>
+    <group>
+      <name>Manger</name>
+      <file>
+        <name>$PROJ_DIR$\..\Source\GenericValueManger.c</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\..\Source\GenericValueManger.h</name>
+      </file>
+    </group>
+    <group>
+      <name>State</name>
+      <file>
+        <name>$PROJ_DIR$\..\Source\InitState.c</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\..\Source\InitState.h</name>
+      </file>
+    </group>
     <file>
       <name>$PROJ_DIR$\..\Source\OSAL_SimpleBLEPeripheral.c</name>
     </file>
@@ -8783,6 +8786,9 @@
     </file>
     <file>
       <name>$PROJ_DIR$\..\..\Include\gapgattserver.h</name>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\Source\gatt_profile_uuid.h</name>
     </file>
     <file>
       <name>$PROJ_DIR$\..\..\..\..\Components\ble\host\gatt_uuid.c</name>

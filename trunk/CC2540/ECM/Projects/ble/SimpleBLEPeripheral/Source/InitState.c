@@ -89,7 +89,7 @@ static bool IsInit = false;
 static uint8 ScanLen = 0; 
 
 void InitState_HandelUartPacket(osal_event_hdr_t * msg);
-
+bool addChar(uint8* buffer, uint8 count);
 
 uint8 GAPManget_SetupName(char* DeviceName, uint8 nameSize)
 {
@@ -234,10 +234,42 @@ void InitState_HandelUartPacket(osal_event_hdr_t * msg)
       }
        break;
     }
+    case COMMAND_GENRICVALUE:
+    {
+      addChar(RX.bufferPtr,RX.count); 
+      
+       break;
+    }
+    case COMMAND_REANGES:
+    {
+      
+     
+       break;
+    }
   }
   
 }
 
+bool addChar(uint8* buffer, uint8 count)
+{
+  
+  if(count>6)
+  {
+    bool subscription = (buffer[0]>>2)&0x01; 
+    bool read = (buffer[0]>>1)&0x01; 
+    bool write = (buffer[0]>>1)&0x01;
+    PresentationFormat Format;
+    Format.Format = buffer[1];
+    GUIPresentationFormat FormatByteSize = (GUIPresentationFormat){buffer[2],buffer[3]};
+    uint8 GPIO = buffer[4];
+    
+    return false;//uint16 SmartCommandsManger_addCharacteristic(uint8 initialValueSize,uint8* description, uint8 descriptioncount, GUIPresentationFormat guiPresentationFormat, PresentationFormat typeFormat, Subscription subscription, uint8 premission);
+    
+  }
+  
+  
+    return false; 
+}
 
 void InitState_Enter(uint8 tarskID)
 {
@@ -248,7 +280,7 @@ void InitState_Enter(uint8 tarskID)
   Uart_Subscribe(tarskID,0x14);
   Uart_Subscribe(tarskID,COMMAND_SMARTFUNCTION);
   
-  /*
+  
   if(IsInit==false)
   {
     GAPManget_SetupName("TEST",4);
@@ -256,7 +288,7 @@ void InitState_Enter(uint8 tarskID)
     IsInit = true; 
   }
   
-  */
+  
   
 }
 

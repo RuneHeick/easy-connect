@@ -64,7 +64,10 @@ namespace UartTester
                 if (serialport.IsOpen && cmd.Packet.Count < 128)
                 {
                     serialport.Write(cmd.Packet.ToArray(), 0, cmd.Packet.Count);
+                    Application.Current.Dispatcher.Invoke(DispatcherPriority.Input, new ThreadStart(() =>
+                    {
                     Log.Add(new SerialCommand(cmd.Packet.ToArray().ToList()));
+                    }));
                 }
                 if (!(cmd.Packet.Count < 128))
                 {

@@ -93,7 +93,7 @@ bool SmartCommandsManger_DeleteService(SmartService* service)
   return false; 
 }
 
-uint16 SmartCommandsManger_addCharacteristic(GenericValue* initialValue,uint8* description, GUIPresentationFormat guiPresentationFormat, PresentationFormat typeFormat,uint8* range, Subscription subscription, uint8 premission)
+uint16 SmartCommandsManger_addCharacteristic(uint8 initialValueSize,uint8* description, uint8 descriptionCount, GUIPresentationFormat guiPresentationFormat, PresentationFormat typeFormat, Subscription subscription, uint8 premission)
 {
   SmartService* service; 
   
@@ -107,22 +107,20 @@ uint16 SmartCommandsManger_addCharacteristic(GenericValue* initialValue,uint8* d
     uint8 address = 1; 
     GenericCharacteristic* chare = osal_mem_alloc(sizeof(GenericCharacteristic));
     bool succses = true; 
-    if(chare == NULL || initialValue->status!=READY) 
+    if(chare == NULL) 
       return 0; 
     
     chare->premission = premission; 
     chare->guiPresentationFormat = guiPresentationFormat; 
     chare->subscribtion = subscription; 
     chare->typePresentationFormat = typeFormat;
-    chare->value = initialValue;
     chare->nextitem = NULL; 
     
-    if(!GenericValue_SetString(&chare->userDescription, description))
-      succses = false; 
+    if(!GenericValue_CreateContainer(&chare->value, initialValueSize))
+      succses = false;
     
-    if(range !=NULL)
-      if(!GenericValue_SetValue(&chare->range, range,chare->value->size*2))
-         succses = false; 
+    if(!GenericValue_SetValue(&chare->userDescription, description, descriptionCount))
+      succses = false; 
     
     if(succses == false)
     {
@@ -161,6 +159,34 @@ uint16 SmartCommandsManger_addCharacteristic(GenericValue* initialValue,uint8* d
       return 0;
   }
   return 0; 
+}
+
+bool SmartCommandsManger_addRange(uint8* Range,uint8 len)
+{
+  GenericCharacteristic* temp;
+  SmartService* service;
+  
+  if(SmartCommandServices_Count==0)
+      return false; 
+  
+  service = SmartCommandServices[SmartCommandServices_Count-1];
+  
+  temp = service->first;
+  
+  if(temp == NULL)
+    return false; 
+  
+  while(temp->nextitem != NULL)
+  { 
+    temp = temp->nextitem; 
+  }
+  
+  if(temp->range.status == NOT_INIT)
+  {
+    return GenericValue_SetValue(&temp->range,Range,len);  
+  }
+  
+  return false; 
 }
 
 bool SmartCommandsManger_RemoveCharacteristic(SmartService* service,GenericCharacteristic* characteristic)
@@ -310,7 +336,7 @@ GenericValue* GetCharacteristic(uint8 service,uint8 characteristic)
       return NULL;
   }
   
-  return chara->value;
+  return &chara->value;
 }
 
 
@@ -397,7 +423,7 @@ static uint8 Local_CreateInfo(SmartService* service, gattAttribute_t* att, uint8
     else if(chara!=NULL)
     {
       Local_Insert(&att[index++],(gattAttrType_t){ ATT_BT_UUID_SIZE, characterUUID },GATT_PERMIT_READ,GetReadAddress(chara->premission)); //char Declaration
-      Local_Insert(&att[index++],(gattAttrType_t){ ATT_BT_UUID_SIZE, genericValuecharUUID },chara->premission,(uint8*)chara->value); //Value;
+      Local_Insert(&att[index++],(gattAttrType_t){ ATT_BT_UUID_SIZE, genericValuecharUUID },chara->premission,(uint8*)&chara->value); //Value;
       
       Local_Insert(&att[index++],(gattAttrType_t){ ATT_BT_UUID_SIZE, charUserDescUUID },GATT_PERMIT_READ ,chara->userDescription.pValue); //char description
       Local_Insert(&att[index++],(gattAttrType_t){ ATT_BT_UUID_SIZE, guiPresentationDescUUID },GATT_PERMIT_READ ,(uint8*)&chara->guiPresentationFormat); //char description

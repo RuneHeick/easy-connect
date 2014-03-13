@@ -33,7 +33,7 @@ typedef struct GenericCharacteristic GenericCharacteristic;
 
 struct GenericCharacteristic  
 {
-  GenericValue* value; 
+  GenericValue value; 
   uint8  premission; 
   
   GenericValue userDescription;
@@ -77,7 +77,9 @@ SmartService* SmartCommandsManger_CreateService(uint8* description, uint8 len);
 
 bool SmartCommandsManger_DeleteService(SmartService* service);
 
-uint16 SmartCommandsManger_addCharacteristic(GenericValue* initialValue,uint8* description, GUIPresentationFormat guiPresentationFormat, PresentationFormat typeFormat,uint8* range, Subscription subscription, uint8 premission);
+uint16 SmartCommandsManger_addCharacteristic(uint8 initialValueSize,uint8* description, uint8 descriptioncount, GUIPresentationFormat guiPresentationFormat, PresentationFormat typeFormat, Subscription subscription, uint8 premission);
+
+bool SmartCommandsManger_addRange(uint8* Range,uint8 len);
 
 bool SmartCommandsManger_RemoveCharacteristic(SmartService* service,GenericCharacteristic* Characteristic);
 
