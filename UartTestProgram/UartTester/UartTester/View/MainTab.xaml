@@ -71,7 +71,7 @@
             <CheckBox Content="CRC"  IsEnabled="False" Grid.Column="1" Margin="5" IsChecked="{Binding SerialCommandFromSelected.IsCrcOK, Mode=OneWay}"/>
             
             <StackPanel Orientation="Horizontal" Grid.Column="2" HorizontalAlignment="Right">
-                <Button Content="Add to Item" Margin="5"/>
+                <Button Content="Add to Item" Margin="5" Command="{Binding AddToItemsCommand}" CommandParameter="{Binding SerialCommandFromSelected}"/>
                 <Button Content="Send" Command="{Binding SerialSendCommand}" CommandParameter="{Binding SerialCommandFromSelected}" Margin="5" />
             </StackPanel>
         </Grid>

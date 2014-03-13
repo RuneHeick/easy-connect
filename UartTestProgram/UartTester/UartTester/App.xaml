@@ -33,8 +33,11 @@
         <DataTemplate DataType="{x:Type VM:SerialViewModel}">
             <view:SerialTab />
         </DataTemplate>
-        
-        
-        
+
+        <DataTemplate DataType="{x:Type VM:ItemsViewModel}">
+            <view:ItemsView />
+        </DataTemplate>
+
+
     </Application.Resources>
 </Application>
