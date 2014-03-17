@@ -85,7 +85,7 @@ namespace UartTester.ViewModel
             SerialSetup = new SerialViewModel(); 
             MainCommands = new ObservableCollection<Command>();
             serialCommandFromSelected = new SerialCommand(); 
-            Command[] setupSubCommands = new Command[] { new DeviceNameCommand(), new ManifactureNameCommand(), new ModelNumberCommand(), new SerialNoCommand(), new SmartFunftionCommand(), new GenericValueCommand(), new Command(7, "Ranges") };
+            Command[] setupSubCommands = new Command[] { new DeviceNameCommand(), new ManifactureNameCommand(), new ModelNumberCommand(), new SerialNoCommand(), new SmartFunftionCommand(), new GenericValueCommand(), new RangesViewModel() };
             MainCommands.Add(new Command(1, "Setup", setupSubCommands.ToList())); 
             MainCommands.Add(new Command(2,"Clear"));
             MainCommands.Add(new Command(3, "Read"));
