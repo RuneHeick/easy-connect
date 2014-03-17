@@ -189,6 +189,8 @@ extern "C"
  *        0xE0 to 0xFC - App<BR>
  * @{
  */
+#define DO_SERVICE_MSG                        0xE0  
+  
 // GAP - Messages IDs (0xD0 - 0xDF)
 #define GAP_MSG_EVENT                         0xD0 //!< Incoming GAP message
 
