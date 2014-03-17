@@ -69,8 +69,10 @@
             </DataGrid.Columns>
         </DataGrid>
 
-        <StackPanel Grid.Row="1" Margin="5">
-            <Button Content="Send All" Command="{Binding SendAllCommand}"/>
+        <StackPanel Grid.Row="1" Margin="5" Orientation="Horizontal">
+            <Button Content="Send All" Margin="5,0,0,0" Width="100" Command="{Binding SendAllCommand}"/>
+            <Button Content="Save" Margin="5,0,0,0" Command="{Binding SaveCommand}" />
+            <Button Content="Load" Margin="5,0,0,0" Command="{Binding LoadCommand}" />
         </StackPanel>
         
     </Grid>

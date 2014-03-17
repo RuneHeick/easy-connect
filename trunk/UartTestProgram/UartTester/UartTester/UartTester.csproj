@@ -55,6 +55,10 @@
     </ApplicationDefinition>
     <Compile Include="BindingConverter.cs" />
     <Compile Include="Commands\Command.cs" />
+    <Compile Include="Commands\RangesViewModel.cs" />
+    <Compile Include="Commands\RangesView.xaml.cs">
+      <DependentUpon>RangesView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Commands\GenericValueView.xaml.cs">
       <DependentUpon>GenericValueView.xaml</DependentUpon>
     </Compile>
@@ -97,6 +101,10 @@
     <Compile Include="View\SerialTab.xaml.cs">
       <DependentUpon>SerialTab.xaml</DependentUpon>
     </Compile>
+    <Page Include="Commands\RangesView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
     <Page Include="Commands\GenericValueView.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
