@@ -30,9 +30,6 @@
 //Subscription Option Descriptor
 #define  SUPSCRIPTIONOPTION_DESCRIPTOR_UUID     0x2911
 
-  
-// Simple Keys Profile Services bit fields
-#define SIMPLEPROFILE_SERVICE_UUID              0x00000001
  
 
 

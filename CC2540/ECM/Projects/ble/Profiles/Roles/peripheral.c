@@ -128,7 +128,7 @@ static uint8  gapRole_AdvertData[B_MAX_ADV_LEN] =
   0x02,   // length of this data
   GAP_ADTYPE_FLAGS,   // AD Type = Flags
   // Limited Discoverable & BR/EDR not supported
-  (GAP_ADTYPE_FLAGS_GENERAL | GAP_ADTYPE_FLAGS_BREDR_NOT_SUPPORTED),
+  (GAP_ADTYPE_FLAGS_NON | GAP_ADTYPE_FLAGS_BREDR_NOT_SUPPORTED),
   0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 };
 static uint8  gapRole_ScanRspDataLen = 0;

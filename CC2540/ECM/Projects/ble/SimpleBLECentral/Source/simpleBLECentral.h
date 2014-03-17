@@ -48,12 +48,29 @@ extern "C"
 /*********************************************************************
  * INCLUDES
  */
+#include "bcomdef.h"
+  
+/*********************************************************************
+* TYPES
+*/
+  
+typedef struct 
+{
+  uint32 KeepAliveTime_ms;
+  uint32 KeepAliveTimeLeft_ms; 
+  uint8 addr[B_ADDR_LEN];
+  uint16 connHandel; 
+}AcceptedDeviceInfo;
+  
+typedef struct
+{
+  osal_event_hdr_t hdr; //!< GATT_MSG_EVENT and status
+  AcceptedDeviceInfo* device;    //!< Connection message was received on
+} DoServiceEvent_t;
 
 /*********************************************************************
  * CONSTANTS
  */
-
-
 // Simple BLE Central Task Events
 #define START_DEVICE_EVT                              0x0001
 #define START_DISCOVERY_EVT                           0x0002
