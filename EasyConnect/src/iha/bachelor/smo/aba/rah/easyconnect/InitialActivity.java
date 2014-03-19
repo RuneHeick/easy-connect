@@ -1,10 +1,14 @@
 package iha.bachelor.smo.aba.rah.easyconnect;
 
+import iha.bachelor.smo.aba.rah.easyconnect.contentprovider.ProfileContentProvider;
+import iha.bachelor.smo.aba.rah.easyconnect.sqlite.ProfilesTable;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.app.Activity;
 import android.content.Intent;
+import android.database.Cursor;
+import android.util.Log;
 import android.view.Menu;
 
 public class InitialActivity extends Activity {
@@ -42,7 +46,7 @@ private WifiManager wifiManager;
 		}
 		else {
 			//Intent NetworkAvailable = new Intent(this, CreateNewProfileActivity.class); //this line is the correct line
-			Intent NetworkAvailable = new Intent(this, EditProfileActivity.class);
+			Intent NetworkAvailable = new Intent(this, CreateNewProfileActivity.class);
 			startActivity(NetworkAvailable);
 		}
 		
@@ -50,8 +54,31 @@ private WifiManager wifiManager;
 	
 	public boolean SeachProfilesForCurrentWifi(CharSequence CurrentWifi){
 		//FIX ME - Insert code for searching the database
-		CharSequence temp = "\"WiredSSID\"!";
-		return CurrentWifi.equals(temp) ? true : false;
+		Log.i("InitCheckForProfile", "Starting function");
+		Log.i("InitCheckForProfile", "CurrentWifi" + CurrentWifi);
+		String[] PROJECTION = { ProfilesTable.COLUMN_Id, 
+				ProfilesTable.COLUMN_ProfileName, 
+				ProfilesTable.COLUMN_ProfilePassword,
+				ProfilesTable.COLUMN_WifiName,
+				ProfilesTable.COLUMN_WifiPassword};
 
+		String SELECTION = ProfilesTable.COLUMN_WifiName + " = '" + (String) CurrentWifi + "'";
+		
+		Cursor cursor = getContentResolver().query(ProfileContentProvider.CONTENT_URI,	PROJECTION, SELECTION, null, null);
+		if (cursor.getCount() != 0){
+			cursor.moveToFirst();
+			
+			Log.i("InitCheckForProfile", "profile: " + 
+			cursor.getString(cursor.getColumnIndexOrThrow(ProfilesTable.COLUMN_ProfileName)) + 
+			". For wifi: " + 
+			cursor.getString(cursor.getColumnIndexOrThrow(ProfilesTable.COLUMN_WifiName)) + ".");
+		
+			
+			Log.i("InitCheckForProfile", "Cursor not equal to null");
+			return true;
+		} else {
+			Log.i("InitCheckForProfile", "Cursor equal to null");
+			return false;
+		}
 	}
 }

@@ -24,16 +24,24 @@ public final class R {
         public static final int ic_launcher=0x7f020000;
     }
     public static final class id {
-        public static final int CreateProfileItem=0x7f080009;
+        public static final int ConfigureModuleItem=0x7f080011;
+        public static final int CreateProfileItem=0x7f08000f;
         public static final int ProfileNameEditText=0x7f080000;
         public static final int ProfilePasswordEditText=0x7f080001;
-        public static final int TextView01=0x7f080007;
+        public static final int SettingsItem=0x7f080010;
+        public static final int TextView01=0x7f08000a;
+        public static final int TextView02=0x7f08000d;
         public static final int WifiNameEditText=0x7f080002;
         public static final int WifiNameLabel=0x7f080005;
         public static final int WifiPasswordEditText=0x7f080003;
-        public static final int action_settings=0x7f080008;
+        public static final int action_settings=0x7f08000e;
         public static final int create_profile_button=0x7f080004;
-        public static final int label=0x7f080006;
+        public static final int label=0x7f080009;
+        public static final int manageProfilesButton=0x7f080006;
+        public static final int profile_name_label=0x7f080008;
+        public static final int roomUnitSetupButton=0x7f080007;
+        public static final int wifi_label=0x7f08000c;
+        public static final int wifi_name_label=0x7f08000b;
     }
     public static final class layout {
         public static final int activity_configure_module=0x7f030000;
@@ -55,23 +63,35 @@ public final class R {
         public static final int settings=0x7f070006;
     }
     public static final class string {
-        public static final int ProfileName=0x7f05000b;
+        /**  RoomUnitSetupActivity Strings 
+ SettingsActivity Strings 
+         */
+        public static final int EditProfilesButton=0x7f050017;
+        public static final int ProfileName=0x7f050011;
         public static final int ProfileNames=0x7f050015;
-        public static final int ProfilePassword=0x7f05000c;
-        public static final int Profile_Name=0x7f05000f;
-        public static final int Profile_Password=0x7f050010;
-        public static final int WifiName=0x7f050009;
-        public static final int WifiPassword=0x7f05000a;
-        public static final int Wifi_Name=0x7f05000d;
-        public static final int Wifi_Password=0x7f05000e;
+        public static final int ProfilePassword=0x7f050012;
+        public static final int Profile_Name=0x7f05000c;
+        public static final int Profile_Password=0x7f05000d;
+        public static final int RoomUnitSetupButton=0x7f050018;
+        /**  EditProfileActivity Strings 
+         */
+        public static final int WifiName=0x7f05000f;
+        public static final int WifiPassword=0x7f050010;
+        public static final int Wifi_Name=0x7f05000a;
+        public static final int Wifi_Password=0x7f05000b;
         public static final int action_settings=0x7f050001;
         public static final int app_name=0x7f050000;
-        public static final int create_profile=0x7f050012;
-        public static final int delete_all_profiles=0x7f050014;
-        public static final int delete_profile=0x7f050013;
+        public static final int create_profile=0x7f050013;
+        public static final int delete_profile=0x7f050014;
+        /**  ModuleListActivity Strings 
+         */
+        public static final int goToConfigModule=0x7f050016;
+        /**  ConfigureModuleActivity Strings 
+ CreateNewProfileActivity strings 
+         */
+        public static final int goToSettings=0x7f050009;
         public static final int hello_world=0x7f050002;
-        public static final int no_profiles=0x7f050016;
-        public static final int save_profile=0x7f050011;
+        public static final int save_profile=0x7f05000e;
         public static final int title_activity_configure_module=0x7f050008;
         public static final int title_activity_create_new_profile=0x7f050003;
         public static final int title_activity_edit_profile=0x7f050005;

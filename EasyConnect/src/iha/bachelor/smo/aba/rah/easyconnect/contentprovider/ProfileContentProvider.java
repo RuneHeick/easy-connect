@@ -11,6 +11,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteQueryBuilder;
 import android.net.Uri;
 import android.text.TextUtils;
+import android.util.Log;
 import iha.bachelor.smo.aba.rah.easyconnect.sqlite.ProfilesTable;
 import iha.bachelor.smo.aba.rah.easyconnect.sqlite.SQLiteHelper;
 
@@ -42,23 +43,24 @@ public class ProfileContentProvider extends ContentProvider {
 	}
 	
 	@Override
-	public Cursor query(Uri uri, String[] projection, String selection,
-		      String[] selectionArgs, String sortOrder) {
-
+	public Cursor query(Uri uri, String[] projection, String selection, String[] selectionArgs, String sortOrder) {
+		Log.i("ProfileContentProvider.Query", "Starting function");
 	    // Using SQLiteQueryBuilder instead of query() method
 	    SQLiteQueryBuilder queryBuilder = new SQLiteQueryBuilder();
 
 	    // check if the caller has requested a column which does not exists
 	    checkColumns(projection);
-
+	    Log.i("ProfileContentProvider.Query", "Checked Columns");
 	    // Set the table
 	    queryBuilder.setTables(ProfilesTable.TABLE_PROFILES);
 
 	    int uriType = sURIMatcher.match(uri);
 	    switch (uriType) {
 	    case PROFILES:
+	    	Log.i("ProfileContentProvider.Query", "URI match Profiles");
 	      break;
 	    case PROFILE_NAME:
+	    	Log.i("ProfileContentProvider.Query", "URI match Profile_name");
 	      // adding the ID to the original query
 	      queryBuilder.appendWhere(ProfilesTable.COLUMN_Id + "=" + uri.getLastPathSegment());
 	      break;
@@ -67,8 +69,8 @@ public class ProfileContentProvider extends ContentProvider {
 	    }
 
 	    SQLiteDatabase database = db.getWritableDatabase();
-	    Cursor cursor = queryBuilder.query(database, projection, selection,
-	        selectionArgs, null, null, sortOrder);
+	    Cursor cursor = queryBuilder.query(database, projection, selection, selectionArgs, null, null, sortOrder);
+	    Log.i("ProfileContentProvider.Query", "Called to DB");
 	    // make sure that potential listeners are getting notified
 	    cursor.setNotificationUri(getContext().getContentResolver(), uri);
 

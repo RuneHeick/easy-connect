@@ -8,6 +8,7 @@ import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.app.Activity;
 import android.content.ContentValues;
+import android.content.Intent;
 import android.database.Cursor;
 import android.text.TextUtils;
 import android.view.View;
@@ -60,8 +61,8 @@ public class CreateNewProfileActivity extends Activity {
 						|| TextUtils.isEmpty(WifiPasswordEditText.getText().toString()) ) {
 					MoreDataToast();
 				} else {
-					setResult(RESULT_OK);
-			        finish();
+					//hejsetResult(RESULT_OK);
+					saveProfile();
 				}
 			}
 	    });	    
@@ -85,20 +86,8 @@ public class CreateNewProfileActivity extends Activity {
 			 cursor.close();
 		 }
 	 }
-	 
-	protected void onSaveInstanceState(Bundle outState) {
-		super.onSaveInstanceState(outState);
-		saveState();
-		outState.putParcelable(ProfileContentProvider.CONTENT_ITEM_TYPE, ProfileUri);
-	}
-	
-	@Override
-	protected void onPause() {
-		super.onPause();
-		saveState();
-	}
-	
-	private void saveState() {
+
+	private void saveProfile() {
 		String ProfileName = ProfileNameEditText.getText().toString();
 	    String ProfilePassword = ProfilePasswordEditText.getText().toString();
 	    String WifiName = WifiNameEditText.getText().toString();
@@ -106,7 +95,9 @@ public class CreateNewProfileActivity extends Activity {
 
 	    // only save if other fields then wifiname is filled out
 
-	    if (ProfileName.length() == 0 && ProfilePassword.length() == 0 && WifiPassword.length() == 0) {
+	    if (ProfileName.length() == 0 &&
+	    		ProfilePassword.length() == 0 &&
+	    		WifiPassword.length() == 0) {
 	    	return;
 	    }
 
@@ -123,20 +114,23 @@ public class CreateNewProfileActivity extends Activity {
 	    	// Update Profile
 	    	getContentResolver().update(ProfileUri, values, null, null);
 	    }
-	  }
-	
+
+	    Intent done = new Intent(this, EditProfileActivity.class);
+	    done.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+	    done.putExtra("ProfileSaved", "True");
+	    startActivity(done);
+	    finish();
+	}
+
 	private void MoreDataToast(){
 		Toast.makeText(this, "Please fill more data" , Toast.LENGTH_LONG).show();	
 	}
 	
-	private void makeImplementToast(){
-		Toast.makeText(this, "needs to be implemented" , Toast.LENGTH_LONG).show();	
-	}
-	
-	public void ClearProfile(View view){
-		//EditText ProfileNameEditText = (EditText) findViewById(R.id.ProfileNameEditText);
-		//db.deleteProfile(ProfileNameEditText.getText().toString());
-		makeImplementToast();
-		//db.deleteProfiles();
+	@Override
+	public void onBackPressed(){
+			Intent back = new Intent(this, EditProfileActivity.class);
+			back.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+			back.putExtra("ProfileSaved", "False");
+			startActivity(back);
 	}
 }
