@@ -13,6 +13,7 @@ import android.database.Cursor;
 import android.widget.AdapterView.AdapterContextMenuInfo;
 import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
+import android.util.Log;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
 import android.view.Menu;
@@ -20,10 +21,10 @@ import android.view.MenuItem;
 import android.view.View;
 
 public class EditProfileActivity extends ListActivity implements LoaderManager.LoaderCallbacks<Cursor> {
-	private static final int ACTIVITY_CREATE = 0;
-	private static final int ACTIVITY_EDIT = 1;
 	private static final int DELETE_ID = Menu.FIRST + 1;
 	private SimpleCursorAdapter adapter;
+	private boolean reloadNeeded;
+	private String TAG = "EditProfileActivity";
 	  
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -33,6 +34,10 @@ public class EditProfileActivity extends ListActivity implements LoaderManager.L
 		this.getListView().setDividerHeight(2);
 	    fillData();
 	    registerForContextMenu(getListView());
+	    Log.d(TAG,"onCreate");
+        Log.d(TAG+ "ReloadNeeded",String.valueOf(reloadNeeded));
+        
+	    reloadNeeded = false;
 	}
 
 	@Override
@@ -61,6 +66,7 @@ public class EditProfileActivity extends ListActivity implements LoaderManager.L
 			Uri uri = Uri.parse(ProfileContentProvider.CONTENT_URI + "/" + info.id);
 			getContentResolver().delete(uri, null, null);
 			fillData();
+			reloadNeeded = true;
 			return true;
 		}
 		return super.onContextItemSelected(item);
@@ -69,6 +75,7 @@ public class EditProfileActivity extends ListActivity implements LoaderManager.L
 	private void CreateProfile() {
 		Intent i = new Intent(this, CreateNewProfileActivity.class);
 	    startActivity(i);
+	    finish();
 	}
 	
 	// Opens the second activity if an entry is clicked
@@ -79,17 +86,18 @@ public class EditProfileActivity extends ListActivity implements LoaderManager.L
 		Uri ProfileUri = Uri.parse(ProfileContentProvider.CONTENT_URI + "/" + id);
 		i.putExtra(ProfileContentProvider.CONTENT_ITEM_TYPE, ProfileUri);
 		startActivity(i);
+		finish();
 	}
 	
 	private void fillData() {
 		// Fields from the database (projection)
 		// Must include the _id column for the adapter to work
-		String[] from = new String[] { ProfilesTable.COLUMN_ProfileName };
+		String[] From = new String[] { ProfilesTable.COLUMN_ProfileName, ProfilesTable.COLUMN_WifiName };
 		// Fields on the UI to which we map
-		int[] to = new int[] { R.id.label };
+		int[] to = new int[] { R.id.label, R.id.wifi_label };
 
 		getLoaderManager().initLoader(0, null, this);
-		adapter = new SimpleCursorAdapter(this, R.layout.profile_row, null, from, to, 0);
+		adapter = new SimpleCursorAdapter(this, R.layout.profile_row, null, From, to, 0);
 
 		setListAdapter(adapter);
 	}
@@ -114,11 +122,57 @@ public class EditProfileActivity extends ListActivity implements LoaderManager.L
 	@Override
 	public void onLoadFinished(Loader<Cursor> Loader, Cursor data) {
 		adapter.swapCursor(data);
-		
 	}
 
 	@Override
 	public void onLoaderReset(Loader<Cursor> Loader) {
 		adapter.swapCursor(null);
 	}
+	
+	@Override
+	public void onBackPressed(){
+		if (reloadNeeded){
+			Intent i = new Intent(this, InitialActivity.class);
+			i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+			startActivity(i);
+		} else{
+			Intent i = new Intent(this, SettingsActivity.class);
+			startActivity(i);
+		}
+	}
+	   // TEST ON SAVE
+    protected void onPause() {
+        Log.d(TAG,"onPause");
+        Log.d(TAG+ "ReloadNeeded",String.valueOf(reloadNeeded));
+        super.onPause();
+    }
+    protected void onStart() {
+        Log.d(TAG,"onStart");
+        Log.d(TAG+ "ReloadNeeded",String.valueOf(reloadNeeded));
+        super.onStart();
+    }
+    
+    protected void onResume() {
+    	 // Check if a new Profile has been made
+	    if (!reloadNeeded){
+	    	Bundle extras = getIntent().getExtras(); 
+	    	if (extras != null) {
+	    		String value = extras.getString("ProfileSaved", "False");
+	    		if ( value.equals("False")){
+	    			reloadNeeded = false;
+	    		}else {
+	    			reloadNeeded = true;
+	    		}
+	    	}
+	    }
+	    
+        Log.d(TAG,"onResume");
+        Log.d(TAG+ "ReloadNeeded",String.valueOf(reloadNeeded));
+        super.onResume();
+    }
+    protected void onStop() {
+        Log.d(TAG,"onStop");
+        Log.d(TAG+ "ReloadNeeded",String.valueOf(reloadNeeded));
+        super.onStop();
+    }
 }

@@ -11,20 +11,45 @@
     <string name="title_activity_room_unit_setup">RoomUnitSetupActivity</string>
     <string name="title_activity_configure_module">ConfigureModuleActivity</string>
     
+<!-- ConfigureModuleActivity Strings -->
+    
+    
+<!-- CreateNewProfileActivity strings -->
+    <string name="goToSettings">Settings</string>
+    <string name="Wifi_Name">Wifi: </string>
+    <string name="Wifi_Password">Wifi Password:</string>
+    <string name="Profile_Name">Profile: </string>
+    <string name="Profile_Password">Profile Password:</string>
+    <string name="save_profile">Save Profile</string>
+    
+<!-- EditProfileActivity Strings -->
     <string name="WifiName">Wifi Name</string>
     <string name="WifiPassword">Wifi Password</string>
     <string name="ProfileName">Profile Name</string>
     <string name="ProfilePassword">Profile Password</string>
-    <string name="Wifi_Name">Wifi Name:</string>
-    <string name="Wifi_Password">Wifi Password:</string>
-    <string name="Profile_Name">Profile Name:</string>
-    <string name="Profile_Password">Profile Password:</string>
-    <string name="save_profile">Save Profile</string>
     <string name="create_profile">Create New Profile</string>
     <string name="delete_profile">Delete Profile</string>
-    <string name="delete_all_profiles">Delete all profiles</string>
     <string name="ProfileNames">ProfileNames</string>
-    <string name="no_profiles">Currently there are no Profiles maintained</string>
+    
+<!-- ModuleListActivity Strings -->
+	<string name="goToConfigModule">Add Module</string>
+
+<!-- RoomUnitSetupActivity Strings -->
+
+
+<!-- SettingsActivity Strings -->
+	<string name="EditProfilesButton">Manage Profiles</string>
+    <string name="RoomUnitSetupButton">Setup Room Unit</string>
+
+
+
+
+
+
+    
+    
+    
+    
     
     
 
