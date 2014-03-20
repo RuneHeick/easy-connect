@@ -15,52 +15,17 @@
 #include "simpleGATTprofile.h"
 #include "simpleBLECentral.h"
 
-
-#define MAX_HW_SUPPORTED_DEVICES 3
-
-typedef enum
-{
-  NOTCONNECTED,
-  CONNECTING,
-  CONNECTED, 
-  INUSE
-}ConnectionStatus_t;
-
-typedef enum
-{
-  Read,
-  Write,
-  Connect,
-  Disconnect,
-  
-}EventType_t;
-
-typedef struct 
-{
-  uint8 addr[B_ADDR_LEN];
-  uint16 ConnHandel;
-  ConnectionStatus_t status; 
-}ConnectedDevice_t; 
- 
-
-typedef struct EventQueueItemBase_t 
-{
-  uint8 addr[B_ADDR_LEN];
-  EventType_t action;
-  
-  struct EventQueueItemBase_t* next;
-  
-}EventQueueItemBase_t;
+#include "ConnectionManger.h"
 
 
-typedef struct EventQueueRWItem_t 
-{
-  EventQueueItemBase_t base;
-  
-  uint16 handel;
-  uint8* data;
-  uint8 length; 
-}EventQueueRWItem_t;
+#define DEQUEUE_EVENT (1<<1)
+
+
+static void ConnectionManger_handel(EventQueueItemBase_t* item);
+static void EstablishLink(ConnectedDevice_t* conContainor);
+static void AcceptLink(uint8* addr, uint16 connHandel);
+static EventQueueItemBase_t* Dequeue();
+static void Dispose(EventQueueItemBase_t* item);
 
 static ConnectedDevice_t connectedDevices[MAX_HW_SUPPORTED_DEVICES];
 static uint8 ConnectedIndex = 0; 
@@ -68,22 +33,107 @@ static uint8 ConnectedCount = 0;
 
 static EventQueueItemBase_t* EventQueue = NULL; 
 
-static void EstablishLink(ConnectedDevice_t* conContainor);
-static void AcceptLink(uint8* addr, uint16 connHandel);
 
-void CreateConnection(uint8* addr)
+typedef enum
+{
+  READY,
+  BUSY, 
+  ERROR
+}ConnectionManger_status;
+
+
+
+static ConnectionManger_status status = READY; 
+static EventQueueItemBase_t* CurrentEvent = NULL; //event there is working on from queue 
+
+
+//***********************************************************
+//      Main Handler 
+//***********************************************************
+
+uint16 ConnectionManger_ProcessEvent( uint8 task_id, uint16 events )
+{
+  if ( events & SYS_EVENT_MSG )
+  {
+    uint8 *pMsg;
+
+    if ( (pMsg = osal_msg_receive( task_id )) != NULL )
+    {
+      // Release the OSAL message
+      VOID osal_msg_deallocate( pMsg );
+    }
+
+    // return unprocessed events
+    return (events ^ SYS_EVENT_MSG);
+  }
+  
+  if ( events & DEQUEUE_EVENT )
+  {
+    if(status==READY && EventQueue!=NULL)
+    {
+      Dispose(CurrentEvent); 
+      CurrentEvent = Dequeue(); 
+      if(CurrentEvent!=NULL) 
+      {
+        status = BUSY; 
+        ConnectionManger_handel(CurrentEvent);
+      }
+    }
+    
+    // return unprocessed events
+    return (events ^ DEQUEUE_EVENT);
+   }
+  
+  
+}
+
+static void ConnectionManger_handel(EventQueueItemBase_t* item)
+{
+  switch(item->action)
+  {
+    case Read:
+    case Write:
+    case Connect:
+    case Disconnect: 
+    // do some stuff with the item
+
+  }
+}
+
+
+//***********************************************************
+//      static Help Functions  
+//***********************************************************
+
+static void Dispose(EventQueueItemBase_t* item)
+{
+  switch(item->action)
+  {
+    case Read:
+    case Write:
+    case Connect:
+    case Disconnect: 
+    // do some stuff to free memory 
+
+  }
+}
+
+
+bool CreateConnection(uint8* addr)
 {
     uint8 i; 
     for(i = 0; i<MAX_HW_SUPPORTED_DEVICES; i++)
     {
       if(connectedDevices[i].status != INUSE)
       {
+        //Terminat LINK ??????? why not; 
+        
         osal_memcpy(connectedDevices[i].addr,addr,B_ADDR_LEN); 
         EstablishLink(&connectedDevices[i]); 
-        return; 
+        return true; 
       }
     }
-    // fix me Some Error or correction.. maybe a queue  
+    return false; 
 }
 
 static void EstablishLink(ConnectedDevice_t* conContainor)
@@ -116,7 +166,12 @@ static void AcceptLink(uint8* addr, uint16 connHandel)
    }
 }
 
-static void addToQueue(EventQueueItemBase_t* item)
+
+//***********************************************************
+//      Static Queue Functions
+//***********************************************************
+
+static void Enqueue(EventQueueItemBase_t* item)
 {
   if(EventQueue==NULL)
   {
@@ -135,12 +190,41 @@ static void addToQueue(EventQueueItemBase_t* item)
   }
 }
 
+static void EnqueueFront(EventQueueItemBase_t* item)
+{
+  if(EventQueue==NULL)
+  {
+    EventQueue = item; 
+  }
+  else
+  {
+    EventQueueItemBase_t* tempItem = EventQueue; 
+    EventQueue = item;
+    EventQueue->next = tempItem;
+  }
+}
+
+
+static EventQueueItemBase_t* Dequeue()
+{
+  if(EventQueue==NULL)
+  {
+    return NULL; 
+  }
+  else
+  {
+    EventQueueItemBase_t* tempItem = EventQueue; 
+    EventQueue = tempItem->next;
+    return tempItem; 
+  }
+}
+
 //***********************************************************
 //      Public Queue Functions
 //***********************************************************
 
 
-void Queue_addWrite(uint8* write, uint8 len, uint8* addr, uint16 handel)
+void Queue_addWrite(uint8* write, uint8 len, uint8* addr, uint16 handel, Callback call)
 {
   EventQueueRWItem_t* item = (EventQueueRWItem_t*)osal_mem_alloc(sizeof(EventQueueRWItem_t)); 
   if(item)
@@ -149,7 +233,7 @@ void Queue_addWrite(uint8* write, uint8 len, uint8* addr, uint16 handel)
     item->base.next = NULL;
     
     osal_memcpy(item->base.addr,addr,B_ADDR_LEN);
-    
+    item->callback = call; 
     item->handel = handel;
     item->data = osal_mem_alloc(len);
     if(item->data)
@@ -167,7 +251,6 @@ void Queue_addWrite(uint8* write, uint8 len, uint8* addr, uint16 handel)
 }
 void Queue_addRead(uint8* addr, uint16 handel )
 {
-  
   
 }
 
