@@ -49,18 +49,11 @@ extern "C"
  * INCLUDES
  */
 #include "bcomdef.h"
+#include "ConnectionManger.h"
   
 /*********************************************************************
 * TYPES
 */
-  
-typedef struct 
-{
-  uint32 KeepAliveTime_ms;
-  uint32 KeepAliveTimeLeft_ms; 
-  uint8 addr[B_ADDR_LEN];
-  uint16 connHandel; 
-}AcceptedDeviceInfo;
   
 typedef struct
 {

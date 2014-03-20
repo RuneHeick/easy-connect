@@ -1060,6 +1060,9 @@
       <name>$PROJ_DIR$\..\Source\ConnectionManger.c</name>
     </file>
     <file>
+      <name>$PROJ_DIR$\..\Source\ConnectionManger.h</name>
+    </file>
+    <file>
       <name>$PROJ_DIR$\..\Source\OSAL_simpleBLECentral.c</name>
     </file>
     <file>
