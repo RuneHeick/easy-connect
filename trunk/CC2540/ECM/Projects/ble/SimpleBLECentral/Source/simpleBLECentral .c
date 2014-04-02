@@ -59,77 +59,7 @@
 #include "simpleBLECentral.h"
 
 #include "OSAL_Timers.h"
-
-/*********************************************************************
- * MACROS
- */
-
-// Length of bd addr as a string
-#define B_ADDR_STR_LEN                        15
-
-/*********************************************************************
- * CONSTANTS
- */
-
-// Maximum number of scan responses
-#define DEFAULT_MAX_SCAN_RES                  8
-
-// Scan duration in ms
-#define DEFAULT_SCAN_DURATION                 4000
-
-// Discovey mode (limited, general, all)
-#define DEFAULT_DISCOVERY_MODE                DEVDISC_MODE_GENERAL//DEVDISC_MODE_ALL
-
-// TRUE to use active scan
-#define DEFAULT_DISCOVERY_ACTIVE_SCAN         TRUE
-
-// TRUE to use white list during discovery
-#define DEFAULT_DISCOVERY_WHITE_LIST          FALSE
-
-// TRUE to use high scan duty cycle when creating link
-#define DEFAULT_LINK_HIGH_DUTY_CYCLE          FALSE
-
-// TRUE to use white list when creating link
-#define DEFAULT_LINK_WHITE_LIST               FALSE
-
-// Default RSSI polling period in ms
-#define DEFAULT_RSSI_PERIOD                   1000
-
-// Whether to enable automatic parameter update request when a connection is formed
-#define DEFAULT_ENABLE_UPDATE_REQUEST         FALSE
-
-// Minimum connection interval (units of 1.25ms) if automatic parameter update request is enabled
-#define DEFAULT_UPDATE_MIN_CONN_INTERVAL      400
-
-// Maximum connection interval (units of 1.25ms) if automatic parameter update request is enabled
-#define DEFAULT_UPDATE_MAX_CONN_INTERVAL      800
-
-// Slave latency to use if automatic parameter update request is enabled
-#define DEFAULT_UPDATE_SLAVE_LATENCY          0
-
-// Supervision timeout value (units of 10ms) if automatic parameter update request is enabled
-#define DEFAULT_UPDATE_CONN_TIMEOUT           600
-
-// Default passcode
-#define DEFAULT_PASSCODE                      19655
-
-// Default GAP pairing mode
-#define DEFAULT_PAIRING_MODE                  GAPBOND_PAIRING_MODE_WAIT_FOR_REQ
-
-// Default MITM mode (TRUE to require passcode or OOB when pairing)
-#define DEFAULT_MITM_MODE                     FALSE
-
-// Default bonding mode, TRUE to bond
-#define DEFAULT_BONDING_MODE                  TRUE
-
-// Default GAP bonding I/O capabilities
-#define DEFAULT_IO_CAPABILITIES               GAPBOND_IO_CAP_DISPLAY_ONLY
-
-// Default service discovery timer delay in ms
-#define DEFAULT_SVC_DISCOVERY_DELAY           1000
-
-// TRUE to filter discovery results on desired service UUID
-#define DEFAULT_DEV_DISC_BY_SVC_UUID          FALSE
+#include "BLEparameters.h"
 
 // Application states
 enum
@@ -338,24 +268,6 @@ void DecrimentUpdateWait(uint32 Ticks)
 
 
 /*********************************************************************
- * PROFILE CALLBACKS
- */
-
-// GAP Role Callbacks
-static const gapCentralRoleCB_t simpleBLERoleCB =
-{
-  simpleBLECentralRssiCB,       // RSSI callback
-  simpleBLECentralEventCB       // Event callback
-};
-
-// Bond Manager Callbacks
-static const gapBondCBs_t simpleBLEBondCB =
-{
-  simpleBLECentralPasscodeCB,
-  simpleBLECentralPairStateCB
-};
-
-/*********************************************************************
  * PUBLIC FUNCTIONS
  */
 
@@ -377,44 +289,6 @@ void SimpleBLECentral_Init( uint8 task_id )
 {
   simpleBLETaskId = task_id;
 
-  // Setup Central Profile
-  {
-    uint8 scanRes = DEFAULT_MAX_SCAN_RES;
-    GAPCentralRole_SetParameter ( GAPCENTRALROLE_MAX_SCAN_RES, sizeof( uint8 ), &scanRes );
-  }
-  
-  // Setup GAP
-  GAP_SetParamValue( TGAP_GEN_DISC_SCAN, DEFAULT_SCAN_DURATION );
-  GAP_SetParamValue( TGAP_LIM_DISC_SCAN, DEFAULT_SCAN_DURATION );
-  GGS_SetParameter( GGS_DEVICE_NAME_ATT, GAP_DEVICE_NAME_LEN, (uint8 *) simpleBLEDeviceName );
-
-  // Setup the GAP Bond Manager
-  {
-    uint32 passkey = DEFAULT_PASSCODE;
-    uint8 pairMode = DEFAULT_PAIRING_MODE;
-    uint8 mitm = DEFAULT_MITM_MODE;
-    uint8 ioCap = DEFAULT_IO_CAPABILITIES;
-    uint8 bonding = DEFAULT_BONDING_MODE;
-    GAPBondMgr_SetParameter( GAPBOND_DEFAULT_PASSCODE, sizeof( uint32 ), &passkey );
-    GAPBondMgr_SetParameter( GAPBOND_PAIRING_MODE, sizeof( uint8 ), &pairMode );
-    GAPBondMgr_SetParameter( GAPBOND_MITM_PROTECTION, sizeof( uint8 ), &mitm );
-    GAPBondMgr_SetParameter( GAPBOND_IO_CAPABILITIES, sizeof( uint8 ), &ioCap );
-    GAPBondMgr_SetParameter( GAPBOND_BONDING_ENABLED, sizeof( uint8 ), &bonding );
-  }  
-
-  // Initialize GATT Client
-  VOID GATT_InitClient();
-
-  // Register to receive incoming ATT Indications/Notifications
-  GATT_RegisterForInd( simpleBLETaskId );
-
-  // Initialize GATT attributes
-  GGS_AddService( GATT_ALL_SERVICES );         // GAP
-  GATTServApp_AddService( GATT_ALL_SERVICES ); // GATT attributes
-
-  // Register for all key events - This app will handle all key events
-  RegisterForKeys( simpleBLETaskId );
-  
   // Setup a delayed profile startup
   osal_set_event( simpleBLETaskId, START_DEVICE_EVT );
 }
@@ -456,13 +330,8 @@ uint16 SimpleBLECentral_ProcessEvent( uint8 task_id, uint16 events )
 
   if ( events & START_DEVICE_EVT )
   {
-    // Start the Device
-    VOID GAPCentralRole_StartDevice( (gapCentralRoleCB_t *) &simpleBLERoleCB );
-
-    // Register with bond manager after starting device
-    GAPBondMgr_Register( (gapBondCBs_t *) &simpleBLEBondCB );
     
-    osal_start_timerEx( simpleBLETaskId, PERIODIC_SCAN_START, PERIODIC_SCAN_PERIOD );
+    //osal_start_timerEx( simpleBLETaskId, PERIODIC_SCAN_START, PERIODIC_SCAN_PERIOD );
     
     return ( events ^ START_DEVICE_EVT );
   }
@@ -479,8 +348,8 @@ uint16 SimpleBLECentral_ProcessEvent( uint8 task_id, uint16 events )
   {
     if(PeriodicScan == FALSE)
     {
-      PeriodicScan = TRUE; 
-      RU_StartScan();
+      //PeriodicScan = TRUE; 
+      //RU_StartScan();
     }
     return ( events ^ PERIODIC_SCAN_START );
   }
@@ -972,71 +841,6 @@ static void simpleBLECentralEventCB( gapCentralRoleEvent_t *pEvent )
   }
 }
 
-
-
-/*********************************************************************
- * @fn      pairStateCB
- *
- * @brief   Pairing state callback.
- *
- * @return  none
- */
-static void simpleBLECentralPairStateCB( uint16 connHandle, uint8 state, uint8 status )
-{
-  if ( state == GAPBOND_PAIRING_STATE_STARTED )
-  {
-    LCD_WRITE_STRING( "Pairing started", HAL_LCD_LINE_1 );
-  }
-  else if ( state == GAPBOND_PAIRING_STATE_COMPLETE )
-  {
-    if ( status == SUCCESS )
-    {
-      LCD_WRITE_STRING( "Pairing success", HAL_LCD_LINE_1 );
-    }
-    else
-    {
-      LCD_WRITE_STRING_VALUE( "Pairing fail", status, 10, HAL_LCD_LINE_1 );
-    }
-  }
-  else if ( state == GAPBOND_PAIRING_STATE_BONDED )
-  {
-    if ( status == SUCCESS )
-    {
-      LCD_WRITE_STRING( "Bonding success", HAL_LCD_LINE_1 );
-    }
-  }
-}
-
-/*********************************************************************
- * @fn      simpleBLECentralPasscodeCB
- *
- * @brief   Passcode callback.
- *
- * @return  none
- */
-static void simpleBLECentralPasscodeCB( uint8 *deviceAddr, uint16 connectionHandle,
-                                        uint8 uiInputs, uint8 uiOutputs )
-{
-#if (HAL_LCD == TRUE)
-
-  uint32  passcode;
-  uint8   str[7];
-
-  // Create random passcode
-  LL_Rand( ((uint8 *) &passcode), sizeof( uint32 ));
-  passcode %= 1000000;
-  
-  // Display passcode to user
-  if ( uiOutputs != 0 )
-  {
-    LCD_WRITE_STRING( "Passcode:",  HAL_LCD_LINE_1 );
-    LCD_WRITE_STRING( (char *) _ltoa(passcode, str, 10),  HAL_LCD_LINE_2 );
-  }
-  
-  // Send passcode response
-  GAPBondMgr_PasscodeRsp( connectionHandle, SUCCESS, passcode );
-#endif
-}
 
 /*********************************************************************
  * @fn      simpleBLECentralStartDiscovery
