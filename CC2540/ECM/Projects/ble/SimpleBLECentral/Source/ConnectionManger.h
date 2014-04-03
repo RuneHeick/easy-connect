@@ -49,6 +49,13 @@ typedef enum
   ServiceDiscovery
 }EventType_t;
 
+typedef enum ScanType
+{
+  Primary,
+  Characteristic,
+  Descriptor
+}ScanType;
+
 /*********** base of queue items *************/
 typedef struct EventQueueItemBase_t 
 {
@@ -89,12 +96,54 @@ typedef struct EventQueueServiceDirItem_t
   EventQueueItemBase_t base;
   Callback callback;
   
+  ScanType type; 
+  uint16 startHandle;
+  uint16 endHandle; 
+  
+  void* Items; 
+  
 }EventQueueServiceDirItem_t;
 
+//***********************************************************
+//      SericeDiscovery Structs 
+//***********************************************************
+
+typedef struct primary_ServiceItem
+{
+  uint16 handle; 
+  uint16 endHandle; 
+  uint16 ServiceUUID; 
+  
+  struct primary_ServiceItem* next; 
+  
+}primary_ServiceItem;
+
+
+typedef struct Chara_ServiceItem
+{
+  uint16 Handle;
+  uint16 UUID;
+  
+  struct Chara_ServiceItem* next; 
+  
+}Chara_ServiceItem;
+
+typedef struct Decs_ServiceItem
+{
+  uint16 Handle;
+  uint16 UUID;
+  
+  struct Decs_ServiceItem* next; 
+  
+}Decs_ServiceItem;
+
+//***********************************************************
+//      Functions 
+//***********************************************************
 
 void ConnectionManger_Init( uint8 task_id);
 uint16 ConnectionManger_ProcessEvent( uint8 task_id, uint16 events );
 
 void Queue_addWrite(uint8* write, uint8 len, uint8* addr, uint16 handel, Callback call, ErrorCallback ecall);
 void Queue_Scan(Scancallback call, ErrorCallback ecall);
-void Queue_addServiceDiscovery(uint8* addr, Callback call ,ErrorCallback ecall);
+void Queue_addServiceDiscovery(uint8* addr, Callback call ,ErrorCallback ecall, ScanType type, uint16 startHandle, uint16 endHandle);
