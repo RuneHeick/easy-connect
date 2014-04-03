@@ -8,6 +8,8 @@
         android:minSdkVersion="17"
         android:targetSdkVersion="18" />
 
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    
     <application
         android:allowBackup="true"
         android:icon="@drawable/ic_launcher"
@@ -26,6 +28,11 @@
             android:name="iha.bachelor.smo.aba.rah.easyconnect_v3.MainActivity"
             android:label="@string/title_activity_main" >
         </activity>
+        <provider
+            android:name="iha.bachelor.smo.aba.rah.easyconnect_v3.contentprovider.ProfileContentProvider"
+            android:authorities="iha.bachelor.smo.aba.rah.easyconnect_v3.contentprovider"
+            android:exported="false">
+        </provider>
     </application>
 
 </manifest>
