@@ -77,7 +77,6 @@
  * LOCAL VARIABLES
  */
 
-static simpleProfileCBs_t *simpleProfile_AppCBs = NULL;
 
 /*********************************************************************
  * Profile Attributes - variables
@@ -129,22 +128,6 @@ CONST gattServiceCBs_t simpleProfileCBs =
  *
  * @return  Success or Failure
  */
-static GenericValue DataTest;
-static GenericValue DataTest1;
-static GenericValue DataTest2;
-static GenericValue DataTest3;
-static GenericValue DataTest4;
-
-static GenericValue DataTest12;
-static GenericValue DataTest22;
-static GenericValue DataTest32;
-static GenericValue DataTest42;
-
-
-static GenericValue DataTest13;
-static GenericValue DataTest23;
-static GenericValue DataTest33;
-static GenericValue DataTest43;
 
 bStatus_t SimpleProfile_AddService( uint32 services )
 {
@@ -156,31 +139,11 @@ bStatus_t SimpleProfile_AddService( uint32 services )
   // Register with Link DB to receive link status change callback
   VOID linkDB_Register( simpleProfile_HandleConnStatusCB );  
     
-  SmartService* Testservice = SmartCommandsManger_CreateService("Lav Kaffe",9); 
- 
-  GenericValue_SetString(&DataTest,"FIRE"); 
-  GenericValue_SetString(&DataTest1,"HEJ MED DIG"); 
-  GenericValue_SetString(&DataTest2,"FIRE"); 
-  GenericValue_SetString(&DataTest3,"HEJ MED DIG"); 
-  GenericValue_SetString(&DataTest4,"11:12"); 
-   
-  GenericValue_SetString(&DataTest12,"HEJ MED DIG"); 
-  GenericValue_SetString(&DataTest22,"HEJ MED DIG"); 
-  GenericValue_SetString(&DataTest32,"HEJ MED DIG"); 
-  GenericValue_SetString(&DataTest42,"11HEJ MED DIG12"); 
   
-  GenericValue_SetString(&DataTest13,"HEJ MED DIG"); 
-  GenericValue_SetString(&DataTest23,"HEJ MED DIG"); 
-  GenericValue_SetString(&DataTest33,"HEJ MED DIG"); 
-  GenericValue_SetString(&DataTest43,"HEJ MED DIG"); 
-            
-  SmartCommandsManger_addCharacteristic(5,"Antal kopper",11,(GUIPresentationFormat){00,00},(PresentationFormat){1,2,3,4,5},NONE,GATT_PERMIT_READ|GATT_PERMIT_WRITE);
-  SmartCommandsManger_addCharacteristic(5,"Bonner",11,(GUIPresentationFormat){00,00},(PresentationFormat){7,4,5,6,5},YES,GATT_PERMIT_READ|GATT_PERMIT_WRITE);
   
-  SmartService* Testservice2 = SmartCommandsManger_CreateService("Lav Kaffe pa Tid",10); 
-  SmartCommandsManger_addCharacteristic(5,"Antal Kopper",11,(GUIPresentationFormat){00,00},(PresentationFormat){7,4,5,6,5},YES,GATT_PERMIT_READ|GATT_PERMIT_WRITE);
-  SmartCommandsManger_addCharacteristic(5,"Bonner",11,(GUIPresentationFormat){00,00},(PresentationFormat){7,4,5,6,5},YES,GATT_PERMIT_READ|GATT_PERMIT_WRITE);
-  SmartCommandsManger_addCharacteristic(50,"Tid",11,(GUIPresentationFormat){00,00},(PresentationFormat){7,4,5,6,5},YES,GATT_PERMIT_READ|GATT_PERMIT_WRITE);
+  SmartService* Testservice = SmartCommandsManger_CreateService("Lav Kaffe",10); 
+  SmartCommandsManger_addCharacteristic(5,"Antal kopper",13,(GUIPresentationFormat){00,00},(PresentationFormat){1,2,3,4,5},NONE,GATT_PERMIT_READ|GATT_PERMIT_WRITE);
+  SmartCommandsManger_addCharacteristic(5,"Bonner",7,(GUIPresentationFormat){00,00},(PresentationFormat){7,4,5,6,5},YES,GATT_PERMIT_READ|GATT_PERMIT_WRITE);
   
   SmartCommandsManger_CompileServices();
   
@@ -189,38 +152,11 @@ bStatus_t SimpleProfile_AddService( uint32 services )
                                           SmartCommandsManger_ElementsInService(Testservice),
                                           &simpleProfileCBs );
   
-  status = GATTServApp_RegisterService( Testservice2->llReg, 
-                                          SmartCommandsManger_ElementsInService(Testservice2),
-                                          &simpleProfileCBs );
   
-   
+  
+  
   
   return ( status );
-}
-
-
-/*********************************************************************
- * @fn      SimpleProfile_RegisterAppCBs
- *
- * @brief   Registers the application callback function. Only call 
- *          this function once.
- *
- * @param   callbacks - pointer to application callbacks.
- *
- * @return  SUCCESS or bleAlreadyInRequestedMode
- */
-bStatus_t SimpleProfile_RegisterAppCBs( simpleProfileCBs_t *appCallbacks )
-{
-  if ( appCallbacks )
-  {
-    simpleProfile_AppCBs = appCallbacks;
-    
-    return ( SUCCESS );
-  }
-  else
-  {
-    return ( bleAlreadyInRequestedMode );
-  }
 }
   
 

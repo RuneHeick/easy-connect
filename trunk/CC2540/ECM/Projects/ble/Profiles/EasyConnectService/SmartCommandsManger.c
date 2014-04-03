@@ -410,7 +410,7 @@ static uint8 Local_CreateInfo(SmartService* service, gattAttribute_t* att, uint8
     uint8 count = index; 
     if( index == 0)
     {
-      Local_Insert(&att[index++],(gattAttrType_t){ ATT_BT_UUID_SIZE, primaryServiceUUID },GATT_PERMIT_READ,(uint8 *)&smartCommandServUUID); // service start;
+      Local_Insert(&att[index++],(gattAttrType_t){ ATT_BT_UUID_SIZE, primaryServiceUUID },GATT_PERMIT_READ,(uint8 *)&smartConnectService); // service start;
       
       Local_Insert(&att[index++],(gattAttrType_t){ ATT_BT_UUID_SIZE, characterUUID },GATT_PERMIT_READ,&ReadProps); //Description String Declaration    
       Local_Insert(&att[index++],(gattAttrType_t){ ATT_BT_UUID_SIZE, descriptionStringCharUUID },GATT_PERMIT_READ,service->description.pValue); //Description String Value

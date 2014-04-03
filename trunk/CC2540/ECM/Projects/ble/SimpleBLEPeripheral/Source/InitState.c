@@ -27,6 +27,7 @@
 #include "GenericValueManger.h"
 #include "Uart.h"
 #include "SmartCommandsManger.h"
+#include "SmartCommandsProperties.h"
 
 /*********************************************************************
  * CONSTANTS
@@ -87,6 +88,24 @@ static uint8 TarskID;
 static bool IsInit = false; 
 
 static uint8 ScanLen = 0; 
+
+static uint8 advertData[] =
+{
+  // Flags; this sets the device to use limited discoverable
+  // mode (advertises for 30 seconds at a time) instead of general
+  // discoverable mode (advertises indefinitely)
+  0x02,   // length of this data
+  GAP_ADTYPE_FLAGS,
+  DEFAULT_DISCOVERABLE_MODE | GAP_ADTYPE_FLAGS_BREDR_NOT_SUPPORTED,
+
+  // service UUID, to notify central devices what services are included
+  // in this peripheral
+  0x03,   // length of this data
+  GAP_ADTYPE_16BIT_MORE,      // some of the UUID's, but not all
+  LO_UINT16( SMARTCOMMAND_SERV_UUID ),
+  HI_UINT16( SMARTCOMMAND_SERV_UUID ),
+
+};
 
 void InitState_HandelUartPacket(osal_event_hdr_t * msg);
 bool addChar(uint8* buffer, uint8 count);
@@ -326,7 +345,10 @@ void InitState_Exit()
     // Set the GAP Role Parameters
     GAPRole_SetParameter( GAPROLE_ADVERT_ENABLED, sizeof( uint8 ), &initial_advertising_enable );
     GAPRole_SetParameter( GAPROLE_ADVERT_OFF_TIME, sizeof( uint16 ), &gapRole_AdvertOffTime );
+    
     GAPRole_SetParameter( GAPROLE_SCAN_RSP_DATA, ScanLen*sizeof( uint8 ) , scanRspData.pValue );
+    GAPRole_SetParameter( GAPROLE_ADVERT_DATA, sizeof( advertData ), advertData );
+    
     GAPRole_SetParameter( GAPROLE_PARAM_UPDATE_ENABLE, sizeof( uint8 ), &enable_update_request );
     GAPRole_SetParameter( GAPROLE_MIN_CONN_INTERVAL, sizeof( uint16 ), &desired_min_interval );
     GAPRole_SetParameter( GAPROLE_MAX_CONN_INTERVAL, sizeof( uint16 ), &desired_max_interval );
@@ -380,10 +402,16 @@ void InitState_Exit()
 
   #endif // defined ( DC_DC_P0_7 )
   
-      // Start the Device
+  
+  // Enable clock divide on halt
+  // This reduces active current while radio is active and CC254x MCU
+  // is halted
+  HCI_EXT_ClkDivOnHaltCmd( HCI_EXT_ENABLE_CLK_DIVIDE_ON_HALT );
+  
+  // Start the Device
   VOID GAPRole_StartDevice( &simpleBLEPeripheral_PeripheralCBs );
-
-    // Start Bond Manager
+  
+      // Start Bond Manager
   VOID GAPBondMgr_Register( &simpleBLEPeripheral_BondMgrCBs );
     
 }
