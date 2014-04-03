@@ -2,10 +2,6 @@
 
 #define MAX_HW_SUPPORTED_DEVICES 3
 
-typedef void (*Scancallback)(gapDevRec_t *devices, uint8 length);
-typedef void (*Callback)(uint8* buffer, uint8 length);
-typedef void (*ErrorCallback)();
-
 //***********************************************************
 //      Connection Structs 
 //***********************************************************
@@ -36,6 +32,43 @@ typedef struct
 }AcceptedDeviceInfo;
 
 //***********************************************************
+//      SericeDiscovery Structs 
+//***********************************************************
+
+typedef enum DiscoveryRange
+{
+  Primary,
+  Characteristic,
+  Descriptor
+}DiscoveryRange;
+
+typedef struct primary_ServiceItem
+{
+  uint16 handle; 
+  uint16 endHandle; 
+  uint16 ServiceUUID;  
+}primary_ServiceItem;
+
+
+typedef struct ValueHandelPair
+{
+  uint16 Handle;
+  uint16 UUID; 
+}ValueHandelPair;
+
+typedef union
+{
+  primary_ServiceItem service;
+  ValueHandelPair characteristic;
+  ValueHandelPair descriptors; 
+}DiscoveryItem;
+
+typedef struct DiscoveryResult
+{
+  DiscoveryItem item; 
+  struct DiscoveryResult* next;
+}DiscoveryResult; 
+//***********************************************************
 //      Queue Structs 
 //***********************************************************
 
@@ -49,12 +82,8 @@ typedef enum
   ServiceDiscovery
 }EventType_t;
 
-typedef enum ScanType
-{
-  Primary,
-  Characteristic,
-  Descriptor
-}ScanType;
+
+typedef void (*Callback)(void* item);
 
 /*********** base of queue items *************/
 typedef struct EventQueueItemBase_t 
@@ -62,7 +91,8 @@ typedef struct EventQueueItemBase_t
   uint8 addr[B_ADDR_LEN];
   EventType_t action;
   
-  ErrorCallback errorcall; 
+  Callback errorcall; 
+  Callback callback;
   
   struct EventQueueItemBase_t* next;
   
@@ -73,12 +103,12 @@ typedef struct EventQueueItemBase_t
 typedef struct EventQueueRWItem_t 
 {
   EventQueueItemBase_t base;
+  EventType_t action; 
   
   uint16 handel;
+  
   uint8* data;
   uint8 length; 
-  
-  Callback callback;
   
 }EventQueueRWItem_t;
 
@@ -86,56 +116,22 @@ typedef struct EventQueueRWItem_t
 typedef struct EventQueueScanItem_t 
 {
   EventQueueItemBase_t base;
-  Scancallback callback;
-  
+  gapDevRec_t * list; 
+  uint8 devicesCount; 
 }EventQueueScanItem_t;
 
 /*** ServiceDir item ***/
 typedef struct EventQueueServiceDirItem_t 
 {
   EventQueueItemBase_t base;
-  Callback callback;
   
-  ScanType type; 
+  DiscoveryRange type; 
   uint16 startHandle;
   uint16 endHandle; 
   
-  void* Items; 
+  DiscoveryResult* result; 
   
 }EventQueueServiceDirItem_t;
-
-//***********************************************************
-//      SericeDiscovery Structs 
-//***********************************************************
-
-typedef struct primary_ServiceItem
-{
-  uint16 handle; 
-  uint16 endHandle; 
-  uint16 ServiceUUID; 
-  
-  struct primary_ServiceItem* next; 
-  
-}primary_ServiceItem;
-
-
-typedef struct Chara_ServiceItem
-{
-  uint16 Handle;
-  uint16 UUID;
-  
-  struct Chara_ServiceItem* next; 
-  
-}Chara_ServiceItem;
-
-typedef struct Decs_ServiceItem
-{
-  uint16 Handle;
-  uint16 UUID;
-  
-  struct Decs_ServiceItem* next; 
-  
-}Decs_ServiceItem;
 
 //***********************************************************
 //      Functions 
@@ -144,6 +140,6 @@ typedef struct Decs_ServiceItem
 void ConnectionManger_Init( uint8 task_id);
 uint16 ConnectionManger_ProcessEvent( uint8 task_id, uint16 events );
 
-void Queue_addWrite(uint8* write, uint8 len, uint8* addr, uint16 handel, Callback call, ErrorCallback ecall);
-void Queue_Scan(Scancallback call, ErrorCallback ecall);
-void Queue_addServiceDiscovery(uint8* addr, Callback call ,ErrorCallback ecall, ScanType type, uint16 startHandle, uint16 endHandle);
+void Queue_addWrite(uint8* write, uint8 len, uint8* addr, uint16 handel, Callback call, Callback ecall);
+void Queue_Scan(Callback call, Callback ecall);
+void Queue_addServiceDiscovery(uint8* addr, Callback call ,Callback ecall, DiscoveryRange range, uint16 startHandle, uint16 endHandle);
