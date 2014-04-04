@@ -30,10 +30,8 @@
   </PropertyGroup>
   <Import Project="$(NetMfTargetsBaseDir)$(TargetFrameworkVersion)\CSharp.Targets" />
   <ItemGroup>
-    <Compile Include="Messages\GetNetworkProfilMessage.cs" />
-    <Compile Include="Messages\NetworkProfileConfigMessage.cs" />
+    <Compile Include="Messages\RegisterTimerMessage.cs" />
     <Compile Include="Messages\Reset.cs" />
-    <Compile Include="Messages\SendMessage.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="EventBus.cs" />
     <Compile Include="TMessage.cs" />

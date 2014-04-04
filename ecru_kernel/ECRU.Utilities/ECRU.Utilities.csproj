@@ -1,17 +1,15 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
-    <AssemblyName>ecru_kernel</AssemblyName>
-    <OutputType>Exe</OutputType>
-    <RootNamespace>ecru_kernel</RootNamespace>
+    <AssemblyName>ECRU.Utilities</AssemblyName>
+    <OutputType>Library</OutputType>
+    <RootNamespace>ECRU.Utilities</RootNamespace>
     <ProjectTypeGuids>{b69e3092-b931-443c-abe7-7e7b65f2a37f};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <ProductVersion>9.0.21022</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{D1EFA9D6-C2D5-4C75-8A37-748B5AD9C576}</ProjectGuid>
+    <ProjectGuid>{5B778498-CDC7-4CE6-8CD3-FD20D04EBF93}</ProjectGuid>
     <TargetFrameworkVersion>v4.3</TargetFrameworkVersion>
     <NetMfTargetsBaseDir Condition="'$(NetMfTargetsBaseDir)'==''">$(MSBuildExtensionsPath32)\Microsoft\.NET Micro Framework\</NetMfTargetsBaseDir>
-    <DeployDevice>Netduino</DeployDevice>
-    <DeployTransport>USB</DeployTransport>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -21,7 +19,6 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <DocumentationFile>bin\Debug\ecru_kernel.XML</DocumentationFile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -31,27 +28,21 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
-  <PropertyGroup>
-    <StartupObject>ECRU.Program</StartupObject>
-  </PropertyGroup>
   <Import Project="$(NetMfTargetsBaseDir)$(TargetFrameworkVersion)\CSharp.Targets" />
   <ItemGroup>
+    <Compile Include="Factories\ModuleFactory\IModule.cs" />
+    <Compile Include="Factories\ModuleFactory\ModuleFactory.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Program.cs" />
+    <Compile Include="SD\Exceptions\ECRUSDFileNotFoundException.cs" />
+    <Compile Include="SD\IConfigMessage.cs" />
+    <Compile Include="SD\SD.cs" />
+    <Compile Include="SD\Types\IConfigurationFile.cs" />
+    <Compile Include="SD\Types\IFile.cs" />
+    <Compile Include="Timers\Timer.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Reference Include="Json.NetMF">
-      <HintPath>..\packages\Json.NetMF.1.3.0.0\lib\netmf43\Json.NetMF.dll</HintPath>
+    <Reference Include="Microsoft.SPOT.Native">
     </Reference>
-    <Reference Include="Microsoft.SPOT.Graphics" />
-    <Reference Include="Microsoft.SPOT.Hardware" />
-    <Reference Include="Microsoft.SPOT.Hardware.PWM" />
-    <Reference Include="Microsoft.SPOT.Hardware.SerialPort" />
-    <Reference Include="Microsoft.SPOT.Native" />
-    <Reference Include="Microsoft.SPOT.Net" />
-    <Reference Include="SecretLabs.NETMF.Hardware" />
-    <Reference Include="SecretLabs.NETMF.Hardware.Netduino" />
-    <Reference Include="System" />
     <Reference Include="System.IO" />
   </ItemGroup>
   <ItemGroup>
@@ -59,16 +50,10 @@
       <Project>{A161B854-6858-4A85-B70D-B949F042B2D4}</Project>
       <Name>ECRU.EventBus</Name>
     </ProjectReference>
-    <ProjectReference Include="..\ECRU.netd\ECRU.netd.csproj">
-      <Project>{CC50D845-8A55-4787-81F4-16793837A047}</Project>
-      <Name>ECRU.netd</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\ECRU.Utilities\ECRU.Utilities.csproj">
-      <Project>{5B778498-CDC7-4CE6-8CD3-FD20D04EBF93}</Project>
-      <Name>ECRU.Utilities</Name>
-    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <None Include="packages.config" />
+    <Folder Include="Buttons\" />
+    <Folder Include="LEDs\" />
+    <Folder Include="Logging\" />
   </ItemGroup>
 </Project>

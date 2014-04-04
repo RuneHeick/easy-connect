@@ -1,4 +1,5 @@
 using System;
+using System.Threading;
 using ECRU.EventBus;
 using ECRU.EventBus.Messages;
 using Microsoft.SPOT;
@@ -9,14 +10,9 @@ namespace ECRU.netd.Handlers
     {
         public void Handle(TMessage message)
         {
-            var _message = message as NetworkProfileConfigMessage;
+            //var _message = message as ConfigMessage;
             
-            Debug.Print(_message.ECRUName);
-            Debug.Print(_message.ECRUNetworkName);
-            Debug.Print(_message.ECRUNetworkPassword);
-            Debug.Print(_message.WiFiPassword);
-            Debug.Print(_message.WiFiSSID);
-            Debug.Print(_message.Type);
+            
         }
     }
 }

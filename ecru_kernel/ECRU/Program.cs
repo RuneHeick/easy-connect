@@ -1,9 +1,12 @@
 ﻿using System.IO;
+using System.Threading;
 using ECRU.EventBus;
 using ECRU.EventBus.Messages;
 using ECRU.netd;
 using Microsoft.SPOT;
-using ECRU.SD;
+using Microsoft.SPOT.Hardware;
+using SecretLabs.NETMF.Hardware.Netduino;
+
 
 namespace ECRU
 {
@@ -19,15 +22,10 @@ namespace ECRU
         {
             // write your code here
 
-            Debug.Print("are we live?");
+            var netDaemon = new Netd();
 
-            var sd = new SD.SD();
-            var netd = new Netd();
-
-            var message = new GetNetworkProfilMessage("SD\\Config\\netd.txt");
-
-            EventBus.EventBus.Publish(message);
-
+            netDaemon.LoadConfig("");
+            netDaemon.Start();
         }
     }
 }
