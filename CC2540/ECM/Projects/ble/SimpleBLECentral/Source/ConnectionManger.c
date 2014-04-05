@@ -170,10 +170,7 @@ uint16 ConnectionManger_ProcessEvent( uint8 task_id, uint16 events )
     
     //osal_start_timerEx( simpleBLETaskId, PERIODIC_SCAN_START, PERIODIC_SCAN_PERIOD );
     uint8 adress[] = {0x62,0xEE,0xD4,0xF7,0xB1,0x34};
-    Queue_addServiceDiscovery(adress, NULL ,NULL,1,1,0xFFFF);
-    Queue_addServiceDiscovery(adress, NULL ,NULL,2,1,0xFFFF);
-    Queue_addServiceDiscovery(adress, NULL ,NULL,1,1,0xFFFF);
-    
+    Queue_addRead(adress, 0x0003, NULL, NULL);
     
     return ( events ^ START_DEVICE_EVENT );
   }
@@ -186,7 +183,6 @@ uint16 ConnectionManger_ProcessEvent( uint8 task_id, uint16 events )
       CurrentEvent = Dequeue(); 
       if(CurrentEvent!=NULL) 
       {
-        printf("Start");
         status = BUSY; 
         osal_set_event(ConnectionManger_tarskID,PROCESSQUEUEITEM_EVENT);
       }
@@ -241,7 +237,13 @@ static void ConnectionManger_handel(EventQueueItemBase_t* item)
   switch(item->action)
   {
     case Read:
+      {
+        EventQueueRWItem_t* extitem = (EventQueueRWItem_t*)item;
+        GATT_ReadLongCharValue(getConnHandel(item), &extitem->item.read, ConnectionManger_tarskID );
+      }
+      break; 
     case Write:
+      
     case Connect:
     case Disconnect: 
     case Scan:
@@ -465,22 +467,45 @@ static EventQueueItemBase_t* Dequeue()
 //***********************************************************
 
 
+void Queue_addRead(uint8* addr, uint16 handel, Callback call, Callback ecall)
+{
+  EventQueueRWItem_t* item = (EventQueueRWItem_t*)osal_mem_alloc(sizeof(EventQueueRWItem_t)); 
+  if(item)
+  {
+    item->base.action = Read;
+    item->action = Read;
+    item->base.next = NULL;
+    item->base.errorcall = ecall;
+    osal_memcpy(item->base.addr,addr,B_ADDR_LEN);
+    item->base.callback = call; 
+    item->item.read.handle = handel;
+    item->item.write.offset = 0; 
+    item->response = GenericList_create();
+    
+    Enqueue((EventQueueItemBase_t*)item);
+  }
+}
+
+
 void Queue_addWrite(uint8* write, uint8 len, uint8* addr, uint16 handel, Callback call, Callback ecall)
 {
   EventQueueRWItem_t* item = (EventQueueRWItem_t*)osal_mem_alloc(sizeof(EventQueueRWItem_t)); 
   if(item)
   {
     item->base.action = Write;
+    item->action = Write;
     item->base.next = NULL;
     item->base.errorcall = ecall;
     osal_memcpy(item->base.addr,addr,B_ADDR_LEN);
     item->base.callback = call; 
-    item->handel = handel;
-    item->data = osal_mem_alloc(len);
-    if(item->data)
+    item->item.write.handle = handel;
+    item->item.write.pValue = osal_mem_alloc(len);
+    item->item.write.offset = 0; 
+    item->response = GenericList_create();
+    if(item->item.write.pValue)
     {
-      osal_memcpy(item->data,write,len);
-      item->length = len;
+      osal_memcpy(item->item.write.pValue,write,len);
+      item->item.write.len = len;
       Enqueue((EventQueueItemBase_t*)item);
       return;
     }
@@ -489,11 +514,6 @@ void Queue_addWrite(uint8* write, uint8 len, uint8* addr, uint16 handel, Callbac
       osal_mem_free(item);
     }
   }
-}
-
-void Queue_addRead(uint8* addr, uint16 handel )
-{
-  
 }
 
 void Queue_addServiceDiscovery(uint8* addr, Callback call ,Callback ecall,DiscoveryRange range, uint16 startHandle, uint16 endHandle)
@@ -694,6 +714,7 @@ static void simpleBLECentralRssiCB( uint16 connHandle, int8 rssi )
 }
 
 
+uint8 count = 0; 
 /*********************************************************************
  * @fn      simpleBLECentralProcessGATTMsg
  *
@@ -736,6 +757,28 @@ static void simpleBLECentralProcessGATTMsg( gattMsgEvent_t *pMsg )
     }
     //simpleBLEProcedureInProgress = FALSE;
   }
+  //******************************************* read blob ***************//
+  
+  if ( ( pMsg->method == ATT_READ_BLOB_RSP ) || ( pMsg->method == ATT_ERROR_RSP ) )
+  {
+    
+    if (pMsg->hdr.status == bleProcedureComplete)
+    {
+      volatile int a = 5;
+    }
+    else if ( pMsg->method == ATT_READ_BLOB_RSP )
+    {
+       EventQueueRWItem_t* event = (EventQueueRWItem_t*)CurrentEvent;
+       GenericList_add(&event->response,pMsg->msg.readBlobRsp.value,pMsg->msg.readBlobRsp.len); 
+    }
+    else
+    {
+
+    }
+    
+  }
+  
+  //**********************************************************************
   else if ( ( pMsg->method == ATT_WRITE_RSP ) ||
        ( ( pMsg->method == ATT_ERROR_RSP ) &&
          ( pMsg->msg.errorRsp.reqOpcode == ATT_WRITE_REQ ) ) )
@@ -920,7 +963,6 @@ static void discoveryComplete()
     item->base.callback(CurrentEvent);
   disposeDiscoveryList(item); 
   status = READY; 
-  printf("Done");
   osal_set_event(ConnectionManger_tarskID,DEQUEUE_EVENT);
 }
 

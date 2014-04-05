@@ -302,6 +302,8 @@ void InitState_Enter(uint8 tarskID)
   
   if(IsInit==false)
   {
+    char name[] = "Runes meget meget lange navn som er længer end man tror";
+    DevInfo_SetParameter(DEVINFO_MANUFACTURER_NAME,strlen(name),name);
     GAPManget_SetupName("TEST",4);
     SimpleBLEPeripheral_SwitchState(0);
     IsInit = true; 

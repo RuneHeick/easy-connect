@@ -1064,6 +1064,12 @@
       <file>
         <name>$PROJ_DIR$\..\Source\ConnectionManger.h</name>
       </file>
+      <file>
+        <name>$PROJ_DIR$\..\Source\GenericList.c</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\..\Source\GenericList.h</name>
+      </file>
     </group>
     <file>
       <name>$PROJ_DIR$\..\Source\BLEparameters.h</name>
