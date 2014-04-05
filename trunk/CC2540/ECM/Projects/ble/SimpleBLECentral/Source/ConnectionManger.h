@@ -1,5 +1,5 @@
 #pragma once
-
+#include "GenericList.h"
 #define MAX_HW_SUPPORTED_DEVICES 3
 
 //***********************************************************
@@ -72,6 +72,8 @@ typedef struct DiscoveryResult
 //      Queue Structs 
 //***********************************************************
 
+/*********** helper **************************/
+
 typedef enum
 {
   Read,
@@ -84,6 +86,12 @@ typedef enum
 
 
 typedef void (*Callback)(void* item);
+
+typedef union 
+{
+  attReadBlobReq_t read;
+  gattPrepareWriteReq_t write; 
+}rwreq_t; 
 
 /*********** base of queue items *************/
 typedef struct EventQueueItemBase_t 
@@ -98,6 +106,7 @@ typedef struct EventQueueItemBase_t
   
 }EventQueueItemBase_t;
 
+/*********** Items *************/
 
 /*** RW item ***/
 typedef struct EventQueueRWItem_t 
@@ -105,10 +114,8 @@ typedef struct EventQueueRWItem_t
   EventQueueItemBase_t base;
   EventType_t action; 
   
-  uint16 handel;
-  
-  uint8* data;
-  uint8 length; 
+  rwreq_t item; 
+  List response; 
   
 }EventQueueRWItem_t;
 
@@ -143,3 +150,4 @@ uint16 ConnectionManger_ProcessEvent( uint8 task_id, uint16 events );
 void Queue_addWrite(uint8* write, uint8 len, uint8* addr, uint16 handel, Callback call, Callback ecall);
 void Queue_Scan(Callback call, Callback ecall);
 void Queue_addServiceDiscovery(uint8* addr, Callback call ,Callback ecall, DiscoveryRange range, uint16 startHandle, uint16 endHandle);
+void Queue_addRead(uint8* addr, uint16 handel, Callback call, Callback ecall);

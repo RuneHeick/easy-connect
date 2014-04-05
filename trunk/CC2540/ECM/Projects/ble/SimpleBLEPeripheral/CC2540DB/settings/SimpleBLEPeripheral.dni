@@ -1,5 +1,5 @@
 [DebugChecksum]
-Checksum=-1505246189
+Checksum=1492691203
 [DisAssemblyWindow]
 NumStates=_ 1
 State 1=_ 1
@@ -18,10 +18,9 @@ TriggerName=main
 LimitSize=0
 ByteLimit=50
 [Breakpoints]
-Bp0=_ "STD_CODE" "{$PROJ_DIR$\..\..\Profiles\EasyConnectService\EasyConnectProfile.c}.148.3@1" 1 0 0 0 "" 0 ""
-Bp1=_ "STD_CODE" "{$PROJ_DIR$\..\..\Profiles\EasyConnectService\EasyConnectProfile.c}.256.13@1" 1 0 0 0 "" 0 ""
-Bp2=_ "STD_CODE" "{$PROJ_DIR$\..\..\Profiles\EasyConnectService\EasyConnectProfile.c}.391.13@1" 1 0 0 0 "" 0 ""
-Count=3
+Bp0=_ "STD_CODE" "{$PROJ_DIR$\..\..\Profiles\EasyConnectService\EasyConnectProfile.c}.256.13@1" 1 0 0 0 "" 0 ""
+Bp1=_ "STD_CODE" "{$PROJ_DIR$\..\..\Profiles\EasyConnectService\EasyConnectProfile.c}.391.13@1" 1 0 0 0 "" 0 ""
+Count=2
 [ChipconEmu]
 Stop timers on halt=0
 Leave target running=1
