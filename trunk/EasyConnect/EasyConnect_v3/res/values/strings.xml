@@ -23,4 +23,21 @@
         <item>@drawable/ic_launcher</item>
     </array>
     
+    <!-- CreateNewProfileActivity strings -->
+    <string name="goToSettings">Settings</string>
+    <string name="Wifi_Name">Wifi: </string>
+    <string name="Wifi_Password">Wifi Password:</string>
+    <string name="Profile_Name">Profile: </string>
+    <string name="Profile_Password">Profile Password:</string>
+    <string name="save_profile">Save Profile</string>
+    
+<!-- EditProfileActivity Strings -->
+    <string name="WifiName">Wifi Name</string>
+    <string name="WifiPassword">Wifi Password</string>
+    <string name="ProfileName">Profile Name</string>
+    <string name="ProfilePassword">Profile Password</string>
+    <string name="create_profile">Create New Profile</string>
+    <string name="delete_profile">Delete Profile</string>
+    <string name="ProfileNames">ProfileNames</string>
+    
 </resources>
