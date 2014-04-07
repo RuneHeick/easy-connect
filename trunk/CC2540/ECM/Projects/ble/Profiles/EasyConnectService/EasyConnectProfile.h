@@ -127,10 +127,10 @@ extern bStatus_t SimpleProfile_SetParameter( uint16 address, uint8 len, void *va
  *          data type (example: data type of uint16 will be cast to 
  *          uint16 pointer).
  */
-bStatus_t SimpleProfile_GetParameter( uint16 address, GenericValue* value );
+extern bStatus_t SimpleProfile_GetParameter( uint16 address, GenericValue* value );
 
 
-
+extern void SimpleProfile_SetItemLocked(bool isLocked);
 
 /*********************************************************************
 *********************************************************************/

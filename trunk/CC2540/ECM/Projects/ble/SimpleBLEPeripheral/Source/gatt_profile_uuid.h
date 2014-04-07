@@ -83,7 +83,8 @@ extern "C"
 #define CSC_SERV_UUID                   0x1816  // Cycling Speed and Cadence
 #define CYCPWR_SERV_UUID                0x1818  // Cycling Power
 #define LOC_NAV_SERV_UUID               0x1819  // Location and Navigation
-  
+#define ECCONNECT_SERV_UUID             0x1821  // Custom EC Service 
+
 /**
  * GATT Characteristic UUIDs
  */
@@ -163,6 +164,10 @@ extern "C"
 #define POS_QUALITY_UUID                0x2A69  // Position Quality
 #define LN_FEATURE_UUID                 0x2A6A  // LN Feature
 #define LN_CTRL_PT_UUID                 0x2A6B  // LN Control Point  
+ 
+#define SYSTEMID_CHARA_UUID             0x2A73  // Custom EC System ID 
+#define UPDATETIME_CHARA_UUID           0x2A74  // Update Time
+  
   
 /**
  * GATT Unit UUIDs

@@ -465,10 +465,12 @@
           <state>$PROJ_DIR$\..\..\common\npi\npi_np</state>
           <state>$PROJ_DIR$\..\..\Profiles\Roles</state>
           <state>$PROJ_DIR$\..\..\Profiles\SimpleProfile</state>
-          <state>$PROJ_DIR$\..\..\Profiles\EasyConnectService</state>
+          <state>$PROJ_DIR$\..\..\Profiles\EasyConnectService   </state>
+          <state>$PROJ_DIR$\..\..\Profiles\ECConnection</state>
           <state>$PROJ_DIR$\..\..\Profiles\Keys</state>
           <state>$PROJ_DIR$\..\..\Profiles\DevInfo</state>
           <state>$PROJ_DIR$\..\Source</state>
+          <state>$PROJ_DIR$\..\..\SimpleBLECentral\Source</state>
         </option>
         <option>
           <name>CCStdIncCheck</name>
@@ -8476,6 +8478,12 @@
     <group>
       <name>Manger</name>
       <file>
+        <name>$PROJ_DIR$\..\..\SimpleBLECentral\Source\GenericList.c</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\..\..\SimpleBLECentral\Source\GenericList.h</name>
+      </file>
+      <file>
         <name>$PROJ_DIR$\..\Source\GenericValueManger.c</name>
       </file>
       <file>
@@ -8489,6 +8497,12 @@
       </file>
       <file>
         <name>$PROJ_DIR$\..\Source\InitState.h</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\..\Source\NormalState.c</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\..\Source\NormalState.h</name>
       </file>
     </group>
     <file>
@@ -8774,6 +8788,12 @@
     </file>
     <file>
       <name>$PROJ_DIR$\..\..\Profiles\DevInfo\devinfoservice.h</name>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\Profiles\ECConnection\ECConnect.c</name>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\Profiles\ECConnection\ECConnect.h</name>
     </file>
     <file>
       <name>$PROJ_DIR$\..\..\Profiles\Roles\gap.c</name>

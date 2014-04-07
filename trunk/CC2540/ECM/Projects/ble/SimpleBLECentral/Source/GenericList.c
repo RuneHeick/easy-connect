@@ -12,9 +12,9 @@ List GenericList_create()
 void GenericList_add(List* list,uint8* val, uint8 len)
 {
   ListItem* item = osal_mem_alloc(sizeof(ListItem));
-  item->value = osal_mem_alloc(sizeof(len));
+  item->value = osal_mem_alloc(len);
   
-  if(item)
+  if(item && item->value)
   {
     ListItem* temp = list->first;
     osal_memcpy(item->value,val,len);
@@ -32,6 +32,11 @@ void GenericList_add(List* list,uint8* val, uint8 len)
     }
     
     list->count = list->count + 1 ; 
+  }
+  else
+  {
+    osal_mem_free(item);
+    osal_mem_free(item->value);
   }
 }
 
@@ -85,4 +90,24 @@ ListItem* GenericList_at(List* list,uint8 index)
   }
   
   return NULL; 
+}
+
+bool GenericList_contains(List* list, uint8* val, uint8 len)
+{
+  if(list->count>0) 
+  {
+    ListItem* item = list->first; 
+    if(item->size == len && osal_memcmp(val,item->value,len)==TRUE)
+       return true; 
+    
+    while(item->next != NULL)
+    {
+      item = item->next;
+      if(item->size == len && osal_memcmp(val,item->value,len)==TRUE)
+       return true; 
+    }
+  
+  }
+    
+  return false; 
 }

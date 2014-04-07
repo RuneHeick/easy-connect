@@ -90,6 +90,7 @@
 
 gattCharCfg_t UpdateConfig[GATT_MAX_NUM_CONN];
 
+static bool EC_isLocked = TRUE; 
 
 /*********************************************************************
  * LOCAL FUNCTIONS
@@ -117,6 +118,13 @@ CONST gattServiceCBs_t simpleProfileCBs =
  * PUBLIC FUNCTIONS
  */
 
+//Lock Read and Write for not ECConnected Devices. 
+
+void SimpleProfile_SetItemLocked(bool isLocked)
+{
+  EC_isLocked = isLocked;
+}
+
 /*********************************************************************
  * @fn      SimpleProfile_AddService
  *
@@ -142,8 +150,8 @@ bStatus_t SimpleProfile_AddService( uint32 services )
   
   
   SmartService* Testservice = SmartCommandsManger_CreateService("Lav Kaffe",10); 
-  SmartCommandsManger_addCharacteristic(5,"Antal kopper",13,(GUIPresentationFormat){00,00},(PresentationFormat){1,2,3,4,5},NONE,GATT_PERMIT_READ|GATT_PERMIT_WRITE);
-  SmartCommandsManger_addCharacteristic(5,"Bonner",7,(GUIPresentationFormat){00,00},(PresentationFormat){7,4,5,6,5},YES,GATT_PERMIT_READ|GATT_PERMIT_WRITE);
+  SmartCommandsManger_addCharacteristic(50,"Antal kopper",13,(GUIPresentationFormat){00,00},(PresentationFormat){1,2,3,4,5},NONE,GATT_PERMIT_READ|GATT_PERMIT_WRITE);
+  SmartCommandsManger_addCharacteristic(50,"Bonner",7,(GUIPresentationFormat){00,00},(PresentationFormat){7,4,5,6,5},YES,GATT_PERMIT_READ|GATT_PERMIT_WRITE);
   
   SmartCommandsManger_CompileServices();
   
@@ -254,6 +262,11 @@ static uint8 simpleProfile_ReadAttrCB( uint16 connHandle, gattAttribute_t *pAttr
                             uint8 *pValue, uint8 *pLen, uint16 offset, uint8 maxLen )
 {
   bStatus_t status = SUCCESS;
+  if(EC_isLocked == TRUE)
+  {
+    return ( ATT_ERR_READ_NOT_PERMITTED );
+  }
+  
   
   // If attribute permissions require authorization to read, return error
   if ( gattPermitAuthorRead( pAttr->permissions ) )
@@ -390,13 +403,11 @@ static bStatus_t simpleProfile_WriteAttrCB( uint16 connHandle, gattAttribute_t *
 {
   bStatus_t status = SUCCESS;
   
-  /* If attribute permissions require authorization to write, return error
-  if ( gattPermitAuthorWrite( pAttr->permissions ) )
+  if(EC_isLocked == TRUE)
   {
-    // Insufficient authorization
-    return ( ATT_ERR_INSUFFICIENT_AUTHOR );
+    return ( ATT_ERR_WRITE_NOT_PERMITTED );
   }
-  */
+  
   if ( pAttr->type.len == ATT_BT_UUID_SIZE )
   {
     // 16-bit UUID

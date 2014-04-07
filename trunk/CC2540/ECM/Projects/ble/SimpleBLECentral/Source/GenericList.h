@@ -20,5 +20,6 @@ List GenericList_create();
 void GenericList_add(List* list,uint8* val, uint8 len);  
 void GenericList_remove(List* list, uint8 index); 
 void GenericList_dispose(List* list); 
+bool GenericList_contains(List* list, uint8* val, uint8 len); 
 
 ListItem* GenericList_at(List* list,uint8 index); 

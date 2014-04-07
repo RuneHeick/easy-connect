@@ -43,6 +43,7 @@ static uint16 getConnHandel(EventQueueItemBase_t* item);
 static void cancelLinkEstablishment();
 static void discoveryComplete();
 static void discoveryCompleteError();
+static void RWComplete(Callback call);
 
 
 static uint8 NULLaddr[B_ADDR_LEN] = {0x00, 0x00, 0x00, 0x00, 0x00 , 0x00}; 
@@ -168,9 +169,11 @@ uint16 ConnectionManger_ProcessEvent( uint8 task_id, uint16 events )
     // Register with bond manager after starting device
     GAPBondMgr_Register( (gapBondCBs_t *) &simpleBLEBondCB );
     
-    //osal_start_timerEx( simpleBLETaskId, PERIODIC_SCAN_START, PERIODIC_SCAN_PERIOD );
+    /*
     uint8 adress[] = {0x62,0xEE,0xD4,0xF7,0xB1,0x34};
-    Queue_addRead(adress, 0x0003, NULL, NULL);
+    char string[] = "There have been several claims for the longest sentence in the English language";
+    Queue_addWrite(string,strlen(string),adress,0x001E,NULL,NULL);
+    */
     
     return ( events ^ START_DEVICE_EVENT );
   }
@@ -243,7 +246,11 @@ static void ConnectionManger_handel(EventQueueItemBase_t* item)
       }
       break; 
     case Write:
-      
+      {
+        EventQueueRWItem_t* extitem = (EventQueueRWItem_t*)item;
+        GATT_WriteLongCharValue(getConnHandel(item), &extitem->item.write, ConnectionManger_tarskID );
+      }
+      break;
     case Connect:
     case Disconnect: 
     case Scan:
@@ -303,17 +310,7 @@ static void Dispose(EventQueueItemBase_t* item)
 {
   if(item != NULL)
   {
-    switch(item->action)
-    {
-      case Read:
-      case Write:
-      case Connect:
-      case Disconnect: 
-      case Scan:
-      case ServiceDiscovery:
-      // do some stuff to free memory 
       osal_mem_free((uint8*)item); 
-    }
   }
 }
 
@@ -473,7 +470,6 @@ void Queue_addRead(uint8* addr, uint16 handel, Callback call, Callback ecall)
   if(item)
   {
     item->base.action = Read;
-    item->action = Read;
     item->base.next = NULL;
     item->base.errorcall = ecall;
     osal_memcpy(item->base.addr,addr,B_ADDR_LEN);
@@ -493,12 +489,11 @@ void Queue_addWrite(uint8* write, uint8 len, uint8* addr, uint16 handel, Callbac
   if(item)
   {
     item->base.action = Write;
-    item->action = Write;
     item->base.next = NULL;
     item->base.errorcall = ecall;
     osal_memcpy(item->base.addr,addr,B_ADDR_LEN);
     item->base.callback = call; 
-    item->item.write.handle = handel;
+   item->item.write.handle = handel;
     item->item.write.pValue = osal_mem_alloc(len);
     item->item.write.offset = 0; 
     item->response = GenericList_create();
@@ -725,83 +720,52 @@ uint8 count = 0;
 static void simpleBLECentralProcessGATTMsg( gattMsgEvent_t *pMsg )
 {
   
+  //********************    read blob ***************//
+  if(CurrentEvent->action == Read)
+  {
+    if ( ( pMsg->method == ATT_READ_BLOB_RSP ) || ( pMsg->method == ATT_ERROR_RSP ) )
+    {
+      
+      if (pMsg->hdr.status == bleProcedureComplete)
+      {
+        RWComplete(CurrentEvent->callback);
+      }
+      else if ( pMsg->method == ATT_READ_BLOB_RSP )
+      {
+         EventQueueRWItem_t* event = (EventQueueRWItem_t*)CurrentEvent;
+         GenericList_add(&event->response,pMsg->msg.readBlobRsp.value,pMsg->msg.readBlobRsp.len); 
+      }
+      else //TIMEOUT AND ERRORS 
+      {
+        RWComplete(CurrentEvent->errorcall);
+      }
+      
+    }
+  }
+  
+  //*************************** Write ********************************
   /*
-  if ( simpleBLEState != BLE_STATE_CONNECTED )
+  ATT_PREPARE_WRITE_RSP,
+ *          ATT_EXECUTE_WRITE_RSP or ATT_ERROR_RSP (if an error occurred on
+ *          the server).
+   
+   */
+  else if(CurrentEvent->action == Write)
   {
-    // In case a GATT message came after a connection has dropped,
-    // ignore the message
-    return;
-  }
-  */
+    if ( (pMsg->method == ATT_PREPARE_WRITE_RSP) || (pMsg->method == ATT_EXECUTE_WRITE_RSP)||(pMsg->method == ATT_ERROR_RSP))
+    {
+      if ( pMsg->method == ATT_ERROR_RSP)
+      {
+         RWComplete(CurrentEvent->errorcall);
+      }
+      else
+      {
+        RWComplete(CurrentEvent->callback);
+      }
   
-  if ( ( pMsg->method == ATT_READ_RSP ) ||
-       ( ( pMsg->method == ATT_ERROR_RSP ) &&
-         ( pMsg->msg.errorRsp.reqOpcode == ATT_READ_REQ ) ) )
-  {
-    if ( pMsg->method == ATT_ERROR_RSP )
-    {
-#if !defined (CC2540_MINIDK)
-      uint8 status = pMsg->msg.errorRsp.errCode;
-      
-      LCD_WRITE_STRING_VALUE( "Read Error", status, 10, HAL_LCD_LINE_1 );
-#endif
     }
-    else
-    {
-#if !defined (CC2540_MINIDK)
-      // After a successful read, display the read value
-      uint8 valueRead = pMsg->msg.readRsp.value[0];
-
-      LCD_WRITE_STRING_VALUE( "Read rsp:", valueRead, 10, HAL_LCD_LINE_1 );
-#endif    
-    }
-    //simpleBLEProcedureInProgress = FALSE;
   }
-  //******************************************* read blob ***************//
-  
-  if ( ( pMsg->method == ATT_READ_BLOB_RSP ) || ( pMsg->method == ATT_ERROR_RSP ) )
-  {
-    
-    if (pMsg->hdr.status == bleProcedureComplete)
-    {
-      volatile int a = 5;
-    }
-    else if ( pMsg->method == ATT_READ_BLOB_RSP )
-    {
-       EventQueueRWItem_t* event = (EventQueueRWItem_t*)CurrentEvent;
-       GenericList_add(&event->response,pMsg->msg.readBlobRsp.value,pMsg->msg.readBlobRsp.len); 
-    }
-    else
-    {
-
-    }
-    
-  }
-  
-  //**********************************************************************
-  else if ( ( pMsg->method == ATT_WRITE_RSP ) ||
-       ( ( pMsg->method == ATT_ERROR_RSP ) &&
-         ( pMsg->msg.errorRsp.reqOpcode == ATT_WRITE_REQ ) ) )
-  {
-    
-    if ( pMsg->method == ATT_ERROR_RSP == ATT_ERROR_RSP )
-    {
-#if !defined (CC2540_MINIDK)
-      uint8 status = pMsg->msg.errorRsp.errCode;
-      
-      LCD_WRITE_STRING_VALUE( "Write Error", status, 10, HAL_LCD_LINE_1 );
-#endif
-    }
-    else
-    {
-      // After a succesful write, display the value that was written and increment value
-      LCD_WRITE_STRING_VALUE( "Write sent:", simpleBLECharVal++, 10, HAL_LCD_LINE_1 );      
-    }
-    
-    //simpleBLEProcedureInProgress = FALSE;    
-
-  }
-  //else if ( simpleBLEDiscState != BLE_DISC_STATE_IDLE )
+  else if(CurrentEvent->action == ServiceDiscovery)
   {
     BLEGATTDiscoveryEvent( pMsg );
   }
@@ -817,9 +781,7 @@ static void simpleBLECentralProcessGATTMsg( gattMsgEvent_t *pMsg )
  */
 
 static void BLEGATTDiscoveryEvent( gattMsgEvent_t *pMsg )
-{
-  if(CurrentEvent->action != ServiceDiscovery)
-    return;  
+{ 
      
   if(pMsg->method == ATT_ERROR_RSP )
   {
@@ -973,5 +935,15 @@ static void discoveryCompleteError()
     item->base.errorcall(CurrentEvent);
   disposeDiscoveryList(item);
   status = READY;
+  osal_set_event(ConnectionManger_tarskID,DEQUEUE_EVENT);
+}
+
+static void RWComplete(Callback call)
+{
+  EventQueueRWItem_t* item = (EventQueueRWItem_t*)CurrentEvent;
+  if(call != NULL)
+    call(CurrentEvent);
+  GenericList_dispose(&item->response);
+  status = READY; 
   osal_set_event(ConnectionManger_tarskID,DEQUEUE_EVENT);
 }
