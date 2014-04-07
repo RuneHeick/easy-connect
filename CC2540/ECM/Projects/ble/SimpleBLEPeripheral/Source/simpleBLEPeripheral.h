@@ -57,6 +57,13 @@ extern "C"
 // Simple BLE Peripheral Task Events
 #define SBP_START_DEVICE_EVT                              0x0001
 #define SBP_PERIODIC_EVT                                  0x0002
+  
+  
+/* STATES */
+
+#define INITSTATE_INDEX                       0
+#define NORMALSTATE_INDEX                     1
+  
 
 /*********************************************************************
  * Vars

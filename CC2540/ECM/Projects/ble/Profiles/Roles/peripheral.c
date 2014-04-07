@@ -271,6 +271,8 @@ bStatus_t GAPRole_SetParameter( uint16 param, uint8 len, void *pValue )
         VOID osal_memset( gapRole_AdvertData, 0, B_MAX_ADV_LEN );
         VOID osal_memcpy( gapRole_AdvertData, pValue, len );
         gapRole_AdvertDataLen = len;
+        GAP_UpdateAdvertisingData( gapRole_TaskID,
+                              TRUE, gapRole_AdvertDataLen, gapRole_AdvertData );
       }
       else
       {

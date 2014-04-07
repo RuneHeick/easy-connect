@@ -112,7 +112,6 @@ typedef struct EventQueueItemBase_t
 typedef struct EventQueueRWItem_t 
 {
   EventQueueItemBase_t base;
-  EventType_t action; 
   
   rwreq_t item; 
   List response; 

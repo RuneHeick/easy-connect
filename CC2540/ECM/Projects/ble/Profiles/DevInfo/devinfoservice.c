@@ -225,9 +225,10 @@ bStatus_t DevInfo_AddService()
 {
   
   // Register GATT attribute list and CBs with GATT Server App
-  return GATTServApp_RegisterService( devInfoAttrTbl,
+  uint8 val = GATTServApp_RegisterService( devInfoAttrTbl,
                                       GATT_NUM_ATTRS( devInfoAttrTbl ),
                                       &devInfoCBs );
+  return val;
 }
 
 /*********************************************************************

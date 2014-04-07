@@ -78,6 +78,7 @@
 #include "simpleBLEPeripheral.h"
 
 #include "Uart.h"
+#include "ECConnect.h"
 
 /*********************************************************************
  * GLOBAL VARIABLES
@@ -100,7 +101,8 @@ const pTaskEventHandlerFn tasksArr[] =
   GAPBondMgr_ProcessEvent,                                          // task 9
   GATTServApp_ProcessEvent,                                         // task 10
   Uart_ProcessEvent,
-  SimpleBLEPeripheral_ProcessEvent                                  // task 12
+  ECConnect_ProcessEvent,
+  SimpleBLEPeripheral_ProcessEvent                                  // task 13
 };
 
 const uint8 tasksCnt = sizeof( tasksArr ) / sizeof( tasksArr[0] );
@@ -161,6 +163,8 @@ void osalInitTasks( void )
 
   
   Uart_Init(taskID++);
+  
+  ECConnect_Init(taskID++);
   
   /* Application */
   SimpleBLEPeripheral_Init( taskID++ );
