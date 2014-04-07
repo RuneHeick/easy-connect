@@ -21,10 +21,7 @@ public class LoaderActivity extends Activity {
 		
 
 		wifiManager = (WifiManager) this.getSystemService(WIFI_SERVICE);
-		//CheckConnection();
-		
-		Intent NetworkNotAvailable = new Intent(this, MainActivity.class);
-		startActivity(NetworkNotAvailable);
+		CheckConnection();
 	}
 	
 	@Override

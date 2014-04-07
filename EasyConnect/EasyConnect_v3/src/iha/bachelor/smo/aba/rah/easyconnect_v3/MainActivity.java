@@ -21,8 +21,11 @@ import android.widget.AdapterView;
 import android.widget.ListView;
 
 public class MainActivity extends Activity {
+	private static final String TAG = "MainActivity"; 
 	private static final int MENUITEM = Menu.FIRST;
 
+	private Fragment fragment;
+	
 	private DrawerLayout mDrawerLayout;
 	private ListView mDrawerList;
 	private ActionBarDrawerToggle mDrawerToggle;
@@ -44,7 +47,11 @@ public class MainActivity extends Activity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
-		Log.i("MainActivity", "made it to OnCreate()");
+		Log.i(TAG, "made it to OnCreate()");
+		// code to select current fragment
+		fragment = new ModuleListFragment();
+		displayView();
+		
 		mTitle = mDrawerTitle = getTitle();
 		
 		// load slide menu items
@@ -109,23 +116,22 @@ public class MainActivity extends Activity {
 		@Override
 		public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 			// display view for selected nav drawer item
-			displayView(position);
+			selectView(position);
 		}
 	}
 	
 	/**
 	 * Diplaying fragment view for selected nav drawer list item
 	 * */
-	private void displayView(int position) {
-		Log.d("MainActivity", "made it to displayView");
+	private void selectView(int position) {
+		Log.d(TAG, "made it to displayView");
 		// update the main content by replacing fragments
-		Fragment fragment = null;
 		switch (position) {
 			case 0:
 				fragment = new ModuleListFragment();
 				break;
 			case 1:
-				fragment = new ManageProfilesFragment();
+				fragment = new ProfileListFragment();
 				break;
 			case 2:
 				fragment = new SetupRoomUnitFragment();
@@ -137,19 +143,27 @@ public class MainActivity extends Activity {
 				break;
 		}
 		
+		// update selected item and title, then close the drawer
+		mDrawerList.setItemChecked(position, true);
+		mDrawerList.setSelection(position);
+		setTitle(navMenuTitles[position]);
+		mDrawerLayout.closeDrawer(mDrawerList);
+		
+		
+		displayView();
+	}
+	
+	private void displayView() {
+		
 		if (fragment != null) {
 			FragmentManager fragmentManager = getFragmentManager();
 			fragmentManager.beginTransaction().replace(R.id.frame_container, fragment).commit();
-			
-			// update selected item and title, then close the drawer
-			mDrawerList.setItemChecked(position, true);
-			mDrawerList.setSelection(position);
-			setTitle(navMenuTitles[position]);
-			mDrawerLayout.closeDrawer(mDrawerList);
+			Log.e(TAG, "Current fragment: "+fragment.toString());
 		} else {
 			// error in creating fragment
-			Log.e("MainActivity", "Error in creating fragment");
+			Log.e(TAG, "Error in creating fragment");
 		}
+		invalidateOptionsMenu();
 	}
 	
 	@Override
@@ -168,7 +182,10 @@ public class MainActivity extends Activity {
 		
 		// Handle action bar actions click
 		switch (item.getItemId()) {
-			case R.id.action_settings:
+			case R.id.create_profile_menu_item:
+				fragment = new CreateProfileFragment();
+				displayView();
+				Log.i(TAG,"You pressed Create Profile");
 				return true;
 			default:
 				return super.onOptionsItemSelected(item);
@@ -180,16 +197,17 @@ public class MainActivity extends Activity {
 	 */
 	@Override
 	public boolean onPrepareOptionsMenu(Menu menu) {
-		
-		menu.clear();
-		menu.add(0,MENUITEM,0,"true");
-		
-		// if nav drawer is opened, hide the action items
-		boolean drawerOpen = mDrawerLayout.isDrawerOpen(mDrawerList);
-		menu.findItem(R.id.action_settings).setVisible(!drawerOpen);
-		return super.onPrepareOptionsMenu(menu);
-		
-		
+		Log.i(TAG,"onPrepareOptionsMenu");
+		//only show "create profile menuitem, when in ProfileListFragment
+		if (fragment.getClass() == ProfileListFragment.class){
+			Log.i(TAG, "Showing menu item");
+			menu.findItem(R.id.create_profile_menu_item).setVisible(true);
+		} else {
+			Log.i(TAG, "Hiding menu item");
+			menu.findItem(R.id.create_profile_menu_item).setVisible(false);
+		}
+
+		return super.onPrepareOptionsMenu(menu);	
 	}
 	
 	@Override
