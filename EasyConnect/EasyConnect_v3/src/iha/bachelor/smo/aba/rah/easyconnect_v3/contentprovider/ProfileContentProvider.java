@@ -84,12 +84,14 @@ public class ProfileContentProvider extends ContentProvider {
 	
 	@Override
 	public Uri insert(Uri uri, ContentValues values) {
+		Log.i("ContentProvider", "Entered te Insert function");
 		int uriType = sURIMatcher.match(uri);
 	    SQLiteDatabase sqlDB = db.getWritableDatabase();
 	    long id = 0;
 	    switch (uriType) {
 	    case PROFILES:
 	      id = sqlDB.insert(ProfilesTable.TABLE_PROFILES, null, values);
+	      Log.d("ContentProvider", "Here we go!");
 	      break;
 	    default:
 	      throw new IllegalArgumentException("Unknown URI: " + uri);

@@ -12,11 +12,13 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.ContextMenu;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ContextMenu.ContextMenuInfo;
 import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
 import android.widget.Toast;
@@ -46,33 +48,33 @@ public class ProfileListFragment extends ListFragment implements LoaderManager.L
 	    fillData();
 	    registerForContextMenu(getListView());
 	}
-		
+	
+	@Override
+	public void onCreateContextMenu(ContextMenu menu, View v, ContextMenuInfo menuInfo) {
+		super.onCreateContextMenu(menu, v, menuInfo);
+		menu.add(0, DELETE_ID, 0, R.string.delete_profile);
+	  }
+	
 	@Override
 	public boolean onContextItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
 		case DELETE_ID:
-			AdapterContextMenuInfo info = (AdapterContextMenuInfo) item.getMenuInfo();
-			Uri uri = Uri.parse(ProfileContentProvider.CONTENT_URI + "/" + info.id);
-			context.getContentResolver().delete(uri, null, null);
-			fillData();
-			reloadNeeded = true;
+			Log.i("ProfileListFragment","delete Profile requested");
+			//AdapterContextMenuInfo info = (AdapterContextMenuInfo) item.getMenuInfo();
+			//Uri uri = Uri.parse(ProfileContentProvider.CONTENT_URI + "/" + info.id);
+			//context.getContentResolver().delete(uri, null, null);
+			//fillData();
+			//reloadNeeded = true;
 			return true;
 		}
 		return super.onContextItemSelected(item);
 	}
-	
-	private void CreateProfile() {
-		//Intent i = new Intent(this, CreateNewProfileActivity.class);
-	    //startActivity(i);
-	    //finish();
-		Toast.makeText(getActivity(),"CreateProfile called.", Toast.LENGTH_LONG).show();
-	}
-	
+		
 	@Override
 	public void onListItemClick(ListView l, View v, int position, long id) {
 		super.onListItemClick(l, v, position, id);
 		//Intent i = new Intent(this, CreateNewProfileActivity.class);
-		//Uri ProfileUri = Uri.parse(ProfileContentProvider.CONTENT_URI + "/" + id);
+		Uri ProfileUri = Uri.parse(ProfileContentProvider.CONTENT_URI + "/" + id);
 		//i.putExtra(ProfileContentProvider.CONTENT_ITEM_TYPE, ProfileUri);
 		//startActivity(i);
 		//finish();
@@ -106,7 +108,7 @@ public class ProfileListFragment extends ListFragment implements LoaderManager.L
 
 	@Override
 	public void onLoadFinished(Loader<Cursor> Loader, Cursor data) {
-		//adapter.swapCursor(data);
+		adapter.swapCursor(data);
 	}
 
 	@Override

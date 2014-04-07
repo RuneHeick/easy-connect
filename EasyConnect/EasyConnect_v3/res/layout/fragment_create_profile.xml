@@ -1,20 +1,45 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
-     
-    <TextView
-        android:id="@+id/txtLabel"
-         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_centerInParent="true"
-        android:textSize="16dp"
-        android:text="createprofile View"/>
-     
-    <ImageView android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/txtLabel"
-        android:src="@drawable/ic_launcher"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="10dp"/>
-</RelativeLayout>
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context=".CreateNewProfileActivity" >
+
+    	<EditText
+       		android:id="@+id/ProfileNameEditText"
+       		android:hint="@string/ProfileName"
+        	android:layout_width="wrap_content"
+        	android:layout_height="wrap_content"
+        	android:ems="10" />
+
+    	<EditText
+        	android:id="@+id/ProfilePasswordEditText"
+        	android:hint="@string/ProfilePassword"
+        	android:layout_width="wrap_content"
+        	android:layout_height="wrap_content"
+        	android:ems="10"
+        	android:inputType="textPassword" />
+    	
+    	<EditText
+    	    android:id="@+id/WifiNameEditText"
+    	    android:hint="@string/WifiPassword"
+        	android:layout_width="wrap_content"
+        	android:layout_height="wrap_content"
+        	android:ems="10" />
+    	    	
+    	<EditText
+    	    android:id="@+id/WifiPasswordEditText"
+    	    android:hint="@string/WifiPassword"
+        	android:layout_width="wrap_content"
+        	android:layout_height="wrap_content"
+        	android:ems="10"
+        	android:inputType="textPassword" />
+    	    	
+    	<Button 
+    	    android:id="@+id/create_profile_button"
+        	android:text="@string/save_profile"
+	        android:layout_width="fill_parent" 
+    	    android:layout_height="wrap_content" />
+
+</LinearLayout>
