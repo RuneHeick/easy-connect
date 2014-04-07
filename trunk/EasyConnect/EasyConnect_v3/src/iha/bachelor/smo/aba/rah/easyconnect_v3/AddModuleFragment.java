@@ -18,5 +18,4 @@ public class AddModuleFragment extends Fragment{
           
         return rootView;
     }
-	
 }

@@ -36,7 +36,7 @@
     <string name="WifiPassword">Wifi Password</string>
     <string name="ProfileName">Profile Name</string>
     <string name="ProfilePassword">Profile Password</string>
-    <string name="create_profile">Create New Profile</string>
+    <string name="create_profile">New Profile</string>
     <string name="delete_profile">Delete Profile</string>
     <string name="ProfileNames">ProfileNames</string>
     
