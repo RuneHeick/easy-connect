@@ -2,11 +2,10 @@ package iha.bachelor.smo.aba.rah.easyconnect_v3;
 
 import iha.bachelor.smo.aba.rah.easyconnect_v3.contentprovider.ProfileContentProvider;
 import iha.bachelor.smo.aba.rah.easyconnect_v3.sqlite.ProfilesTable;
+import android.app.Fragment;
 import android.app.ListFragment;
 import android.app.LoaderManager;
-import android.content.Context;
 import android.content.CursorLoader;
-import android.content.Intent;
 import android.content.Loader;
 import android.database.Cursor;
 import android.net.Uri;
@@ -21,22 +20,18 @@ import android.view.ViewGroup;
 import android.view.ContextMenu.ContextMenuInfo;
 import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
-import android.widget.Toast;
 import android.widget.AdapterView.AdapterContextMenuInfo;
 
 public class ProfileListFragment extends ListFragment implements LoaderManager.LoaderCallbacks<Cursor>{
 	private static final int DELETE_ID = Menu.FIRST + 1;
 	private SimpleCursorAdapter adapter;
-	private boolean reloadNeeded;
 	private String TAG = "ProfileListFragment";
-	Context context = getActivity();
 	
 	public ProfileListFragment(){}
 	
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		View rootView = inflater.inflate(R.layout.fragment_profile_list, container, false);
-
 		return rootView;
 	}
 	
@@ -45,7 +40,7 @@ public class ProfileListFragment extends ListFragment implements LoaderManager.L
 		super.onActivityCreated(savedInstanceState);
 		
 		this.getListView().setDividerHeight(2);
-	    fillData();
+		fillData();
 	    registerForContextMenu(getListView());
 	}
 	
@@ -53,16 +48,17 @@ public class ProfileListFragment extends ListFragment implements LoaderManager.L
 	public void onCreateContextMenu(ContextMenu menu, View v, ContextMenuInfo menuInfo) {
 		super.onCreateContextMenu(menu, v, menuInfo);
 		menu.add(0, DELETE_ID, 0, R.string.delete_profile);
-	  }
+	}
 	
 	@Override
 	public boolean onContextItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
 		case DELETE_ID:
-			Log.i("ProfileListFragment","delete Profile requested");
-			//AdapterContextMenuInfo info = (AdapterContextMenuInfo) item.getMenuInfo();
-			//Uri uri = Uri.parse(ProfileContentProvider.CONTENT_URI + "/" + info.id);
-			//context.getContentResolver().delete(uri, null, null);
+			Log.i(TAG,"delete Profile requested");
+			AdapterContextMenuInfo info = (AdapterContextMenuInfo) item.getMenuInfo();
+			Uri uri = Uri.parse(ProfileContentProvider.CONTENT_URI + "/" + info.id);
+			Log.i(TAG,"uri to delete" + uri);
+			getActivity().getContentResolver().delete(uri, null, null);
 			//fillData();
 			//reloadNeeded = true;
 			return true;
@@ -73,13 +69,17 @@ public class ProfileListFragment extends ListFragment implements LoaderManager.L
 	@Override
 	public void onListItemClick(ListView l, View v, int position, long id) {
 		super.onListItemClick(l, v, position, id);
-		//Intent i = new Intent(this, CreateNewProfileActivity.class);
-		Uri ProfileUri = Uri.parse(ProfileContentProvider.CONTENT_URI + "/" + id);
-		//i.putExtra(ProfileContentProvider.CONTENT_ITEM_TYPE, ProfileUri);
-		//startActivity(i);
-		//finish();
-		Toast.makeText(getActivity(),"onListItemClick() called.", Toast.LENGTH_LONG).show();
+		//build selector URI as a string
+		String ProfileUri = ProfileContentProvider.CONTENT_URI + "/" + id;
 		
+		//Set the URI as an argument for the next fragment
+		Bundle bundle = new Bundle();
+		bundle.putString(ProfileContentProvider.CONTENT_ITEM_TYPE, ProfileUri);
+		Fragment CreateProfile = new CreateProfileFragment();
+		CreateProfile.setArguments(bundle);
+		
+		//replace the fragment with new fragment
+		getFragmentManager().beginTransaction().replace(R.id.frame_container, CreateProfile).commit();; 
 	}
 	
 	private void fillData() {
@@ -90,9 +90,11 @@ public class ProfileListFragment extends ListFragment implements LoaderManager.L
 		int[] to = new int[] { R.id.label, R.id.wifi_label };
 
 		getActivity().getLoaderManager().initLoader(0, null, this);
-		adapter = new SimpleCursorAdapter(getActivity(), R.layout.profile_row, null, From, to, 0);
-
+		if (adapter == null){
+			adapter = new SimpleCursorAdapter(getActivity(), R.layout.profile_row, null, From, to, 0);
+		}
 		setListAdapter(adapter);
+		Log.i(TAG, "filldata this method is done now!");
 	}
 
 	@Override
@@ -108,6 +110,7 @@ public class ProfileListFragment extends ListFragment implements LoaderManager.L
 
 	@Override
 	public void onLoadFinished(Loader<Cursor> Loader, Cursor data) {
+		Log.i(TAG+":onLoadFinished", "crasy things are going down here");
 		adapter.swapCursor(data);
 	}
 
@@ -117,4 +120,8 @@ public class ProfileListFragment extends ListFragment implements LoaderManager.L
 		
 	}
 	
+	@Override
+	public String toString(){
+		return "ProfileListFragment";
+	}
 }

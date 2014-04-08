@@ -22,9 +22,9 @@ import android.widget.ListView;
 
 public class MainActivity extends Activity {
 	private static final String TAG = "MainActivity"; 
-	private static final int MENUITEM = Menu.FIRST;
 
 	private Fragment fragment;
+	private Fragment profileList;
 	
 	private DrawerLayout mDrawerLayout;
 	private ListView mDrawerList;
@@ -131,7 +131,10 @@ public class MainActivity extends Activity {
 				fragment = new ModuleListFragment();
 				break;
 			case 1:
-				fragment = new ProfileListFragment();
+				if (profileList == null){
+					profileList = new ProfileListFragment();
+				}
+				fragment = profileList;
 				break;
 			case 2:
 				fragment = new SetupRoomUnitFragment();
@@ -233,5 +236,22 @@ public class MainActivity extends Activity {
 		super.onConfigurationChanged(newConfig);
 		// Pass any configuration change to the drawer toggls
 		mDrawerToggle.onConfigurationChanged(newConfig);
+	}
+	
+	@Override
+	public void onBackPressed(){
+		FragmentManager fragmentManager = getFragmentManager();
+		Fragment temp = (Fragment) fragmentManager.findFragmentById(R.id.frame_container);
+		if (temp.toString() == "CreateProfileFragment"){
+			if (profileList == null){
+				profileList = new ProfileListFragment();
+			}
+			fragment = profileList;
+		} else if (temp.toString() == "ModuleListFragment"){
+			Log.i("onBackPressed", "ModuleListFragment");
+		} else {
+			fragment = new ModuleListFragment();
+		}
+		displayView();
 	}
 }

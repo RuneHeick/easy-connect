@@ -19,4 +19,8 @@ public class ModuleListFragment extends Fragment{
         return rootView;
     }
 	
+	@Override
+	public String toString(){
+		return "ModuleListFragment";
+	}
 }
