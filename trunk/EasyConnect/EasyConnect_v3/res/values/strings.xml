@@ -5,7 +5,10 @@
     <string name="action_settings">Settings</string>
     <string name="hello_world">Hello world!</string>
     <string name="title_activity_main">MainActivity</string>
-
+	<string name="add_module">Add Module Fragment</string>
+	<string name="module_list">Module List Fragment</string>
+	<string name="setup_room_unit">Setup Room Unit Fragment</string>
+	
     <!-- Nav Drawer Menu Items -->
     <string-array name="nav_drawer_items">
         <item >Home</item>

@@ -8,13 +8,7 @@
          android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_centerInParent="true"
-        android:textSize="16dp"
-        android:text="SetupRoomUnit View"/>
+        android:textSize="16sp"
+        android:text="@string/setup_room_unit"/>
      
-    <ImageView android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/txtLabel"
-        android:src="@drawable/ic_launcher"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="10dp"/>
 </RelativeLayout>

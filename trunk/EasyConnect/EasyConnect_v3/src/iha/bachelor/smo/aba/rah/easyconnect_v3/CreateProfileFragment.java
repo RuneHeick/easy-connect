@@ -45,15 +45,16 @@ public class CreateProfileFragment extends Fragment{
 		wifiManager = (WifiManager) getActivity().getSystemService(Context.WIFI_SERVICE);
 		WifiInfo wifiInfo = wifiManager.getConnectionInfo();
 		WifiNameEditText.setText(wifiInfo.getSSID());
-		Bundle extras = getActivity().getIntent().getExtras();
+		
+		Bundle extras = getArguments();
 
 	    // check from the saved Instance
 		ProfileUri = (savedInstanceState == null) ? null : (Uri) savedInstanceState.getParcelable(ProfileContentProvider.CONTENT_ITEM_TYPE);
 
 	    // Or passed from the other activity
 	    if (extras != null) {
-	    	ProfileUri = extras.getParcelable(ProfileContentProvider.CONTENT_ITEM_TYPE);
-
+	    	String temp = extras.getString(ProfileContentProvider.CONTENT_ITEM_TYPE);
+	    	ProfileUri = Uri.parse(temp);
 	    	fillData(ProfileUri);
 	    }
 	    
@@ -64,7 +65,6 @@ public class CreateProfileFragment extends Fragment{
 						|| TextUtils.isEmpty(WifiPasswordEditText.getText().toString()) ) {
 					MoreDataToast();
 				} else {
-					//hejsetResult(RESULT_OK);
 					saveProfile();
 				}
 			}
@@ -128,5 +128,10 @@ public class CreateProfileFragment extends Fragment{
 
 	private void MoreDataToast(){
 		Toast.makeText(this.getActivity(), "Please fill more data" , Toast.LENGTH_LONG).show();	
+	}
+	
+	@Override
+	public String toString(){
+		return "CreateProfileFragment";
 	}
 }

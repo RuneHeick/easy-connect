@@ -18,4 +18,9 @@ public class AddModuleFragment extends Fragment{
           
         return rootView;
     }
+	
+	@Override
+	public String toString(){
+		return "AddModuleFragment";
+	}
 }
