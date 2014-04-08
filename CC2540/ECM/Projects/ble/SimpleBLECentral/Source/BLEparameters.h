@@ -18,7 +18,7 @@
 #define DEFAULT_SCAN_DURATION                 4000
 
 // Discovey mode (limited, general, all)
-#define DEFAULT_DISCOVERY_MODE                DEVDISC_MODE_ALL
+#define DEFAULT_DISCOVERY_MODE                DEVDISC_MODE_GENERAL
 
 // TRUE to use active scan
 #define DEFAULT_DISCOVERY_ACTIVE_SCAN         TRUE

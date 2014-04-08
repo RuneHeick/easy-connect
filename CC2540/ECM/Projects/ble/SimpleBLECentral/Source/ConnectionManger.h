@@ -28,6 +28,7 @@ typedef struct
   uint32 KeepAliveTimeLeft_ms; //time left til Keep Alive Service 
   uint16 KeppAliveHandel; 
   
+  uint16 UpdateHandel; // Handel to the Update function. Is Used to automatic get updates. 
   uint8 addr[B_ADDR_LEN];
 }AcceptedDeviceInfo;
 
@@ -93,6 +94,18 @@ typedef union
   gattPrepareWriteReq_t write; 
 }rwreq_t; 
 
+typedef struct ScanResponse
+{
+  uint8 eventType;
+  
+  uint8 addr[B_ADDR_LEN];
+  int8 rssi;  
+  
+  uint8 dataLen;
+  uint8 *pEvtData;
+  
+}ScanResponse_t;
+
 /*********** base of queue items *************/
 typedef struct EventQueueItemBase_t 
 {
@@ -122,8 +135,7 @@ typedef struct EventQueueRWItem_t
 typedef struct EventQueueScanItem_t 
 {
   EventQueueItemBase_t base;
-  gapDevRec_t * list; 
-  uint8 devicesCount; 
+  List response;
 }EventQueueScanItem_t;
 
 /*** ServiceDir item ***/

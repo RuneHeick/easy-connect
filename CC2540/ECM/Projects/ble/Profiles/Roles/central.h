@@ -93,7 +93,7 @@ typedef union
 {
   gapEventHdr_t             gap;                //!< GAP_MSG_EVENT and status.
   gapDeviceInitDoneEvent_t  initDone;           //!< GAP initialization done.
-  gapDeviceInfoEvent_t      deviceInfo;         //!< Discovery device information event structure.
+  gapDeviceInfoEvent_t      devceInfo;         //!< Discovery device information event structure.
   gapDevDiscEvent_t         discCmpl;           //!< Discovery complete event structure.
   gapEstLinkReqEvent_t      linkCmpl;           //!< Link complete event structure.
   gapLinkUpdateEvent_t      linkUpdate;         //!< Link update event structure.

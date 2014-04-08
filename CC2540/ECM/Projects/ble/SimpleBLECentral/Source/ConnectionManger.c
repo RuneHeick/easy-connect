@@ -44,7 +44,8 @@ static void cancelLinkEstablishment();
 static void discoveryComplete();
 static void discoveryCompleteError();
 static void RWComplete(Callback call);
-
+static void disposeScanList(List* item);
+static void TerminateALLLinks();
 
 static uint8 NULLaddr[B_ADDR_LEN] = {0x00, 0x00, 0x00, 0x00, 0x00 , 0x00}; 
 static uint8 ConnectionManger_tarskID;
@@ -169,12 +170,6 @@ uint16 ConnectionManger_ProcessEvent( uint8 task_id, uint16 events )
     // Register with bond manager after starting device
     GAPBondMgr_Register( (gapBondCBs_t *) &simpleBLEBondCB );
     
-    /*
-    uint8 adress[] = {0x62,0xEE,0xD4,0xF7,0xB1,0x34};
-    char string[] = "There have been several claims for the longest sentence in the English language";
-    Queue_addWrite(string,strlen(string),adress,0x001E,NULL,NULL);
-    */
-    
     return ( events ^ START_DEVICE_EVENT );
   }
   
@@ -189,6 +184,10 @@ uint16 ConnectionManger_ProcessEvent( uint8 task_id, uint16 events )
         status = BUSY; 
         osal_set_event(ConnectionManger_tarskID,PROCESSQUEUEITEM_EVENT);
       }
+    }
+    else if(EventQueue==NULL)
+    {
+      TerminateALLLinks(); 
     }
     
     // return unprocessed events
@@ -393,6 +392,17 @@ static void EstablishLink(ConnectedDevice_t* conContainor)
   osal_start_timerEx(ConnectionManger_tarskID ,LINKTIMEOUT_EVENT,LINKTIMEOUT_TIME);
 }
 
+static void TerminateALLLinks()
+{
+  for(uint8 i = 0; i<MAX_HW_SUPPORTED_DEVICES; i++)
+  {
+      if(connectedDevices[i].status == CONNECTED)
+      {
+          GAPCentralRole_TerminateLink(connectedDevices[i].ConnHandel);
+      }
+  }
+}
+
 static void cancelLinkEstablishment()
 {
   uint8 i; 
@@ -535,6 +545,8 @@ void Queue_Scan(Callback call, Callback ecall)
   osal_memcpy(item->base.addr,NULLaddr,B_ADDR_LEN);
   item->base.callback = call; 
   
+  item->response = GenericList_create(); 
+  
   Enqueue((EventQueueItemBase_t*)item);
 }
 
@@ -561,7 +573,28 @@ static void BLE_CentralEventCB( gapCentralRoleEvent_t *pEvent )
         LCD_WRITE_STRING( bdAddr2Str( pEvent->initDone.devAddr ),  HAL_LCD_LINE_2 );
       }
       break;
-      
+    case GAP_DEVICE_INFO_EVENT:
+      {
+        if(CurrentEvent!=NULL  && CurrentEvent->action == Scan)
+        {
+          EventQueueScanItem_t* currentevent = (EventQueueScanItem_t*)CurrentEvent;
+          ScanResponse_t item; 
+          item.eventType = pEvent->devceInfo.eventType;
+          item.rssi = pEvent->devceInfo.rssi;
+          item.dataLen = pEvent->devceInfo.dataLen;
+          
+          osal_memcpy(item.addr,pEvent->devceInfo.addr,B_ADDR_LEN);
+          item.pEvtData = osal_memdup(pEvent->devceInfo.pEvtData,pEvent->devceInfo.dataLen);
+          if(item.pEvtData==NULL)
+          {
+            item.dataLen = NULL; 
+          }
+          
+          if(false==GenericList_add(&currentevent->response,(uint8*)&item,sizeof(ScanResponse_t)))
+            osal_mem_free(item.pEvtData); 
+        }
+      }
+      break;
     case GAP_DEVICE_DISCOVERY_EVENT:
     {
        if(CurrentEvent!=NULL  && CurrentEvent->action == Scan)
@@ -569,10 +602,9 @@ static void BLE_CentralEventCB( gapCentralRoleEvent_t *pEvent )
          EventQueueScanItem_t* item = (EventQueueScanItem_t*)CurrentEvent;
          if(item->base.callback != NULL)
          {
-          item->list = pEvent->discCmpl.pDevList;
-          item->devicesCount = pEvent->discCmpl.numDevs;
-          item->base.callback(CurrentEvent); 
+            item->base.callback(CurrentEvent); 
          }
+         disposeScanList(&item->response);
          status = READY; 
        }
        osal_set_event(ConnectionManger_tarskID,DEQUEUE_EVENT); 
@@ -946,4 +978,15 @@ static void RWComplete(Callback call)
   GenericList_dispose(&item->response);
   status = READY; 
   osal_set_event(ConnectionManger_tarskID,DEQUEUE_EVENT);
+}
+
+static void disposeScanList(List* list)
+{
+  while(list->count != 0)
+  { 
+     ListItem* listitem = GenericList_at(list,0);
+     ScanResponse_t* item = (ScanResponse_t*)listitem->value; 
+     osal_mem_free(item->pEvtData);
+     GenericList_remove(list,0); 
+  }
 }

@@ -130,37 +130,58 @@ uint8 GAPManget_SetupName(char* DeviceName, uint8 nameSize)
     return size; 
 }
 
-void Setup_discoverableMode(uint8 mode)
+void Setup_discoverableMode(uint8 mode, bool hasData)
 {
-  uint8 advertData[] =
-  {
-  // Flags; this sets the device to use limited discoverable
-  // mode (advertises for 30 seconds at a time) instead of general
-  // discoverable mode (advertises indefinitely)
-  0x02,   // length of this data
-  GAP_ADTYPE_FLAGS,
-  mode | GAP_ADTYPE_FLAGS_BREDR_NOT_SUPPORTED,
-
-  // service UUID, to notify central devices what services are included
-  // in this peripheral
-  0x03,   // length of this data
-  GAP_ADTYPE_16BIT_MORE,      // some of the UUID's, but not all
-  LO_UINT16( SMARTCOMMAND_SERV_UUID ),
-  HI_UINT16( SMARTCOMMAND_SERV_UUID ),
-
-  };
+  if(mode == GAP_ADTYPE_FLAGS_NON || mode == GAP_ADTYPE_FLAGS_LIMITED || 
+     mode == GAP_ADTYPE_FLAGS_GENERAL)
+  { 
+    uint8 advertlen; 
+    
+    uint8 advertData[] =
+    {
+    // Flags; this sets the device to use limited discoverable
+    // mode (advertises for 30 seconds at a time) instead of general
+    // discoverable mode (advertises indefinitely)
+    0x02,   // length of this data
+    GAP_ADTYPE_FLAGS,
+    mode | GAP_ADTYPE_FLAGS_BREDR_NOT_SUPPORTED,
   
-  uint8 initial_advertising_enable = TRUE;
-
-  // By setting this to zero, the device will go into the waiting state after
-  // being discoverable for 30.72 second, and will not being advertising again
-  // until the enabler is set back to TRUE
-  uint16 gapRole_AdvertOffTime = 0;
+    // service UUID, to notify central devices what services are included
+    // in this peripheral
+    0x03,   // length of this data
+    GAP_ADTYPE_16BIT_MORE,      // some of the UUID's, but not all
+    LO_UINT16( SMARTCOMMAND_SERV_UUID ),
+    HI_UINT16( SMARTCOMMAND_SERV_UUID ),
+    0, // for has data flag
+    0,
+    0,
+    0,
+    };
+    advertlen = sizeof(advertData)-4; 
+    
+    if(hasData)
+    {
+      // three-byte broadcast of the data "1 2 3"
+      advertData[7] = 0x03;   // length of this data including the data type byte
+      advertData[8] = GAP_ADTYPE_MANUFACTURER_SPECIFIC;      // manufacturer specific advertisement data type
+      advertData[9] = 0xEC;
+      advertData[10] = 0xDA; // EC application has DAta 
+      
+      advertlen += 4;
+    }
+    
+    uint8 initial_advertising_enable = TRUE;
   
-  // Set the GAP Role Parameters
-  GAPRole_SetParameter( GAPROLE_ADVERT_DATA, sizeof( advertData ), advertData );
-  GAPRole_SetParameter( GAPROLE_ADVERT_ENABLED, sizeof( uint8 ), &initial_advertising_enable );
-  GAPRole_SetParameter( GAPROLE_ADVERT_OFF_TIME, sizeof( uint16 ), &gapRole_AdvertOffTime );
+    // By setting this to zero, the device will go into the waiting state after
+    // being discoverable for 30.72 second, and will not being advertising again
+    // until the enabler is set back to TRUE
+    uint16 gapRole_AdvertOffTime = 0;
+    
+    // Set the GAP Role Parameters
+    GAPRole_SetParameter( GAPROLE_ADVERT_DATA, advertlen , advertData );
+    GAPRole_SetParameter( GAPROLE_ADVERT_ENABLED, sizeof( uint8 ), &initial_advertising_enable );
+    GAPRole_SetParameter( GAPROLE_ADVERT_OFF_TIME, sizeof( uint16 ), &gapRole_AdvertOffTime );
+  }
 }
 
 uint16 InitState_ProcessEvent( uint8 task_id, uint16 events )
@@ -319,7 +340,6 @@ void InitState_Enter(uint8 tarskID)
   {
     char name[] = "Runes meget meget lange navn som er længer end man tror";
     DevInfo_SetParameter(DEVINFO_MANUFACTURER_NAME,strlen(name),name);
-    GAPManget_SetupName("TEST",4);
     SimpleBLEPeripheral_SwitchState(NORMALSTATE_INDEX);
     IsInit = true; 
   }
@@ -346,9 +366,11 @@ void InitState_Exit()
     uint16 desired_slave_latency = DEFAULT_DESIRED_SLAVE_LATENCY;
     uint16 desired_conn_timeout = DEFAULT_DESIRED_CONN_TIMEOUT;
     
-    
+    ScanLen = GAPManget_SetupName("TEST",4);
     GAPRole_SetParameter( GAPROLE_SCAN_RSP_DATA, ScanLen*sizeof( uint8 ) , scanRspData.pValue );
-    Setup_discoverableMode(DEFAULT_DISCOVERABLE_MODE);
+    Setup_discoverableMode(DEFAULT_DISCOVERABLE_MODE,false);
+    
+    
     
     GAPRole_SetParameter( GAPROLE_PARAM_UPDATE_ENABLE, sizeof( uint8 ), &enable_update_request );
     GAPRole_SetParameter( GAPROLE_MIN_CONN_INTERVAL, sizeof( uint16 ), &desired_min_interval );
@@ -358,7 +380,7 @@ void InitState_Exit()
   }
 
   // Set the GAP Characteristics
-  GGS_SetParameter( GGS_DEVICE_NAME_ATT, scanRspData.size-11, &scanRspData.pValue[2] );
+  GGS_SetParameter( GGS_DEVICE_NAME_ATT, scanRspData.size-11, &scanRspData.pValue[2] ); //to only get the name; 
   
   // Set advertising interval
   {

@@ -97,7 +97,7 @@ const pTaskEventHandlerFn tasksArr[] =
   GAPCentralRole_ProcessEvent,
   GAPBondMgr_ProcessEvent,
   GATTServApp_ProcessEvent,
-  //SimpleBLECentral_ProcessEvent,
+  SimpleBLECentral_ProcessEvent,
   ConnectionManger_ProcessEvent
 };
 
@@ -158,7 +158,7 @@ void osalInitTasks( void )
   GATTServApp_Init( taskID++ );
 
   /* Application */
-  //SimpleBLECentral_Init( taskID++ );
+  SimpleBLECentral_Init( taskID++ );
   
   ConnectionManger_Init(taskID++ );
 }
