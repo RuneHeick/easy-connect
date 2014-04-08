@@ -74,6 +74,7 @@ extern "C"
 
 // Callback when a characteristic value has changed
 typedef void (*simpleProfileChange_t)( uint8 servicehandel );
+typedef void (*simpleProfileUnreadValueChange_t)( bool hasUnreadValue );
 
 typedef struct
 {
@@ -131,7 +132,7 @@ extern bStatus_t SimpleProfile_GetParameter( uint16 address, GenericValue* value
 
 
 extern void SimpleProfile_SetItemLocked(bool isLocked);
-
+extern void SimpleProfile_RegistreUnreadCallback(simpleProfileUnreadValueChange_t call);
 /*********************************************************************
 *********************************************************************/
 

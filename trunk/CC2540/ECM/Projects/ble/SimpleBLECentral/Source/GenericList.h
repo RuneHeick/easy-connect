@@ -15,11 +15,14 @@ typedef struct List
   ListItem* first; 
 }List;
 
+typedef bool (*Condition)(ListItem* item);
+
 List GenericList_create(); 
 
-void GenericList_add(List* list,uint8* val, uint8 len);  
+bool GenericList_add(List* list,uint8* val, uint8 len);  
 void GenericList_remove(List* list, uint8 index); 
 void GenericList_dispose(List* list); 
 bool GenericList_contains(List* list, uint8* val, uint8 len); 
-
-ListItem* GenericList_at(List* list,uint8 index); 
+bool GenericList_HasElement(List* list,Condition con); 
+ListItem* GenericList_First(List* list,Condition con);
+ListItem* GenericList_at(List* list,uint8 index);

@@ -91,7 +91,7 @@
 gattCharCfg_t UpdateConfig[GATT_MAX_NUM_CONN];
 
 static bool EC_isLocked = TRUE; 
-
+static simpleProfileUnreadValueChange_t  unreadValueChange = NULL;
 /*********************************************************************
  * LOCAL FUNCTIONS
  */
@@ -123,6 +123,14 @@ CONST gattServiceCBs_t simpleProfileCBs =
 void SimpleProfile_SetItemLocked(bool isLocked)
 {
   EC_isLocked = isLocked;
+}
+
+
+
+//Deice has Unread updates 
+void SimpleProfile_RegistreUnreadCallback(simpleProfileUnreadValueChange_t call)
+{
+  unreadValueChange = call;
 }
 
 /*********************************************************************
@@ -208,7 +216,8 @@ bStatus_t SimpleProfile_SetParameter( uint16 address, uint8 len, void *value )
       
     SmartCommandsManger_AddHandleToUpdate(handel);
     simpleProfile_CCCUpdate(SmartCommandServices[service-1]);
-
+    if(unreadValueChange != NULL)
+      unreadValueChange(true);  
   }
   else
   {
@@ -366,6 +375,8 @@ static uint8 simpleProfile_ReadAttrCB( uint16 connHandle, gattAttribute_t *pAttr
         }
       case UPDATE_CHARACTERISTICS_UUID:
         *pLen = SmartCommandsManger_GetUpdate(pValue, maxLen);
+        if(unreadValueChange != NULL)
+          unreadValueChange(false); 
         break;
         
       default:

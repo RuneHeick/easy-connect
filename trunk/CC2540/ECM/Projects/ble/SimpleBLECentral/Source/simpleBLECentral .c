@@ -1,42 +1,3 @@
-/**************************************************************************************************
-  Filename:       simpleBLECentral.c
-  Revised:        $Date: 2011-06-20 11:57:59 -0700 (Mon, 20 Jun 2011) $
-  Revision:       $Revision: 28 $
-
-  Description:    This file contains the Simple BLE Central sample application 
-                  for use with the CC2540 Bluetooth Low Energy Protocol Stack.
-
-  Copyright 2010 Texas Instruments Incorporated. All rights reserved.
-
-  IMPORTANT: Your use of this Software is limited to those specific rights
-  granted under the terms of a software license agreement between the user
-  who downloaded the software, his/her employer (which must be your employer)
-  and Texas Instruments Incorporated (the "License").  You may not use this
-  Software unless you agree to abide by the terms of the License. The License
-  limits your use, and you acknowledge, that the Software may not be modified,
-  copied or distributed unless embedded on a Texas Instruments microcontroller
-  or used solely and exclusively in conjunction with a Texas Instruments radio
-  frequency transceiver, which is integrated into your product.  Other than for
-  the foregoing purpose, you may not use, reproduce, copy, prepare derivative
-  works of, modify, distribute, perform, display or sell this Software and/or
-  its documentation for any purpose.
-
-  YOU FURTHER ACKNOWLEDGE AND AGREE THAT THE SOFTWARE AND DOCUMENTATION ARE
-  PROVIDED “AS IS?WITHOUT WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED,
-  INCLUDING WITHOUT LIMITATION, ANY WARRANTY OF MERCHANTABILITY, TITLE,
-  NON-INFRINGEMENT AND FITNESS FOR A PARTICULAR PURPOSE. IN NO EVENT SHALL
-  TEXAS INSTRUMENTS OR ITS LICENSORS BE LIABLE OR OBLIGATED UNDER CONTRACT,
-  NEGLIGENCE, STRICT LIABILITY, CONTRIBUTION, BREACH OF WARRANTY, OR OTHER
-  LEGAL EQUITABLE THEORY ANY DIRECT OR INDIRECT DAMAGES OR EXPENSES
-  INCLUDING BUT NOT LIMITED TO ANY INCIDENTAL, SPECIAL, INDIRECT, PUNITIVE
-  OR CONSEQUENTIAL DAMAGES, LOST PROFITS OR LOST DATA, COST OF PROCUREMENT
-  OF SUBSTITUTE GOODS, TECHNOLOGY, SERVICES, OR ANY CLAIMS BY THIRD PARTIES
-  (INCLUDING BUT NOT LIMITED TO ANY DEFENSE THEREOF), OR OTHER SIMILAR COSTS.
-
-  Should you have any questions regarding your right to use this Software,
-  contact Texas Instruments Incorporated at www.TI.com.
-**************************************************************************************************/
-
 /*********************************************************************
  * INCLUDES
  */
@@ -61,27 +22,10 @@
 #include "OSAL_Timers.h"
 #include "BLEparameters.h"
 
-// Application states
-enum
-{
-  BLE_STATE_IDLE,
-  BLE_STATE_CONNECTING,
-  BLE_STATE_CONNECTED,
-  BLE_STATE_DISCONNECTING
-};
 
-// Discovery states
-enum
-{
-  BLE_DISC_STATE_IDLE,                // Idle
-  BLE_DISC_STATE_SVC,                 // Service discovery
-  BLE_DISC_STATE_CHAR                 // Characteristic discovery
-};
-
-#define PERIODIC_SCAN_PERIOD  5000
+#define PERIODIC_SCAN_PERIOD  10000  // in ms. Minimum 5000 = 5 sec 
 
 #define PERIODIC_SCAN_START   (1<<5)
-#define PERIODIC_SCAN_COMPLETE (1<<6)
 #define SERVICE_DEVICE (1<<7)
 
 #define MAX_CONNECTED_DEVICES 10
@@ -112,54 +56,8 @@ enum
 // Task ID for internal task/event processing
 static uint8 simpleBLETaskId;
 
-// GAP GATT Attributes
-static const uint8 simpleBLEDeviceName[GAP_DEVICE_NAME_LEN] = "Simple BLE Central";
-
-// Number of scan results and scan result index
-static uint8 simpleBLEScanRes;
-static uint8 simpleBLEScanIdx;
-
-// Scan result list
-static gapDevRec_t simpleBLEDevList[DEFAULT_MAX_SCAN_RES];
-
-// Scanning state
-static uint8 simpleBLEScanning = FALSE;
-
-// RSSI polling state
-static uint8 simpleBLERssi = FALSE;
-
-// Connection handle of current connection 
-static uint16 simpleBLEConnHandle = GAP_CONNHANDLE_INIT;
-
-// Application state
-static uint8 simpleBLEState = BLE_STATE_IDLE;
-
-// Discovery state
-static uint8 simpleBLEDiscState = BLE_DISC_STATE_IDLE;
-
-// Discovered service start and end handle
-static uint16 simpleBLESvcStartHdl = 0;
-static uint16 simpleBLESvcEndHdl = 0;
-
-// Discovered characteristic handle
-static uint16 simpleBLECharHdl = 0;
-
-// Value to write
-static uint8 simpleBLECharVal = 0;
-
-// Value read/write toggle
-static bool simpleBLEDoWrite = FALSE;
-
-// GATT read/write procedure state
-static bool simpleBLEProcedureInProgress = FALSE;
-
-// is Periodic Scan being prformed  
-static bool PeriodicScan = FALSE; 
-
-
 // contains All devices to service 
-static AcceptedDeviceInfo DevicesToService[MAX_CONNECTED_DEVICES]; 
-static uint8 DevicesToServiceCount = 0; 
+static List DevicesToService; 
 
 static uint32 SystemClockLastUpdate; 
 
@@ -167,102 +65,100 @@ static uint32 SystemClockLastUpdate;
 /*********************************************************************
  * LOCAL FUNCTIONS
  */
-static void simpleBLECentralProcessGATTMsg( gattMsgEvent_t *pMsg );
-static void simpleBLECentralRssiCB( uint16 connHandle, int8  rssi );
-static void simpleBLECentralEventCB( gapCentralRoleEvent_t *pEvent );
-static void simpleBLECentralPasscodeCB( uint8 *deviceAddr, uint16 connectionHandle,
-                                        uint8 uiInputs, uint8 uiOutputs );
-static void simpleBLECentralPairStateCB( uint16 connHandle, uint8 state, uint8 status );
-static void simpleBLECentral_HandleKeys( uint8 shift, uint8 keys );
 static void simpleBLECentral_ProcessOSALMsg( osal_event_hdr_t *pMsg );
-static void simpleBLEGATTDiscoveryEvent( gattMsgEvent_t *pMsg );
-static void simpleBLECentralStartDiscovery( void );
-static bool simpleBLEFindSvcUuid( uint16 uuid, uint8 *pData, uint8 dataLen );
-static void simpleBLEAddDeviceInfo( uint8 *pAddr, uint8 addrType );
-char *bdAddr2Str ( uint8 *pAddr );
-
-
-void RU_StartScan();
+static void scanComplete(void* event);
+static void ReadUpdateHandelsComplete(void* event);
 
 static void scheduleUpdate();
-static void service_addDevice(uint8* addr);
+static void service_addKnownDevice(uint8* addr, uint16 UpdateTimeHandel, uint16 UpdateHandel);
+static void service_addUnknownDevice(uint8* addr, uint16 UpdateTimeHandel,uint8* SysID, uint8 sysIDlen,uint16 SysIdHandel , uint16 UpdateHandel);
+void service_doService(AcceptedDeviceInfo* device);
 
+//***** SCHEDULE NEXT DEVICE UPDATETIME UPDATE *******// 
+static void scheduleUpdate()
+{
+  uint32 UpdateTime = 3600000; // update minimum every houer 
+  uint8 i;  
+  
+  for(i = 0;i< DevicesToService.count; i++)
+  {
+    ListItem* listitem = GenericList_at(&DevicesToService,i);
+    AcceptedDeviceInfo* item = (AcceptedDeviceInfo*)listitem->value;
+   
+     if(item->KeepAliveTimeLeft_ms<UpdateTime)
+       UpdateTime = item->KeepAliveTimeLeft_ms; 
+  }
+  
+  osal_start_timerEx( simpleBLETaskId,SERVICE_DEVICE ,UpdateTime);
+}
 
+// **** ADD DEVICE TO EC CONNECTION UPDATE SERVICE ****// 
+static void service_addUnknownDevice(uint8* addr, uint16 UpdateTimeHandel,uint8* SysID, uint8 sysIDlen,uint16 SysIdHandel, uint16 UpdateHandel )
+{
+  Queue_addWrite(SysID,sysIDlen,addr,SysIdHandel, NULL, NULL);
+  service_addKnownDevice(addr,UpdateTimeHandel, UpdateHandel);
+}
 
-static void service_addDevice(uint8* addr)
+static void service_addKnownDevice(uint8* addr, uint16 UpdateTimeHandel, uint16 UpdateHandel)
 {
   uint8 i; 
-  
-  if(DevicesToServiceCount<MAX_CONNECTED_DEVICES)
+  AcceptedDeviceInfo itemToAdd; 
+  if(DevicesToService.count<MAX_CONNECTED_DEVICES)
   {
     
-    for(i = 0;i< DevicesToServiceCount; i++)
+    for(i = 0;i< DevicesToService.count; i++)
     {
-      if(osal_memcmp(DevicesToService[i].addr,addr,B_ADDR_LEN))
+      ListItem* listitem = GenericList_at(&DevicesToService,i);
+      AcceptedDeviceInfo* item = (AcceptedDeviceInfo*)listitem->value;
+      
+      if(osal_memcmp(item->addr,addr,B_ADDR_LEN))
          return; 
     }
     
     
-    osal_memcpy(DevicesToService[DevicesToServiceCount].addr,addr,B_ADDR_LEN);
-    DevicesToService[DevicesToServiceCount].KeepAliveTime_ms = START_UPDATETIME; 
-    DevicesToService[DevicesToServiceCount].KeepAliveTimeLeft_ms = START_UPDATETIME;
+    osal_memcpy(itemToAdd.addr,addr,B_ADDR_LEN);
+    itemToAdd.KeepAliveTime_ms = START_UPDATETIME; 
+    itemToAdd.KeepAliveTimeLeft_ms = START_UPDATETIME;
+    itemToAdd.KeppAliveHandel = UpdateTimeHandel; // to the ECConnect time char
+    itemToAdd.UpdateHandel = UpdateHandel; // to the update char
+    GenericList_add(&DevicesToService,(uint8*)&itemToAdd,sizeof(AcceptedDeviceInfo));
+    service_doService(&itemToAdd); 
     
-    DevicesToServiceCount++; 
-    
-    if(DevicesToServiceCount==1)
-      osal_start_timerEx( simpleBLETaskId,SERVICE_DEVICE ,START_UPDATETIME);
-    
+    scheduleUpdate();
   }
 }
 
-
-static void scheduleUpdate()
-{
-  uint32 UpdateTime = 3600000;
-  uint8 i;  
-  
-  for(i = 0;i< DevicesToServiceCount; i++)
-  {
-   
-     if(DevicesToService[i].KeepAliveTimeLeft_ms<UpdateTime)
-       UpdateTime = DevicesToService[i].KeepAliveTimeLeft_ms; 
-  }
-  
-  osal_start_timerEx( simpleBLETaskId,SERVICE_DEVICE ,UpdateTime);
-
-}
-
-
+// UPDATE THE CONNECTED DEVICE INFO
 void service_doService(AcceptedDeviceInfo* device)
-{
+{ 
+  device->KeepAliveTimeLeft_ms = device->KeepAliveTime_ms; // here you can change the time dynamicaly
+  uint32 writevalue = device->KeepAliveTimeLeft_ms*2+100; 
+  uint8 write[4] = {(uint8)writevalue,(uint8)(writevalue>>8),(uint8)(writevalue>>16),(uint8)(writevalue>>24)};
+  Queue_addWrite(write,sizeof(write),device->addr,device->KeppAliveHandel, NULL, NULL);
   
-  
-  device->KeepAliveTimeLeft_ms = device->KeepAliveTime_ms;
   scheduleUpdate();
 }
 
 void DecrimentUpdateWait(uint32 Ticks)
 {
   uint8 i;
-  for(i = 0;i< DevicesToServiceCount; i++)
+  for(i = 0;i< DevicesToService.count; i++)
   {   
-      if(DevicesToService[i].KeepAliveTimeLeft_ms<=Ticks && DevicesToService[i].KeepAliveTimeLeft_ms!=0 )
+      ListItem* listitem = GenericList_at(&DevicesToService,i);
+      AcceptedDeviceInfo* item = (AcceptedDeviceInfo*)listitem->value;
+      if(item->KeepAliveTimeLeft_ms<=Ticks && item->KeepAliveTimeLeft_ms!=0 )
       {
-        DevicesToService[i].KeepAliveTimeLeft_ms = 0; 
+        item->KeepAliveTimeLeft_ms = 0; 
         DoServiceEvent_t* msg = (DoServiceEvent_t*)osal_msg_allocate(sizeof(DoServiceEvent_t));
         if(msg)
         {
           msg->hdr.event = DO_SERVICE_MSG; 
-          msg->device = &DevicesToService[i]; 
+          msg->device = item; 
           osal_msg_send(simpleBLETaskId, (uint8*)msg);
         }
-        else
-        {
-         // error fix me 
-        }
       }
-     
-      DevicesToService[i].KeepAliveTimeLeft_ms -= Ticks; 
+      else
+        item->KeepAliveTimeLeft_ms -= Ticks; 
   }  
 }
 
@@ -288,9 +184,12 @@ void DecrimentUpdateWait(uint32 Ticks)
 void SimpleBLECentral_Init( uint8 task_id )
 {
   simpleBLETaskId = task_id;
-
+  DevicesToService = GenericList_create();
   // Setup a delayed profile startup
   osal_set_event( simpleBLETaskId, START_DEVICE_EVT );
+  
+  osal_start_reload_timer( simpleBLETaskId, PERIODIC_SCAN_START, PERIODIC_SCAN_PERIOD );
+
 }
 
 
@@ -330,38 +229,20 @@ uint16 SimpleBLECentral_ProcessEvent( uint8 task_id, uint16 events )
 
   if ( events & START_DEVICE_EVT )
   {
-    
-    //osal_start_timerEx( simpleBLETaskId, PERIODIC_SCAN_START, PERIODIC_SCAN_PERIOD );
+    //test
+    //uint8 adress[] = {0x62,0xEE,0xD4,0xF7,0xB1,0x34};
+    uint8 adress[] = {0xF8,0x3A,0x22,0x8C,0xBA,0x1C};
+    //char string[] = "There have been several claims for the longest sentence in the English language";
+    service_addUnknownDevice(adress,0x001b,adress,sizeof(adress),0x0019,0x020);
     
     return ( events ^ START_DEVICE_EVT );
   }
-
-  if ( events & START_DISCOVERY_EVT )
-  {
-    simpleBLECentralStartDiscovery( );
-    
-    return ( events ^ START_DISCOVERY_EVT );
-  }
-  
   
   if ( events & PERIODIC_SCAN_START )
   {
-    if(PeriodicScan == FALSE)
-    {
-      //PeriodicScan = TRUE; 
-      //RU_StartScan();
-    }
+    Queue_Scan(scanComplete,NULL); 
+    
     return ( events ^ PERIODIC_SCAN_START );
-  }
-  
-  if ( events & PERIODIC_SCAN_COMPLETE )
-  {
-    PeriodicScan = FALSE;
-
-    if(simpleBLEScanRes>0)
-      service_addDevice(simpleBLEDevList[0].addr); 
-    osal_start_timerEx( simpleBLETaskId, PERIODIC_SCAN_START, PERIODIC_SCAN_PERIOD );
-    return ( events ^ PERIODIC_SCAN_COMPLETE );
   }
   
   
@@ -395,663 +276,126 @@ uint16 SimpleBLECentral_ProcessEvent( uint8 task_id, uint16 events )
 static void simpleBLECentral_ProcessOSALMsg( osal_event_hdr_t *pMsg )
 {
   switch ( pMsg->event )
-  {
-    case KEY_CHANGE:
-      simpleBLECentral_HandleKeys( ((keyChange_t *)pMsg)->state, ((keyChange_t *)pMsg)->keys );
-      break;
-
-    case GATT_MSG_EVENT:
-      simpleBLECentralProcessGATTMsg( (gattMsgEvent_t *) pMsg );
-      break;
-      
+  { 
     case DO_SERVICE_MSG:
       service_doService(((DoServiceEvent_t*)pMsg)->device); 
     break;
   }
 }
 
-/*********************************************************************
- * @fn      simpleBLECentral_HandleKeys
- *
- * @brief   Handles all key events for this device.
- *
- * @param   shift - true if in shift/alt.
- * @param   keys - bit field for key events. Valid entries:
- *                 HAL_KEY_SW_2
- *                 HAL_KEY_SW_1
- *
- * @return  none
- */
-
-
-void RU_StartScan()
-{
-  if ( !simpleBLEScanning )
-  {
-    simpleBLEScanning = TRUE;
-    simpleBLEScanRes = 0;
-    GAPCentralRole_StartDiscovery( DEFAULT_DISCOVERY_MODE,
-                                   DEFAULT_DISCOVERY_ACTIVE_SCAN,
-                                   DEFAULT_DISCOVERY_WHITE_LIST );      
-  }
-  else 
-  {
-     GAPCentralRole_CancelDiscovery();
-  } 
-}
-
-
-uint8 gStatus;
-static void simpleBLECentral_HandleKeys( uint8 shift, uint8 keys )
-{
-  (void)shift;  // Intentionally unreferenced parameter
-
-#if defined( CC2540_MINIDK )
-  if ( keys & HAL_KEY_SW_1 )
-#else
-  if ( keys & HAL_KEY_UP )
-#endif
-  {
-    // Start or stop discovery
-    if ( simpleBLEState != BLE_STATE_CONNECTED )
-    {
-      if ( !simpleBLEScanning )
-      {
-        simpleBLEScanning = TRUE;
-        simpleBLEScanRes = 0;
-        
-        
-
-#if defined( CC2540_MINIDK )
-        HalLedSet( HAL_LED_1, HAL_LED_MODE_ON );
-#else        
-        LCD_WRITE_STRING( "Discovering...", HAL_LCD_LINE_1 );
-        LCD_WRITE_STRING( "", HAL_LCD_LINE_2 );
-#endif        
-        GAPCentralRole_StartDiscovery( DEFAULT_DISCOVERY_MODE,
-                                       DEFAULT_DISCOVERY_ACTIVE_SCAN,
-                                       DEFAULT_DISCOVERY_WHITE_LIST );      
-      }
-      else 
-      {
-#if defined( CC2540_MINIDK )
-        HalLedSet( HAL_LED_1, HAL_LED_MODE_OFF );
-        simpleBLEScanning = FALSE;
-#endif        
-        GAPCentralRole_CancelDiscovery();
-      }
-    }
-    else if ( simpleBLEState == BLE_STATE_CONNECTED &&
-              simpleBLECharHdl != 0 &&
-              simpleBLEProcedureInProgress == FALSE )
-    {
-      uint8 status;
-      
-      // Do a read or write as long as no other read or write is in progress
-      if ( simpleBLEDoWrite )
-      {
-        // Do a write
-        attWriteReq_t req;
-        
-        req.handle = simpleBLECharHdl;
-        req.len = 1;
-        req.value[0] = simpleBLECharVal;
-        req.sig = 0;
-        req.cmd = 0;
-        status = GATT_WriteCharValue( simpleBLEConnHandle, &req, simpleBLETaskId );         
-      }
-      else
-      {
-        // Do a read
-        attReadReq_t req;
-        
-        req.handle = simpleBLECharHdl;
-        status = GATT_ReadCharValue( simpleBLEConnHandle, &req, simpleBLETaskId );
-      }
-      
-      if ( status == SUCCESS )
-      {
-        simpleBLEProcedureInProgress = TRUE;
-        simpleBLEDoWrite = !simpleBLEDoWrite;
-      }
-    }    
-  }
-
-  if ( keys & HAL_KEY_LEFT )
-  {
-    // Display discovery results
-    if ( !simpleBLEScanning && simpleBLEScanRes > 0 )
-    {
-        // Increment index of current result (with wraparound)
-        simpleBLEScanIdx++;
-        if ( simpleBLEScanIdx >= simpleBLEScanRes )
-        {
-          simpleBLEScanIdx = 0;
-        }
-        
-        LCD_WRITE_STRING_VALUE( "Device", simpleBLEScanIdx + 1,
-                                10, HAL_LCD_LINE_1 );
-        LCD_WRITE_STRING( bdAddr2Str( simpleBLEDevList[simpleBLEScanIdx].addr ),
-                          HAL_LCD_LINE_2 );
-    }
-  }
-#if !defined( CC2540_MINIDK )
-  if ( keys & HAL_KEY_RIGHT )
-  {
-    // Connection update
-    if ( simpleBLEState == BLE_STATE_CONNECTED )
-    {
-      GAPCentralRole_UpdateLink( simpleBLEConnHandle,
-                                 DEFAULT_UPDATE_MIN_CONN_INTERVAL,
-                                 DEFAULT_UPDATE_MAX_CONN_INTERVAL,
-                                 DEFAULT_UPDATE_SLAVE_LATENCY,
-                                 DEFAULT_UPDATE_CONN_TIMEOUT );
-    }
-  }
-#endif
-#if defined( CC2540_MINIDK )
-  if ( keys & HAL_KEY_SW_2 )
-#else          
-  if ( keys & HAL_KEY_CENTER )
-#endif
-  {
-    uint8 addrType;
-    uint8 *peerAddr;
-    
-    // Connect or disconnect
-    if ( simpleBLEState == BLE_STATE_IDLE )
-    {
-      // if there is a scan result
-      if ( simpleBLEScanRes > 0 )
-      {
-#if defined( CC2540_MINIDK )
-        // Only connect to first device.
-        peerAddr = simpleBLEDevList[0].addr;
-        addrType = simpleBLEDevList[0].addrType;
-#else
-        // connect to current device in scan result
-        peerAddr = simpleBLEDevList[simpleBLEScanIdx].addr;
-        addrType = simpleBLEDevList[simpleBLEScanIdx].addrType;
-#endif
-      
-        simpleBLEState = BLE_STATE_CONNECTING;
-        //osal_pwrmgr_device( PWRMGR_ALWAYS_ON );
-        GAPCentralRole_EstablishLink( DEFAULT_LINK_HIGH_DUTY_CYCLE,
-                                      DEFAULT_LINK_WHITE_LIST,
-                                      addrType, peerAddr );
-  
-#if defined( CC2540_MINIDK )
-        HalLedSet( HAL_LED_2, HAL_LED_MODE_FLASH );
-#else
-        LCD_WRITE_STRING( "Connecting", HAL_LCD_LINE_1 );
-        LCD_WRITE_STRING( bdAddr2Str( peerAddr ), HAL_LCD_LINE_2 ); 
-#endif
-      }
-    }
-    else if ( simpleBLEState == BLE_STATE_CONNECTING ||
-              simpleBLEState == BLE_STATE_CONNECTED )
-    {
-      // disconnect
-      simpleBLEState = BLE_STATE_DISCONNECTING;
-
-      gStatus = GAPCentralRole_TerminateLink( simpleBLEConnHandle );
-
-#if !defined( CC2540_MINIDK )
-      LCD_WRITE_STRING( "Disconnecting", HAL_LCD_LINE_1 ); 
-#endif
-    }
-  }
-  
-  if ( keys & HAL_KEY_DOWN )
-  {
-    // Start or cancel RSSI polling
-    if ( simpleBLEState == BLE_STATE_CONNECTED )
-    {
-      if ( !simpleBLERssi )
-      {
-        simpleBLERssi = TRUE;
-        GAPCentralRole_StartRssi( simpleBLEConnHandle, DEFAULT_RSSI_PERIOD );
-      }
-      else
-      {
-        simpleBLERssi = FALSE;
-        GAPCentralRole_CancelRssi( simpleBLEConnHandle );
-        
-        LCD_WRITE_STRING( "RSSI Cancelled", HAL_LCD_LINE_1 );
-      }
-    }
-  }
-}
-
-/*********************************************************************
- * @fn      simpleBLECentralProcessGATTMsg
- *
- * @brief   Process GATT messages
- *
- * @return  none
- */
-static void simpleBLECentralProcessGATTMsg( gattMsgEvent_t *pMsg )
-{
-  if ( simpleBLEState != BLE_STATE_CONNECTED )
-  {
-    // In case a GATT message came after a connection has dropped,
-    // ignore the message
-    return;
-  }
-  
-  if ( ( pMsg->method == ATT_READ_RSP ) ||
-       ( ( pMsg->method == ATT_ERROR_RSP ) &&
-         ( pMsg->msg.errorRsp.reqOpcode == ATT_READ_REQ ) ) )
-  {
-    if ( pMsg->method == ATT_ERROR_RSP )
-    {
-#if !defined (CC2540_MINIDK)
-      uint8 status = pMsg->msg.errorRsp.errCode;
-      
-      LCD_WRITE_STRING_VALUE( "Read Error", status, 10, HAL_LCD_LINE_1 );
-#endif
-    }
-    else
-    {
-#if !defined (CC2540_MINIDK)
-      // After a successful read, display the read value
-      uint8 valueRead = pMsg->msg.readRsp.value[0];
-
-      LCD_WRITE_STRING_VALUE( "Read rsp:", valueRead, 10, HAL_LCD_LINE_1 );
-#endif    
-    }
-    simpleBLEProcedureInProgress = FALSE;
-  }
-  else if ( ( pMsg->method == ATT_WRITE_RSP ) ||
-       ( ( pMsg->method == ATT_ERROR_RSP ) &&
-         ( pMsg->msg.errorRsp.reqOpcode == ATT_WRITE_REQ ) ) )
-  {
-    
-    if ( pMsg->method == ATT_ERROR_RSP == ATT_ERROR_RSP )
-    {
-#if !defined (CC2540_MINIDK)
-      uint8 status = pMsg->msg.errorRsp.errCode;
-      
-      LCD_WRITE_STRING_VALUE( "Write Error", status, 10, HAL_LCD_LINE_1 );
-#endif
-    }
-    else
-    {
-      // After a succesful write, display the value that was written and increment value
-      LCD_WRITE_STRING_VALUE( "Write sent:", simpleBLECharVal++, 10, HAL_LCD_LINE_1 );      
-    }
-    
-    simpleBLEProcedureInProgress = FALSE;    
-
-  }
-  else if ( simpleBLEDiscState != BLE_DISC_STATE_IDLE )
-  {
-    simpleBLEGATTDiscoveryEvent( pMsg );
-  }
-  
-}
-
-/*********************************************************************
- * @fn      simpleBLECentralRssiCB
- *
- * @brief   RSSI callback.
- *
- * @param   connHandle - connection handle
- * @param   rssi - RSSI
- *
- * @return  none
- */
-static void simpleBLECentralRssiCB( uint16 connHandle, int8 rssi )
-{
-    LCD_WRITE_STRING_VALUE( "RSSI -dB:", (uint8) (-rssi), 10, HAL_LCD_LINE_1 );
-}
-
-/*********************************************************************
- * @fn      simpleBLECentralEventCB
- *
- * @brief   Central event callback function.
- *
- * @param   pEvent - pointer to event structure
- *
- * @return  none
- */
-static void simpleBLECentralEventCB( gapCentralRoleEvent_t *pEvent )
-{
-  switch ( pEvent->gap.opcode )
-  {
-    case GAP_DEVICE_INIT_DONE_EVENT:  
-      {
-        LCD_WRITE_STRING( "BLE Central", HAL_LCD_LINE_1 );
-        LCD_WRITE_STRING( bdAddr2Str( pEvent->initDone.devAddr ),  HAL_LCD_LINE_2 );
-      }
-      break;
-
-    case GAP_DEVICE_INFO_EVENT:
-      {
-        // if filtering device discovery results based on service UUID
-        if ( DEFAULT_DEV_DISC_BY_SVC_UUID == TRUE )
-        {
-          if ( simpleBLEFindSvcUuid( SIMPLEPROFILE_SERV_UUID,
-                                     pEvent->deviceInfo.pEvtData,
-                                     pEvent->deviceInfo.dataLen ) )
-          {
-#if defined( CC2540_MINIDK )
-            HalLedSet( HAL_LED_1, HAL_LED_MODE_FLASH );
-            simpleBLEScanning = FALSE;
-            GAPCentralRole_CancelDiscovery();
-#endif        
-            simpleBLEAddDeviceInfo( pEvent->deviceInfo.addr, pEvent->deviceInfo.addrType );
-          }
-        }
-      }
-      break;
-      
-    case GAP_DEVICE_DISCOVERY_EVENT:
-      {
-        // discovery complete
-       simpleBLEScanning = FALSE;
-
-        // if not filtering device discovery results based on service UUID
-        if ( DEFAULT_DEV_DISC_BY_SVC_UUID == FALSE )
-        {
-          // Copy results
-          simpleBLEScanRes = pEvent->discCmpl.numDevs;
-          osal_memcpy( simpleBLEDevList, pEvent->discCmpl.pDevList,
-                       (sizeof( gapDevRec_t ) * pEvent->discCmpl.numDevs) );
-        }
-#if !defined(CC2540_MINIDK)       
-        LCD_WRITE_STRING_VALUE( "Devices Found", simpleBLEScanRes,
-                                10, HAL_LCD_LINE_1 );
-#endif
-        if ( simpleBLEScanRes > 0 )
-        {
-          LCD_WRITE_STRING( "<- To Select", HAL_LCD_LINE_2 );
-        }
-
-        // initialize scan index to last device
-        simpleBLEScanIdx = simpleBLEScanRes;
-        
-        if(PeriodicScan)
-          osal_set_event( simpleBLETaskId, PERIODIC_SCAN_COMPLETE);
-
-      }
-      break;
-
-    case GAP_LINK_ESTABLISHED_EVENT:
-      {
-        if ( pEvent->gap.hdr.status == SUCCESS )
-        {          
-          simpleBLEState = BLE_STATE_CONNECTED;
-          simpleBLEConnHandle = pEvent->linkCmpl.connectionHandle;
-          simpleBLEProcedureInProgress = TRUE;    
-
-          // If service discovery not performed initiate service discovery
-          if ( simpleBLECharHdl == 0 )
-          {
-            osal_start_timerEx( simpleBLETaskId, START_DISCOVERY_EVT, DEFAULT_SVC_DISCOVERY_DELAY );
-          }
-#if defined (CC2540_MINIDK)    
-          HalLedSet( HAL_LED_1, HAL_LED_MODE_OFF );
-          HalLedSet( HAL_LED_2, HAL_LED_MODE_ON );
-#else
-          LCD_WRITE_STRING( "Connected", HAL_LCD_LINE_1 );
-          LCD_WRITE_STRING( bdAddr2Str( pEvent->linkCmpl.devAddr ), HAL_LCD_LINE_2 );   
-#endif
-        }
-        else
-        {
-          simpleBLEState = BLE_STATE_IDLE;
-          simpleBLEConnHandle = GAP_CONNHANDLE_INIT;
-          simpleBLERssi = FALSE;
-          simpleBLEDiscState = BLE_DISC_STATE_IDLE;
-          
-          LCD_WRITE_STRING( "Connect Failed", HAL_LCD_LINE_1 );
-          LCD_WRITE_STRING_VALUE( "Reason:", pEvent->gap.hdr.status, 10, HAL_LCD_LINE_2 );
-        }
-      }
-      break;
-
-    case GAP_LINK_TERMINATED_EVENT:
-      {
-        simpleBLEState = BLE_STATE_IDLE;
-        simpleBLEConnHandle = GAP_CONNHANDLE_INIT;
-        simpleBLERssi = FALSE;
-        simpleBLEDiscState = BLE_DISC_STATE_IDLE;
-        simpleBLECharHdl = 0;
-        simpleBLEProcedureInProgress = FALSE;
-          
-#if defined( CC2540_MINIDK )
-        HalLedSet( HAL_LED_2, HAL_LED_MODE_OFF );
-#else        
-        LCD_WRITE_STRING( "Disconnected", HAL_LCD_LINE_1 );
-        LCD_WRITE_STRING_VALUE( "Reason:", pEvent->linkTerminate.reason,
-                                10, HAL_LCD_LINE_2 );
-#endif
-      }
-      break;
-
-    case GAP_LINK_PARAM_UPDATE_EVENT:
-      {
-        LCD_WRITE_STRING( "Param Update", HAL_LCD_LINE_1 );
-      }
-      break;
-      
-    default:
-      break;
-  }
-}
 
 
 /*********************************************************************
- * @fn      simpleBLECentralStartDiscovery
- *
- * @brief   Start service discovery.
- *
- * @return  none
- */
-static void simpleBLECentralStartDiscovery( void )
-{
-  uint8 uuid[ATT_BT_UUID_SIZE] = { LO_UINT16(SIMPLEPROFILE_SERV_UUID),
-                                   HI_UINT16(SIMPLEPROFILE_SERV_UUID) };
-  
-  // Initialize cached handles
-  simpleBLESvcStartHdl = simpleBLESvcEndHdl = simpleBLECharHdl = 0;
-
-  simpleBLEDiscState = BLE_DISC_STATE_SVC;
-  
-  // Discovery simple BLE service
-  GATT_DiscPrimaryServiceByUUID( simpleBLEConnHandle,
-                                 uuid,
-                                 ATT_BT_UUID_SIZE,
-                                 simpleBLETaskId );
-}
-
-/*********************************************************************
- * @fn      simpleBLEGATTDiscoveryEvent
- *
- * @brief   Process GATT discovery event
- *
- * @return  none
- */
-static void simpleBLEGATTDiscoveryEvent( gattMsgEvent_t *pMsg )
-{
-  attReadByTypeReq_t req;
-  
-  if ( simpleBLEDiscState == BLE_DISC_STATE_SVC )
-  {
-    // Service found, store handles
-    if ( pMsg->method == ATT_FIND_BY_TYPE_VALUE_RSP &&
-         pMsg->msg.findByTypeValueRsp.numInfo > 0 )
-    {
-      simpleBLESvcStartHdl = pMsg->msg.findByTypeValueRsp.handlesInfo[0].handle;
-      simpleBLESvcEndHdl = pMsg->msg.findByTypeValueRsp.handlesInfo[0].grpEndHandle;
-    }
-    
-    // If procedure complete
-    if ( ( pMsg->method == ATT_FIND_BY_TYPE_VALUE_RSP  && 
-           pMsg->hdr.status == bleProcedureComplete ) ||
-         ( pMsg->method == ATT_ERROR_RSP ) )
-    {
-      if ( simpleBLESvcStartHdl != 0 )
-      {
-        // Discover characteristic
-        simpleBLEDiscState = BLE_DISC_STATE_CHAR;
-        
-        req.startHandle = simpleBLESvcStartHdl;
-        req.endHandle = simpleBLESvcEndHdl;
-        req.type.len = ATT_BT_UUID_SIZE;
-        req.type.uuid[0] = LO_UINT16(SIMPLEPROFILE_CHAR1_UUID);
-        req.type.uuid[1] = HI_UINT16(SIMPLEPROFILE_CHAR1_UUID);
-
-        GATT_ReadUsingCharUUID( simpleBLEConnHandle, &req, simpleBLETaskId );
-      }
-    }
-  }
-  else if ( simpleBLEDiscState == BLE_DISC_STATE_CHAR )
-  {
-    // Characteristic found, store handle
-    if ( pMsg->method == ATT_READ_BY_TYPE_RSP && 
-         pMsg->msg.readByTypeRsp.numPairs > 0 )
-    {
-      simpleBLECharHdl = BUILD_UINT16( pMsg->msg.readByTypeRsp.dataList[0],
-                                       pMsg->msg.readByTypeRsp.dataList[1] );
-      
-      LCD_WRITE_STRING( "Simple Svc Found", HAL_LCD_LINE_1 );
-      simpleBLEProcedureInProgress = FALSE;
-    }
-    
-    simpleBLEDiscState = BLE_DISC_STATE_IDLE;
-
-    
-  }    
-}
-
-
-/*********************************************************************
- * @fn      simpleBLEFindSvcUuid
- *
- * @brief   Find a given UUID in an advertiser's service UUID list.
- *
- * @return  TRUE if service UUID found
- */
-static bool simpleBLEFindSvcUuid( uint16 uuid, uint8 *pData, uint8 dataLen )
-{
-  uint8 adLen;
-  uint8 adType;
-  uint8 *pEnd;
-  
-  pEnd = pData + dataLen - 1;
-  
-  // While end of data not reached
-  while ( pData < pEnd )
-  {
-    // Get length of next AD item
-    adLen = *pData++;
-    if ( adLen > 0 )
-    {
-      adType = *pData;
-      
-      // If AD type is for 16-bit service UUID
-      if ( adType == GAP_ADTYPE_16BIT_MORE || adType == GAP_ADTYPE_16BIT_COMPLETE )
-      {
-        pData++;
-        adLen--;
-        
-        // For each UUID in list
-        while ( adLen >= 2 && pData < pEnd )
-        {
-          // Check for match
-          if ( pData[0] == LO_UINT16(uuid) && pData[1] == HI_UINT16(uuid) )
-          {
-            // Match found
-            return TRUE;
-          }
-          
-          // Go to next
-          pData += 2;
-          adLen -= 2;
-        }
-        
-        // Handle possible erroneous extra byte in UUID list
-        if ( adLen == 1 )
-        {
-          pData++;
-        }
-      }
-      else
-      {
-        // Go to next item
-        pData += adLen;
-      }
-    }
-  }
-  
-  // Match not found
-  return FALSE;
-}
-
-/*********************************************************************
- * @fn      simpleBLEAddDeviceInfo
- *
- * @brief   Add a device to the device discovery result list
- *
- * @return  none
- */
-static void simpleBLEAddDeviceInfo( uint8 *pAddr, uint8 addrType )
-{
-  uint8 i;
-  
-  // If result count not at max
-  if ( simpleBLEScanRes < DEFAULT_MAX_SCAN_RES )
-  {
-    // Check if device is already in scan results
-    for ( i = 0; i < simpleBLEScanRes; i++ )
-    {
-      if ( osal_memcmp( pAddr, simpleBLEDevList[i].addr , B_ADDR_LEN ) )
-      {
-        return;
-      }
-    }
-    
-    // Add addr to scan result list
-    osal_memcpy( simpleBLEDevList[simpleBLEScanRes].addr, pAddr, B_ADDR_LEN );
-    simpleBLEDevList[simpleBLEScanRes].addrType = addrType;
-    
-    // Increment scan result count
-    simpleBLEScanRes++;
-  }
-}
-
-/*********************************************************************
- * @fn      bdAddr2Str
- *
- * @brief   Convert Bluetooth address to string
- *
- * @return  none
- */
-char *bdAddr2Str( uint8 *pAddr )
-{
-  uint8       i;
-  char        hex[] = "0123456789ABCDEF";
-  static char str[B_ADDR_STR_LEN];
-  char        *pStr = str;
-  
-  *pStr++ = '0';
-  *pStr++ = 'x';
-  
-  // Start from end of addr
-  pAddr += B_ADDR_LEN;
-  
-  for ( i = B_ADDR_LEN; i > 0; i-- )
-  {
-    *pStr++ = hex[*--pAddr >> 4];
-    *pStr++ = hex[*pAddr & 0x0F];
-  }
-  
-  *pStr = 0;
-  
-  return str;
-}
-
-/*********************************************************************
+*     SCAN CALLBACK 
 *********************************************************************/
+static uint8 Itemaddr[B_ADDR_LEN]; // for search in list
+bool searchForItemaddr(ListItem* listitem)
+{
+  AcceptedDeviceInfo* item = (AcceptedDeviceInfo*)listitem->value;
+  return osal_memcmp(Itemaddr,item->addr,B_ADDR_LEN);
+}
+
+//All types found with GAP_ADTYPE_ADV_IND
+static void RecivedAdvertisment(ScanResponse_t* item)
+{
+  ListItem* listitem;
+  osal_memcpy(Itemaddr,item->addr,B_ADDR_LEN);
+  listitem = GenericList_First(&DevicesToService,searchForItemaddr);
+  if(listitem != NULL)
+  {
+    AcceptedDeviceInfo* dev = (AcceptedDeviceInfo*)listitem->value;
+    uint8 i = 0; 
+    while(i<item->dataLen)      // se if the ECDA Signal is send to signal a Connection Rq. 
+    {
+      uint8 len = item->pEvtData[i];
+      uint8 command = item->pEvtData[i+1];
+      if(command==GAP_ADTYPE_MANUFACTURER_SPECIFIC && len == 3)
+      {
+        if(item->pEvtData[i+2]==0xEC && item->pEvtData[i+3]==0xDA && dev->UpdateHandel != 0)
+        {
+          Queue_addRead(dev->addr,dev->UpdateHandel,ReadUpdateHandelsComplete,NULL);
+          break; 
+        }
+      }
+      i=i+len+1; 
+    }
+    
+  }
+}
+
+//All types found with GAP_ADTYPE_SCAN_RSP_IND
+static void DeviceFound(ScanResponse_t* item)
+{
+  
+  // send name and addr to USER. 
+  
+}
+
+static void scanComplete(void* event)
+{
+  EventQueueScanItem_t* scan_event = (EventQueueScanItem_t*)event;
+  List* foundDevices = &scan_event->response;
+  ScanResponse_t* resp;
+  
+  for(uint8 i = 0; i<foundDevices->count;i++)
+  {
+     ListItem* item = GenericList_at(foundDevices,i); 
+     resp = (ScanResponse_t*)item->value; 
+     if(resp->eventType == GAP_ADTYPE_ADV_IND)
+       RecivedAdvertisment(resp); 
+     if(resp->eventType == GAP_ADTYPE_SCAN_RSP_IND)
+       DeviceFound(resp); 
+  }
+}
+
+//****************************************************************************
+//    Auto Read Update Values 
+//****************************************************************************
+
+static void ReadValueComplete(void* event)
+{
+  EventQueueRWItem_t* item = (EventQueueRWItem_t*)event;
+  // send to user. 
+  
+}
+
+
+//Takes out the 2 byte handel from multible list items. And queue a read. 
+
+static void ReadUpdateHandelsComplete(void* event)
+{
+  EventQueueRWItem_t* item = (EventQueueRWItem_t*)event;
+  uint16 handel; 
+  bool hasleftovers = false; 
+  
+  while(item->response.count != 0 )
+  {
+    uint8* value =  item->response.first->value;
+    uint8 len = item->response.first->size; 
+    
+    if(hasleftovers)
+    {
+      len--; 
+      handel = (handel) + (value[0]<<8);
+      Queue_addRead(item->base.addr,handel,ReadValueComplete,NULL);
+      value = &value[1];
+    }
+    
+    for(uint8 i = 0; i<len; i=i+2)
+    {
+      handel = (value[i]) + (value[i+1]<<8);
+      Queue_addRead(item->base.addr,handel,ReadValueComplete,NULL);
+    }
+    
+    if(len%2!=0)
+    {
+      handel = value[len-1];
+      hasleftovers = true; 
+    }
+    else
+      hasleftovers = false; 
+    
+    GenericList_remove(&item->response,0);
+    
+  }  
+}

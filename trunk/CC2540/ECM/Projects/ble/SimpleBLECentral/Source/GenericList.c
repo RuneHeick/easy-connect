@@ -9,7 +9,7 @@ List GenericList_create()
   return list; 
 }
 
-void GenericList_add(List* list,uint8* val, uint8 len)
+bool GenericList_add(List* list,uint8* val, uint8 len)
 {
   ListItem* item = osal_mem_alloc(sizeof(ListItem));
   item->value = osal_mem_alloc(len);
@@ -32,11 +32,13 @@ void GenericList_add(List* list,uint8* val, uint8 len)
     }
     
     list->count = list->count + 1 ; 
+    return true; 
   }
   else
   {
     osal_mem_free(item);
     osal_mem_free(item->value);
+    return false;
   }
 }
 
@@ -110,4 +112,42 @@ bool GenericList_contains(List* list, uint8* val, uint8 len)
   }
     
   return false; 
+}
+
+bool GenericList_HasElement(List* list,Condition con)
+{
+  if(list->count>0) 
+  {
+    ListItem* item = list->first; 
+    if(con(item))
+       return true; 
+    
+    while(item->next != NULL)
+    {
+      item = item->next;
+      if(con(item))
+       return true; 
+    }
+  }
+    
+  return false; 
+}
+
+ListItem* GenericList_First(List* list,Condition con)
+{
+  if(list->count>0) 
+  {
+    ListItem* item = list->first; 
+    if(con(item))
+       return item; 
+    
+    while(item->next != NULL)
+    {
+      item = item->next;
+      if(con(item))
+       return item; 
+    }
+  }
+    
+  return NULL; 
 }

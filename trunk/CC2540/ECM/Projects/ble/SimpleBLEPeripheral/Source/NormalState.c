@@ -31,11 +31,14 @@
 #include "InitState.h"
 
 
+#define PERIODIC_TEST_EVENT (1<<10)
+
 //variabels 
 static uint8 TarskID;
-
+static bool requestRead = false; 
 //prototypes
 static void ECConnectionChanged(ECC_Status_t newState);
+static void hasApplicationUnreadData(bool hasUnreadData);
 
 
 //functions
@@ -55,7 +58,14 @@ uint16 NormalState_ProcessEvent( uint8 task_id, uint16 events )
     // return unprocessed events
     return (events ^ SYS_EVENT_MSG);
   }
+  
+  if ( events & PERIODIC_TEST_EVENT )
+  {
+    SimpleProfile_SetParameter(0x0101,3,"HEJ"); // set to hej every time; 
 
+    // return unprocessed events
+    return (events ^ PERIODIC_TEST_EVENT);
+  }
 
   // Discard unknown events
   return 0;
@@ -66,14 +76,14 @@ void NormalState_Enter(uint8 tarskID)
 {
   TarskID = tarskID;
   ECConnect_RegistreChangedCallback(ECConnectionChanged);
-  
+  SimpleProfile_RegistreUnreadCallback(hasApplicationUnreadData);
+  osal_start_reload_timer(tarskID,PERIODIC_TEST_EVENT,30000);
 }
 
 void NormalState_Exit()
 {
-  
-
-    
+  ECConnect_RegistreChangedCallback(NULL);
+  SimpleProfile_RegistreUnreadCallback(NULL);
 }
 
 
@@ -83,7 +93,7 @@ static void ECConnectionChanged(ECC_Status_t newState)
   {
     case CONNECTED_ACCEPTED:
       {
-        Setup_discoverableMode(GAP_ADTYPE_FLAGS_NON);
+        Setup_discoverableMode(GAP_ADTYPE_FLAGS_NON,requestRead);
         SimpleProfile_SetItemLocked(false); //making profiles RW'abel 
       }
       break; 
@@ -94,10 +104,26 @@ static void ECConnectionChanged(ECC_Status_t newState)
       break; 
     case DISCONNECTED:
       {
-        Setup_discoverableMode(GAP_ADTYPE_FLAGS_GENERAL);
+        Setup_discoverableMode(GAP_ADTYPE_FLAGS_GENERAL,requestRead);
+        SimpleProfile_SetItemLocked(true); //making profiles non RW'abel 
+      }
+      break;
+    case CONNECTED_SLEEPING:
+      {
+        if(requestRead)
+          Setup_discoverableMode(GAP_ADTYPE_FLAGS_GENERAL,requestRead);
+        else
+          Setup_discoverableMode(GAP_ADTYPE_FLAGS_NON,requestRead);
         SimpleProfile_SetItemLocked(true); //making profiles non RW'abel 
       }
       break;
   }
   
+}
+
+static void hasApplicationUnreadData(bool hasUnreadData)
+{
+  requestRead = hasUnreadData; 
+  if(hasUnreadData == true)
+    Setup_discoverableMode(GAP_ADTYPE_FLAGS_GENERAL,requestRead);
 }
