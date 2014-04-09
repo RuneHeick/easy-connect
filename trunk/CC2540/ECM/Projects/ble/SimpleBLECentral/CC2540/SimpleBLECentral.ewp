@@ -275,6 +275,7 @@
           <state>HAL_UART</state>
           <state>HAL_UART_DMA=1</state>
           <state>HAL_UART_ISR=0</state>
+          <state>OSALMEM_METRICS</state>
         </option>
         <option>
           <name>CCPreprocFile</name>
@@ -464,6 +465,7 @@
           <state>$PROJ_DIR$\..\..\Include</state>
           <state>$PROJ_DIR$\..\..\Profiles\Roles</state>
           <state>$PROJ_DIR$\..\..\Profiles\SimpleProfile</state>
+          <state>$PROJ_DIR$\..\..\SimpleBLEPeripheral\Source</state>
         </option>
         <option>
           <name>CCStdIncCheck</name>
@@ -1062,16 +1064,16 @@
     <group>
       <name>Communications</name>
       <file>
-        <name>$PROJ_DIR$\..\Source\RUCOM.c</name>
-      </file>
-      <file>
-        <name>$PROJ_DIR$\..\Source\RUCOM.h</name>
-      </file>
-      <file>
         <name>$PROJ_DIR$\..\..\SimpleBLEPeripheral\Source\Uart.c</name>
       </file>
       <file>
         <name>$PROJ_DIR$\..\..\SimpleBLEPeripheral\Source\Uart.h</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\..\Source\UartManager.c</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\..\Source\UartManager.h</name>
       </file>
     </group>
     <group>

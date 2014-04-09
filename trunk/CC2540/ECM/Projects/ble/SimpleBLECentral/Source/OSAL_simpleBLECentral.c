@@ -76,6 +76,7 @@
 /* Application */
 #include "simpleBLECentral.h"
 #include "ConnectionManger.h"
+#include "Uart.h"
 
 /*********************************************************************
  * GLOBAL VARIABLES
@@ -97,6 +98,7 @@ const pTaskEventHandlerFn tasksArr[] =
   GAPCentralRole_ProcessEvent,
   GAPBondMgr_ProcessEvent,
   GATTServApp_ProcessEvent,
+  Uart_ProcessEvent,
   SimpleBLECentral_ProcessEvent,
   ConnectionManger_ProcessEvent
 };
@@ -158,6 +160,8 @@ void osalInitTasks( void )
   GATTServApp_Init( taskID++ );
 
   /* Application */
+  Uart_Init( taskID++ );
+  
   SimpleBLECentral_Init( taskID++ );
   
   ConnectionManger_Init(taskID++ );

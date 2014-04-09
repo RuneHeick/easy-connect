@@ -280,6 +280,15 @@ static void Uart_ClearPendingResponse()
   pendingResponse = false;
   osal_stop_timerEx( Uart_TaskID, UART_ACK_TIMEOUT_EVENT);
 }
+
+uint8* Uart_TxGetDataBuffer()
+{
+  if(bufferTX.status == Ready)
+  {
+    return &bufferTX.buffer[3];
+  }
+  return NULL;
+}
   
 bool Uart_Send(uint8* buffer, uint8 len, uint8 command, CallBackFunction func)
 {
