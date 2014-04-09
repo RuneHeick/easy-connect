@@ -18,12 +18,12 @@
 #include "gapbondmgr.h"
 #include "simpleGATTprofile.h"
 #include "simpleBLECentral.h"
-
+#include "UartManager.h"
 #include "OSAL_Timers.h"
 #include "BLEparameters.h"
+#include "OSAL_Memory.h"
 
-
-#define PERIODIC_SCAN_PERIOD  10000  // in ms. Minimum 5000 = 5 sec 
+#define PERIODIC_SCAN_PERIOD 5000  // in ms. Minimum 5000 = 5 sec 
 
 #define PERIODIC_SCAN_START   (1<<5)
 #define SERVICE_DEVICE (1<<7)
@@ -73,6 +73,7 @@ static void scheduleUpdate();
 static void service_addKnownDevice(uint8* addr, uint16 UpdateTimeHandel, uint16 UpdateHandel);
 static void service_addUnknownDevice(uint8* addr, uint16 UpdateTimeHandel,uint8* SysID, uint8 sysIDlen,uint16 SysIdHandel , uint16 UpdateHandel);
 void service_doService(AcceptedDeviceInfo* device);
+static void ReadValueCompleteFail(void* event);
 
 //***** SCHEDULE NEXT DEVICE UPDATETIME UPDATE *******// 
 static void scheduleUpdate()
@@ -134,7 +135,7 @@ void service_doService(AcceptedDeviceInfo* device)
   device->KeepAliveTimeLeft_ms = device->KeepAliveTime_ms; // here you can change the time dynamicaly
   uint32 writevalue = device->KeepAliveTimeLeft_ms*2+100; 
   uint8 write[4] = {(uint8)writevalue,(uint8)(writevalue>>8),(uint8)(writevalue>>16),(uint8)(writevalue>>24)};
-  Queue_addWrite(write,sizeof(write),device->addr,device->KeppAliveHandel, NULL, NULL);
+  Queue_addWrite(write,sizeof(write),device->addr,device->KeppAliveHandel, NULL, ReadValueCompleteFail);
   
   scheduleUpdate();
 }
@@ -189,7 +190,7 @@ void SimpleBLECentral_Init( uint8 task_id )
   osal_set_event( simpleBLETaskId, START_DEVICE_EVT );
   
   osal_start_reload_timer( simpleBLETaskId, PERIODIC_SCAN_START, PERIODIC_SCAN_PERIOD );
-
+  UartManager_Init();
 }
 
 
@@ -231,17 +232,20 @@ uint16 SimpleBLECentral_ProcessEvent( uint8 task_id, uint16 events )
   {
     //test
     //uint8 adress[] = {0x62,0xEE,0xD4,0xF7,0xB1,0x34};
-    uint8 adress[] = {0xF8,0x3A,0x22,0x8C,0xBA,0x1C};
+    //uint8 adress[] = {0xF8,0x3A,0x22,0x8C,0xBA,0x1C};
     //char string[] = "There have been several claims for the longest sentence in the English language";
-    service_addUnknownDevice(adress,0x001b,adress,sizeof(adress),0x0019,0x020);
+    
+    //uint8 adress[] = {0xE6,0x81,0x70,0xE5,0xc5,0x78};
+    //service_addUnknownDevice(adress,0x001b,adress,sizeof(adress),0x0019,0x020);
     
     return ( events ^ START_DEVICE_EVT );
   }
   
   if ( events & PERIODIC_SCAN_START )
   {
-    Queue_Scan(scanComplete,NULL); 
+    uint16 dec = osal_heap_mem_used();
     
+    Queue_Scan(scanComplete,NULL); 
     return ( events ^ PERIODIC_SCAN_START );
   }
   
@@ -326,9 +330,7 @@ static void RecivedAdvertisment(ScanResponse_t* item)
 //All types found with GAP_ADTYPE_SCAN_RSP_IND
 static void DeviceFound(ScanResponse_t* item)
 {
-  
-  // send name and addr to USER. 
-  
+  SendDeviceInfo(item); 
 }
 
 static void scanComplete(void* event)
@@ -355,10 +357,14 @@ static void scanComplete(void* event)
 static void ReadValueComplete(void* event)
 {
   EventQueueRWItem_t* item = (EventQueueRWItem_t*)event;
-  // send to user. 
-  
+  SendDataCommand(item);
 }
 
+static void ReadValueCompleteFail(void* event)
+{
+  EventQueueRWItem_t* item = (EventQueueRWItem_t*)event;
+  SendDisconnectedCommand(item->base.addr);
+}
 
 //Takes out the 2 byte handel from multible list items. And queue a read. 
 

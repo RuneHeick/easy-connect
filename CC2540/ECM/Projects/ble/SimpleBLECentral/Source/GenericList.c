@@ -151,3 +151,16 @@ ListItem* GenericList_First(List* list,Condition con)
     
   return NULL; 
 }
+
+uint16 GenericList_TotalSize(List* list)
+{
+  uint16 count = 0; 
+  
+  for(uint8 i = 0; i < list->count; i++)
+  {
+    ListItem* item = GenericList_at(list,i);
+    count = count + item->size;
+  }
+  
+  return count; 
+}

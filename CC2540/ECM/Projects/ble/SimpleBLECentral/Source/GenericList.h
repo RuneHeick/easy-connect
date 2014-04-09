@@ -26,3 +26,5 @@ bool GenericList_contains(List* list, uint8* val, uint8 len);
 bool GenericList_HasElement(List* list,Condition con); 
 ListItem* GenericList_First(List* list,Condition con);
 ListItem* GenericList_at(List* list,uint8 index);
+
+uint16 GenericList_TotalSize(List* list); 

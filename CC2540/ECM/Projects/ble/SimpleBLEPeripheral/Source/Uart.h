@@ -12,7 +12,7 @@
 
 #define RETRY_COUNT 3
 #define UART_MAX_SUBCRIPTIONS 10
-
+#define UART_BUFFER_SIZE 128
 
 
 /*****************Command types***************************/
@@ -41,7 +41,7 @@ typedef enum
 
 typedef struct
 {
-  uint8 buffer[128];
+  uint8 buffer[UART_BUFFER_SIZE];
   uint8 count; 
   BufferStatus status;
   
@@ -99,3 +99,5 @@ bool Uart_Subscribe(uint8 tarskId,uint8 command);
 bool Uart_Unsubscribe(uint8 tarskId,uint8 command);
 
 PayloadBuffer Uart_getRXpayload();
+
+uint8* Uart_TxGetDataBuffer();

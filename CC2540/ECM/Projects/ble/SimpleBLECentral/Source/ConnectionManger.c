@@ -175,19 +175,22 @@ uint16 ConnectionManger_ProcessEvent( uint8 task_id, uint16 events )
   
   if ( events & DEQUEUE_EVENT )
   {
-    if(status==READY && EventQueue!=NULL)
+    if(status==READY)
     {
-      Dispose(CurrentEvent); 
-      CurrentEvent = Dequeue(); 
-      if(CurrentEvent!=NULL) 
+      if(EventQueue!=NULL)
       {
-        status = BUSY; 
-        osal_set_event(ConnectionManger_tarskID,PROCESSQUEUEITEM_EVENT);
+        Dispose(CurrentEvent); 
+        CurrentEvent = Dequeue(); 
+        if(CurrentEvent!=NULL) 
+        {
+          status = BUSY; 
+          osal_set_event(ConnectionManger_tarskID,PROCESSQUEUEITEM_EVENT);
+        }
       }
-    }
-    else if(EventQueue==NULL)
-    {
-      TerminateALLLinks(); 
+      else if(EventQueue==NULL)
+      {
+        TerminateALLLinks(); 
+      }
     }
     
     // return unprocessed events
@@ -309,7 +312,7 @@ static void Dispose(EventQueueItemBase_t* item)
 {
   if(item != NULL)
   {
-      osal_mem_free((uint8*)item); 
+      osal_mem_free(item); 
   }
 }
 
@@ -590,8 +593,8 @@ static void BLE_CentralEventCB( gapCentralRoleEvent_t *pEvent )
             item.dataLen = NULL; 
           }
           
-          if(false==GenericList_add(&currentevent->response,(uint8*)&item,sizeof(ScanResponse_t)))
-            osal_mem_free(item.pEvtData); 
+          GenericList_add(&currentevent->response,(uint8*)&item,sizeof(ScanResponse_t));
+          osal_mem_free(item.pEvtData); 
         }
       }
       break;
@@ -957,6 +960,8 @@ static void discoveryComplete()
     item->base.callback(CurrentEvent);
   disposeDiscoveryList(item); 
   status = READY; 
+  Dispose(CurrentEvent);
+  CurrentEvent = NULL;
   osal_set_event(ConnectionManger_tarskID,DEQUEUE_EVENT);
 }
 
@@ -967,6 +972,8 @@ static void discoveryCompleteError()
     item->base.errorcall(CurrentEvent);
   disposeDiscoveryList(item);
   status = READY;
+  Dispose(CurrentEvent);
+  CurrentEvent = NULL;
   osal_set_event(ConnectionManger_tarskID,DEQUEUE_EVENT);
 }
 
@@ -976,7 +983,13 @@ static void RWComplete(Callback call)
   if(call != NULL)
     call(CurrentEvent);
   GenericList_dispose(&item->response);
+  if(item->base.action == Write)
+  {
+    osal_mem_free(item->item.write.pValue);
+  }
   status = READY; 
+  Dispose(CurrentEvent);
+  CurrentEvent = NULL;
   osal_set_event(ConnectionManger_tarskID,DEQUEUE_EVENT);
 }
 
