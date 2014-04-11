@@ -77,7 +77,6 @@
 #include "simpleBLECentral.h"
 #include "ConnectionManger.h"
 #include "Uart.h"
-
 /*********************************************************************
  * GLOBAL VARIABLES
  */

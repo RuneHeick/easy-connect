@@ -265,7 +265,7 @@
         </option>
         <option>
           <name>CCDefines</name>
-          <state>INT_HEAP_LEN=3072</state>
+          <state>INT_HEAP_LEN=3000</state>
           <state>HALNODEBUG</state>
           <state>OSAL_CBTIMER_NUM_TASKS=1</state>
           <state>HAL_AES_DMA=TRUE</state>
@@ -275,7 +275,6 @@
           <state>HAL_UART</state>
           <state>HAL_UART_DMA=1</state>
           <state>HAL_UART_ISR=0</state>
-          <state>OSALMEM_METRICS</state>
         </option>
         <option>
           <name>CCPreprocFile</name>
@@ -466,6 +465,7 @@
           <state>$PROJ_DIR$\..\..\Profiles\Roles</state>
           <state>$PROJ_DIR$\..\..\Profiles\SimpleProfile</state>
           <state>$PROJ_DIR$\..\..\SimpleBLEPeripheral\Source</state>
+          <state>$PROJ_DIR$\..\Source</state>
         </option>
         <option>
           <name>CCStdIncCheck</name>
@@ -1089,6 +1089,12 @@
       </file>
       <file>
         <name>$PROJ_DIR$\..\Source\GenericList.h</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\..\Source\ResetManager.c</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\..\Source\ResetManager.h</name>
       </file>
     </group>
     <file>

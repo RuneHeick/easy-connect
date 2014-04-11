@@ -1,5 +1,6 @@
 #include "UartManager.h"
 #include "GenericList.h"
+#include "Uart.h"
 
 #define COMMANDLENGTH 1
 #define HANDELLENGTH 2
@@ -17,7 +18,8 @@ static void Send(TXStatus status)
   if(uartQueue.count>0 )
   {
     ListItem* item = GenericList_at(&uartQueue,0);
-    if(Uart_Send(&item->value[1],item->size-1, item->value[0], Send))
+    uint8* dataptr = (uint8*)item->value; 
+    if(Uart_Send(&dataptr[1],item->size-1,dataptr[0], Send))
     {
       GenericList_remove(&uartQueue,0);
     }
@@ -48,7 +50,6 @@ void SendDeviceInfo(ScanResponse_t* item)
 
 void SendDataCommand(EventQueueRWItem_t* item)
 {
-  /*
   uint16 len = GenericList_TotalSize(&item->response);
   uint8 index = 0; 
   if(len < UART_BUFFER_SIZE-COMMANDLENGTH-B_ADDR_LEN-HANDELLENGTH)
@@ -72,7 +73,6 @@ void SendDataCommand(EventQueueRWItem_t* item)
       Send(SUCSSES);
     }
   }
-  */
   
 }
 

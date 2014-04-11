@@ -3,7 +3,7 @@
 
 typedef struct ListItem
 {
-   uint8* value; 
+   void* value; 
    uint8 size; 
    
    struct ListItem* next; 
@@ -19,12 +19,12 @@ typedef bool (*Condition)(ListItem* item);
 
 List GenericList_create(); 
 
-bool GenericList_add(List* list,uint8* val, uint8 len);  
-void GenericList_remove(List* list, uint8 index); 
-void GenericList_dispose(List* list); 
-bool GenericList_contains(List* list, uint8* val, uint8 len); 
-bool GenericList_HasElement(List* list,Condition con); 
-ListItem* GenericList_First(List* list,Condition con);
-ListItem* GenericList_at(List* list,uint8 index);
+extern bool GenericList_add(List* list,void* val, uint8 len);  
+extern void GenericList_remove(List* list, uint8 index); 
+extern void GenericList_dispose(List* list); 
+extern bool GenericList_contains(List* list, uint8* val, uint8 len); 
+extern bool GenericList_HasElement(List* list,Condition con); 
+extern ListItem* GenericList_First(List* list,Condition con);
+extern ListItem* GenericList_at(List* list,uint8 index);
 
-uint16 GenericList_TotalSize(List* list); 
+extern uint16 GenericList_TotalSize(List* list); 

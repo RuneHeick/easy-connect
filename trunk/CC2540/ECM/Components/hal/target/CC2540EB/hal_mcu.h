@@ -135,11 +135,12 @@ typedef unsigned char halIntState_t;
  */
 #define WD_EN               BV(3)
 #define WD_MODE             BV(2)
-#define WD_INT_1900_USEC    (BV(0) | BV(1))
+#define WD_INT_1900_USEC    0//(BV(0))
+#define WD_INT_1_S          0
 #define WD_RESET1           (0xA0 | WD_EN | WD_INT_1900_USEC)
 #define WD_RESET2           (0x50 | WD_EN | WD_INT_1900_USEC)
-#define WD_KICK()           st( WDCTL = (0xA0 | WDCTL & 0x0F); WDCTL = (0x50 | WDCTL & 0x0F); )
-
+#define WD_KICK()           st( WDCTL = (0xA0 | (WDCTL & 0x0F)); WDCTL = (0x50 | (WDCTL & 0x0F));)
+#define WD_START()          WDCTL = WD_RESET1; WDCTL = WD_RESET2
 /* disable interrupts, set watchdog timer, wait for reset */
 #define HAL_SYSTEM_RESET()  st( HAL_DISABLE_INTERRUPTS(); WDCTL = WD_RESET1; WDCTL = WD_RESET2; for(;;); )
 

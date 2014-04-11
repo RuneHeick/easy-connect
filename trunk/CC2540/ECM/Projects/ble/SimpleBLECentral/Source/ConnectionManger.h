@@ -82,7 +82,8 @@ typedef enum
   Connect,
   Disconnect,
   Scan, 
-  ServiceDiscovery
+  ServiceDiscovery,
+  None
 }EventType_t;
 
 
@@ -114,8 +115,6 @@ typedef struct EventQueueItemBase_t
   
   Callback errorcall; 
   Callback callback;
-  
-  struct EventQueueItemBase_t* next;
   
 }EventQueueItemBase_t;
 
@@ -150,6 +149,17 @@ typedef struct EventQueueServiceDirItem_t
   DiscoveryResult* result; 
   
 }EventQueueServiceDirItem_t;
+
+
+typedef union 
+{
+  EventQueueItemBase_t base;
+  EventQueueRWItem_t read;
+  EventQueueRWItem_t write;
+  EventQueueScanItem_t scan;
+  EventQueueServiceDirItem_t serviceDir;
+  
+}ConnectionEvents_t; 
 
 //***********************************************************
 //      Functions 

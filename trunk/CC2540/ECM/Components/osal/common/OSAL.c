@@ -63,6 +63,8 @@
   #include "osal_task.h"
 #endif
 
+#include "ResetManager.h"
+
 /*********************************************************************
  * MACROS
  */
@@ -208,7 +210,7 @@ void *osal_revmemcpy( void *dst, const void GENERIC *src, unsigned int len )
  */
 void *osal_memdup( const void GENERIC *src, unsigned int len )
 {
-  uint8 *pDst;
+  uint8 *pDst = NULL;
 
   pDst = osal_mem_alloc( len );
   if ( pDst )
@@ -1052,11 +1054,11 @@ uint8 osal_init_system( void )
   // Initialize the Power Management System
   osal_pwrmgr_init();
 
-  // Initialize the system tasks.
-  osalInitTasks();
-
   // Setup efficient search for the first free block of heap.
   osal_mem_kick();
+  
+  // Initialize the system tasks.
+  osalInitTasks();
 
   return ( SUCCESS );
 }
@@ -1073,12 +1075,19 @@ uint8 osal_init_system( void )
  *
  * @return  none
  */
+
+uint32 maxtime = 0; 
+uint32 SystemClockLastUpdatemain = 0;
 void osal_start_system( void )
 {
+  
+  ResetManager_StartWatchDog();
 #if !defined ( ZBIT ) && !defined ( UBIT )
   for(;;)  // Forever Loop
 #endif
   {
+    ResetManager_ClearWatchDog(); 
+    
     osal_run_system();
   }
 }

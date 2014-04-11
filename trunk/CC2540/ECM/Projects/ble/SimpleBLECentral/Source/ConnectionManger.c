@@ -25,10 +25,9 @@
 
 #define LINKTIMEOUT_TIME 1000
 
-static void ConnectionManger_handel(EventQueueItemBase_t* item);
+static void ConnectionManger_handel(ConnectionEvents_t* item);
 static void EstablishLink(ConnectedDevice_t* conContainor);
-static EventQueueItemBase_t* Dequeue();
-static void Dispose(EventQueueItemBase_t* item);
+static void Dequeue(ConnectionEvents_t*);
 static bool CreateConnection(uint8* addr);
 static bool HasConnection(uint8* addr);
 static void BLE_CentralEventCB( gapCentralRoleEvent_t *pEvent );
@@ -39,7 +38,7 @@ static void simpleBLECentralPasscodeCB( uint8 *deviceAddr, uint16 connectionHand
 static void ConnectionManger_ProcessOSALMsg( osal_event_hdr_t *pMsg );
 static void simpleBLECentralProcessGATTMsg( gattMsgEvent_t *pMsg );
 static void BLEGATTDiscoveryEvent( gattMsgEvent_t *pMsg );
-static uint16 getConnHandel(EventQueueItemBase_t* item);
+static uint16 getConnHandel(ConnectionEvents_t* item);
 static void cancelLinkEstablishment();
 static void discoveryComplete();
 static void discoveryCompleteError();
@@ -51,8 +50,6 @@ static uint8 NULLaddr[B_ADDR_LEN] = {0x00, 0x00, 0x00, 0x00, 0x00 , 0x00};
 static uint8 ConnectionManger_tarskID;
 static ConnectedDevice_t connectedDevices[MAX_HW_SUPPORTED_DEVICES]; 
 
-static EventQueueItemBase_t* EventQueue = NULL; 
-
 
 typedef enum
 {
@@ -62,8 +59,8 @@ typedef enum
 }ConnectionManger_status;
 
 static ConnectionManger_status status = READY; // is item in queue bein processed 
-static EventQueueItemBase_t* CurrentEvent = NULL; //event there is working on from queue 
-
+static ConnectionEvents_t CurrentEvent; //event there is working on from queue 
+static List EventQueue; 
 
 /*********************************************************************
  * PROFILE CALLBACKS
@@ -93,7 +90,7 @@ void ConnectionManger_Init( uint8 task_id)
 {  
   uint8 i; 
   ConnectionManger_tarskID = task_id;
-  
+  EventQueue = GenericList_create();
   // Setup Central Profile
   {
     uint8 scanRes = DEFAULT_MAX_SCAN_RES;
@@ -177,17 +174,16 @@ uint16 ConnectionManger_ProcessEvent( uint8 task_id, uint16 events )
   {
     if(status==READY)
     {
-      if(EventQueue!=NULL)
+      if(EventQueue.count>0)
       {
-        Dispose(CurrentEvent); 
-        CurrentEvent = Dequeue(); 
-        if(CurrentEvent!=NULL) 
+        Dequeue(&CurrentEvent);
+        if(CurrentEvent.base.action != None) 
         {
           status = BUSY; 
           osal_set_event(ConnectionManger_tarskID,PROCESSQUEUEITEM_EVENT);
         }
       }
-      else if(EventQueue==NULL)
+      else
       {
         TerminateALLLinks(); 
       }
@@ -199,21 +195,21 @@ uint16 ConnectionManger_ProcessEvent( uint8 task_id, uint16 events )
   
   if ( events & PROCESSQUEUEITEM_EVENT )
   {
-    if(CurrentEvent!=NULL && status==BUSY)
+    if(CurrentEvent.base.action != None && status==BUSY)
     {
-      if(HasConnection(CurrentEvent->addr)==false)
+      if(HasConnection(CurrentEvent.base.addr)==false)
       {
-        if(CreateConnection(CurrentEvent->addr)==false)
+        if(CreateConnection(CurrentEvent.base.addr)==false)
         {
-          if(CurrentEvent->errorcall != NULL)
-            CurrentEvent->errorcall(CurrentEvent); // if no connection can be established. 
+          if(CurrentEvent.base.errorcall != NULL)
+            CurrentEvent.base.errorcall(&CurrentEvent); // if no connection can be established. 
           status = READY; 
           osal_set_event(ConnectionManger_tarskID,DEQUEUE_EVENT);
         }
       }
       else
       {
-        ConnectionManger_handel(CurrentEvent);
+        ConnectionManger_handel(&CurrentEvent);
       }
     }
     return (events ^ PROCESSQUEUEITEM_EVENT);
@@ -222,9 +218,9 @@ uint16 ConnectionManger_ProcessEvent( uint8 task_id, uint16 events )
   if ( events & LINKTIMEOUT_EVENT )
   {
     cancelLinkEstablishment();
-    if(CurrentEvent!=NULL && status==BUSY && CurrentEvent->errorcall != NULL)
+    if(CurrentEvent.base.action != None && status==BUSY && CurrentEvent.base.errorcall != NULL)
     {
-      CurrentEvent->errorcall(CurrentEvent); 
+      CurrentEvent.base.errorcall(&CurrentEvent); 
     }
     status = READY;
     osal_set_event(ConnectionManger_tarskID,DEQUEUE_EVENT);
@@ -237,26 +233,25 @@ uint16 ConnectionManger_ProcessEvent( uint8 task_id, uint16 events )
 
 
 
-static void ConnectionManger_handel(EventQueueItemBase_t* item)
+static void ConnectionManger_handel(ConnectionEvents_t* item)
 {
-  switch(item->action)
+  switch(item->base.action)
   {
     case Read:
       {
-        EventQueueRWItem_t* extitem = (EventQueueRWItem_t*)item;
-        GATT_ReadLongCharValue(getConnHandel(item), &extitem->item.read, ConnectionManger_tarskID );
+        GATT_ReadLongCharValue(getConnHandel(item), &item->read.item.read, ConnectionManger_tarskID );
       }
       break; 
     case Write:
       {
-        EventQueueRWItem_t* extitem = (EventQueueRWItem_t*)item;
-        GATT_WriteLongCharValue(getConnHandel(item), &extitem->item.write, ConnectionManger_tarskID );
+        GATT_WriteLongCharValue(getConnHandel(item), &item->write.item.write, ConnectionManger_tarskID );
       }
       break;
     case Connect:
     case Disconnect: 
     case Scan:
       {
+        GAPCentralRole_CancelDiscovery();
         GAPCentralRole_StartDiscovery( DEFAULT_DISCOVERY_MODE,
                                        DEFAULT_DISCOVERY_ACTIVE_SCAN,
                                        DEFAULT_DISCOVERY_WHITE_LIST );
@@ -264,17 +259,16 @@ static void ConnectionManger_handel(EventQueueItemBase_t* item)
       break;
     case ServiceDiscovery:
       { 
-        EventQueueServiceDirItem_t* extitem = (EventQueueServiceDirItem_t*)item;
-        switch(extitem->type)
+        switch(item->serviceDir.type)
         {
           case Primary: 
             GATT_DiscAllPrimaryServices(getConnHandel(item),ConnectionManger_tarskID); 
             break; 
           case Characteristic: 
-            GATT_DiscAllChars(getConnHandel(item),extitem->startHandle,extitem->endHandle,ConnectionManger_tarskID); 
+            GATT_DiscAllChars(getConnHandel(item),item->serviceDir.startHandle,item->serviceDir.endHandle,ConnectionManger_tarskID); 
             break;
           case Descriptor: 
-            GATT_DiscAllCharDescs(getConnHandel(item),extitem->startHandle,extitem->endHandle,ConnectionManger_tarskID); 
+            GATT_DiscAllCharDescs(getConnHandel(item),item->serviceDir.startHandle,item->serviceDir.endHandle,ConnectionManger_tarskID); 
             break;
         }
       }
@@ -307,14 +301,6 @@ static void ConnectionManger_ProcessOSALMsg( osal_event_hdr_t *pMsg )
 //***********************************************************
 //      static Help Functions  
 //***********************************************************
-
-static void Dispose(EventQueueItemBase_t* item)
-{
-  if(item != NULL)
-  {
-      osal_mem_free(item); 
-  }
-}
 
 
 static bool CreateConnection(uint8* addr)
@@ -364,11 +350,11 @@ static bool HasConnection(uint8* addr)
     return false;
 }
 
-static uint16 getConnHandel(EventQueueItemBase_t* item)
+static uint16 getConnHandel(ConnectionEvents_t* item)
 {                      
    for(uint8 i = 0; i<MAX_HW_SUPPORTED_DEVICES; i++)
    {
-     if(osal_memcmp(connectedDevices[i].addr,item->addr,B_ADDR_LEN))
+     if(osal_memcmp(connectedDevices[i].addr,item->base.addr,B_ADDR_LEN))
         {
           if(connectedDevices[i].status == CONNECTED)
             return connectedDevices[i].ConnHandel; 
@@ -422,53 +408,34 @@ static void cancelLinkEstablishment()
 //      Static Queue Functions
 //***********************************************************
 
-static void Enqueue(EventQueueItemBase_t* item)
+static void Enqueue(ConnectionEvents_t* item)
 {
-  if(EventQueue==NULL)
+  if(EventQueue.count<20)
   {
-    EventQueue = item; 
+  
+  
+  if(GenericList_add(&EventQueue,(uint8*)item,sizeof(ConnectionEvents_t))==false &&
+     item->base.errorcall != NULL)
+        item->base.errorcall(item);
   }
   else
   {
-    EventQueueItemBase_t* tempItem = EventQueue; 
-    
-    while(tempItem->next!=NULL)
-    {
-      tempItem = tempItem->next;
-    }
-    
-    tempItem->next = item;
+    ResetManager_Reset(false);
   }
   osal_set_event(ConnectionManger_tarskID,DEQUEUE_EVENT);
 }
 
-static void EnqueueFront(EventQueueItemBase_t* item)
+static void Dequeue(ConnectionEvents_t* item)
 {
-  if(EventQueue==NULL)
+  if(EventQueue.count>0)
   {
-    EventQueue = item; 
+    ListItem* firstItem = GenericList_at(&EventQueue,0);
+    osal_memcpy(item,firstItem->value,sizeof(ConnectionEvents_t));
+    GenericList_remove(&EventQueue,0);
   }
   else
   {
-    EventQueueItemBase_t* tempItem = EventQueue; 
-    EventQueue = item;
-    EventQueue->next = tempItem;
-  }
-  osal_set_event(ConnectionManger_tarskID,DEQUEUE_EVENT);
-}
-
-
-static EventQueueItemBase_t* Dequeue()
-{
-  if(EventQueue==NULL)
-  {
-    return NULL; 
-  }
-  else
-  {
-    EventQueueItemBase_t* tempItem = EventQueue; 
-    EventQueue = tempItem->next;
-    return tempItem; 
+    item->base.action = None; 
   }
 }
 
@@ -479,78 +446,68 @@ static EventQueueItemBase_t* Dequeue()
 
 void Queue_addRead(uint8* addr, uint16 handel, Callback call, Callback ecall)
 {
-  EventQueueRWItem_t* item = (EventQueueRWItem_t*)osal_mem_alloc(sizeof(EventQueueRWItem_t)); 
-  if(item)
-  {
-    item->base.action = Read;
-    item->base.next = NULL;
-    item->base.errorcall = ecall;
-    osal_memcpy(item->base.addr,addr,B_ADDR_LEN);
-    item->base.callback = call; 
-    item->item.read.handle = handel;
-    item->item.write.offset = 0; 
-    item->response = GenericList_create();
+  ConnectionEvents_t item;
+  item.base.action = Read;
+  item.base.errorcall = ecall;
+  osal_memcpy(item.base.addr,addr,B_ADDR_LEN);
+  item.base.callback = call; 
+  item.read.item.read.handle = handel;
+  item.read.item.write.offset = 0; 
+  item.read.response = GenericList_create();
     
-    Enqueue((EventQueueItemBase_t*)item);
-  }
+  Enqueue(&item);
 }
 
 
 void Queue_addWrite(uint8* write, uint8 len, uint8* addr, uint16 handel, Callback call, Callback ecall)
 {
-  EventQueueRWItem_t* item = (EventQueueRWItem_t*)osal_mem_alloc(sizeof(EventQueueRWItem_t)); 
-  if(item)
-  {
-    item->base.action = Write;
-    item->base.next = NULL;
-    item->base.errorcall = ecall;
-    osal_memcpy(item->base.addr,addr,B_ADDR_LEN);
-    item->base.callback = call; 
-   item->item.write.handle = handel;
-    item->item.write.pValue = osal_mem_alloc(len);
-    item->item.write.offset = 0; 
-    item->response = GenericList_create();
-    if(item->item.write.pValue)
+    ConnectionEvents_t item;
+    item.base.action = Write;
+    item.base.errorcall = ecall;
+    osal_memcpy(item.base.addr,addr,B_ADDR_LEN);
+    item.base.callback = call; 
+    item.write.item.write.handle = handel;
+    item.write.item.write.pValue = osal_mem_alloc(len);
+    item.write.item.write.offset = 0; 
+    item.write.response = GenericList_create();
+    if(item.write.item.write.pValue)
     {
-      osal_memcpy(item->item.write.pValue,write,len);
-      item->item.write.len = len;
-      Enqueue((EventQueueItemBase_t*)item);
+      osal_memcpy(item.write.item.write.pValue,write,len);
+      item.write.item.write.len = len;
+      Enqueue(&item);
       return;
     }
-    else
+    else if(ecall != NULL)
     {
-      osal_mem_free(item);
+      ecall(&item);
     }
-  }
 }
 
 void Queue_addServiceDiscovery(uint8* addr, Callback call ,Callback ecall,DiscoveryRange range, uint16 startHandle, uint16 endHandle)
 {
-  EventQueueServiceDirItem_t* item = (EventQueueServiceDirItem_t*)osal_mem_alloc(sizeof(EventQueueServiceDirItem_t));
-  item->base.action = ServiceDiscovery;
-  item->base.next = NULL;
-  item->base.errorcall = ecall;
-  osal_memcpy(item->base.addr,addr,B_ADDR_LEN);
-  item->base.callback = call; 
-  item->type = range; 
-  item->result = NULL; 
-  item->startHandle = startHandle;
-  item->endHandle = endHandle;
-  Enqueue((EventQueueItemBase_t*)item);
+  ConnectionEvents_t item;
+  item.base.action = ServiceDiscovery;
+  item.base.errorcall = ecall;
+  osal_memcpy(item.base.addr,addr,B_ADDR_LEN);
+  item.base.callback = call; 
+  item.serviceDir.type = range; 
+  item.serviceDir.result = NULL; 
+  item.serviceDir.startHandle = startHandle;
+  item.serviceDir.endHandle = endHandle;
+  Enqueue(&item);
 }
 
 void Queue_Scan(Callback call, Callback ecall)
 {
-  EventQueueScanItem_t* item = (EventQueueScanItem_t*)osal_mem_alloc(sizeof(EventQueueScanItem_t));
-  item->base.action = Scan;
-  item->base.next = NULL;
-  item->base.errorcall = ecall;
-  osal_memcpy(item->base.addr,NULLaddr,B_ADDR_LEN);
-  item->base.callback = call; 
+  ConnectionEvents_t item;
+  item.base.action = Scan;
+  item.base.errorcall = ecall;
+  osal_memcpy(item.base.addr,NULLaddr,B_ADDR_LEN);
+  item.base.callback = call; 
   
-  item->response = GenericList_create(); 
+  item.scan.response = GenericList_create(); 
   
-  Enqueue((EventQueueItemBase_t*)item);
+  Enqueue(&item);
 }
 
 
@@ -578,34 +535,34 @@ static void BLE_CentralEventCB( gapCentralRoleEvent_t *pEvent )
       break;
     case GAP_DEVICE_INFO_EVENT:
       {
-        if(CurrentEvent!=NULL  && CurrentEvent->action == Scan)
+        if(CurrentEvent.base.action == Scan)
         {
-          EventQueueScanItem_t* currentevent = (EventQueueScanItem_t*)CurrentEvent;
+          EventQueueScanItem_t* currentevent = &CurrentEvent.scan;
           ScanResponse_t item; 
           item.eventType = pEvent->devceInfo.eventType;
           item.rssi = pEvent->devceInfo.rssi;
           item.dataLen = pEvent->devceInfo.dataLen;
           
           osal_memcpy(item.addr,pEvent->devceInfo.addr,B_ADDR_LEN);
-          item.pEvtData = osal_memdup(pEvent->devceInfo.pEvtData,pEvent->devceInfo.dataLen);
+          item.pEvtData = (uint8*)osal_memdup(pEvent->devceInfo.pEvtData,pEvent->devceInfo.dataLen);
           if(item.pEvtData==NULL)
           {
-            item.dataLen = NULL; 
+            item.dataLen = 0; 
           }
           
-          GenericList_add(&currentevent->response,(uint8*)&item,sizeof(ScanResponse_t));
-          osal_mem_free(item.pEvtData); 
+          if(GenericList_add(&currentevent->response,&item,sizeof(ScanResponse_t))==false)
+           osal_mem_free(item.pEvtData); 
         }
       }
       break;
     case GAP_DEVICE_DISCOVERY_EVENT:
     {
-       if(CurrentEvent!=NULL  && CurrentEvent->action == Scan)
+       if(CurrentEvent.base.action == Scan)
        {
-         EventQueueScanItem_t* item = (EventQueueScanItem_t*)CurrentEvent;
+         EventQueueScanItem_t* item = &CurrentEvent.scan;
          if(item->base.callback != NULL)
          {
-            item->base.callback(CurrentEvent); 
+            item->base.callback(&CurrentEvent); 
          }
          disposeScanList(&item->response);
          status = READY; 
@@ -756,25 +713,28 @@ static void simpleBLECentralProcessGATTMsg( gattMsgEvent_t *pMsg )
 {
   
   //********************    read blob ***************//
-  if(CurrentEvent->action == Read)
+  if(CurrentEvent.base.action == Read)
   {
     if ( ( pMsg->method == ATT_READ_BLOB_RSP ) || ( pMsg->method == ATT_ERROR_RSP ) )
     {
       
       if (pMsg->hdr.status == bleProcedureComplete)
       {
-        RWComplete(CurrentEvent->callback);
+        RWComplete(CurrentEvent.base.callback);
       }
-      else if ( pMsg->method == ATT_READ_BLOB_RSP )
+      else if ( pMsg->method == ATT_READ_BLOB_RSP && pMsg->hdr.status == 0)
       {
-         EventQueueRWItem_t* event = (EventQueueRWItem_t*)CurrentEvent;
-         GenericList_add(&event->response,pMsg->msg.readBlobRsp.value,pMsg->msg.readBlobRsp.len); 
+         GenericList_add(&CurrentEvent.read.response,pMsg->msg.readBlobRsp.value,pMsg->msg.readBlobRsp.len); 
       }
       else //TIMEOUT AND ERRORS 
       {
-        RWComplete(CurrentEvent->errorcall);
+        RWComplete(CurrentEvent.base.errorcall);
       }
       
+    }
+    else
+    {
+     RWComplete(CurrentEvent.base.errorcall); 
     }
   }
   
@@ -785,22 +745,26 @@ static void simpleBLECentralProcessGATTMsg( gattMsgEvent_t *pMsg )
  *          the server).
    
    */
-  else if(CurrentEvent->action == Write)
+  else if(CurrentEvent.base.action == Write)
   {
     if ( (pMsg->method == ATT_PREPARE_WRITE_RSP) || (pMsg->method == ATT_EXECUTE_WRITE_RSP)||(pMsg->method == ATT_ERROR_RSP))
     {
       if ( pMsg->method == ATT_ERROR_RSP)
       {
-         RWComplete(CurrentEvent->errorcall);
+         RWComplete(CurrentEvent.base.errorcall);
       }
       else
       {
-        RWComplete(CurrentEvent->callback);
+        RWComplete(CurrentEvent.base.callback);
       }
   
     }
+    else
+    {
+        RWComplete(CurrentEvent.base.errorcall);
+    }
   }
-  else if(CurrentEvent->action == ServiceDiscovery)
+  else if(CurrentEvent.base.action == ServiceDiscovery)
   {
     BLEGATTDiscoveryEvent( pMsg );
   }
@@ -831,7 +795,7 @@ static void BLEGATTDiscoveryEvent( gattMsgEvent_t *pMsg )
   {
     // Service found, store handles
       uint8 i; 
-      EventQueueServiceDirItem_t* extitem = (EventQueueServiceDirItem_t*)CurrentEvent;
+      EventQueueServiceDirItem_t* extitem = &CurrentEvent.serviceDir;
       
       for(i=0;i<pMsg->msg.readByGrpTypeRsp.numGrps;i++)
       {
@@ -864,7 +828,7 @@ static void BLEGATTDiscoveryEvent( gattMsgEvent_t *pMsg )
     else if(pMsg->method == ATT_READ_BY_TYPE_RSP && pMsg->msg.readByTypeRsp.numPairs > 0)
     {
         uint8 i; 
-        EventQueueServiceDirItem_t* extitem = (EventQueueServiceDirItem_t*)CurrentEvent;
+        EventQueueServiceDirItem_t* extitem = &CurrentEvent.serviceDir;
       
         for(i=0;i<pMsg->msg.readByGrpTypeRsp.numGrps;i++)
         {
@@ -895,7 +859,7 @@ static void BLEGATTDiscoveryEvent( gattMsgEvent_t *pMsg )
     else if(pMsg->method == ATT_FIND_INFO_RSP && pMsg->msg.findInfoRsp.numInfo > 0)
     {
         uint8 i; 
-        EventQueueServiceDirItem_t* extitem = (EventQueueServiceDirItem_t*)CurrentEvent;
+        EventQueueServiceDirItem_t* extitem = &CurrentEvent.serviceDir;
         
         if(pMsg->msg.findInfoRsp.format == 0x01)// 16 bit UUID
         {
@@ -955,41 +919,35 @@ static void disposeDiscoveryList(EventQueueServiceDirItem_t* item)
 
 static void discoveryComplete()
 {
-  EventQueueServiceDirItem_t* item = (EventQueueServiceDirItem_t*)CurrentEvent;
+  EventQueueServiceDirItem_t* item = &CurrentEvent.serviceDir;
   if(item->base.callback != NULL)
-    item->base.callback(CurrentEvent);
+    item->base.callback(&CurrentEvent);
   disposeDiscoveryList(item); 
   status = READY; 
-  Dispose(CurrentEvent);
-  CurrentEvent = NULL;
   osal_set_event(ConnectionManger_tarskID,DEQUEUE_EVENT);
 }
 
 static void discoveryCompleteError()
 {
-  EventQueueServiceDirItem_t* item = (EventQueueServiceDirItem_t*)CurrentEvent;
+  EventQueueServiceDirItem_t* item = &CurrentEvent.serviceDir;
   if(item->base.errorcall != NULL)
-    item->base.errorcall(CurrentEvent);
+    item->base.errorcall(&CurrentEvent);
   disposeDiscoveryList(item);
   status = READY;
-  Dispose(CurrentEvent);
-  CurrentEvent = NULL;
   osal_set_event(ConnectionManger_tarskID,DEQUEUE_EVENT);
 }
 
 static void RWComplete(Callback call)
 {
-  EventQueueRWItem_t* item = (EventQueueRWItem_t*)CurrentEvent;
+  EventQueueRWItem_t* item = &CurrentEvent.read;
   if(call != NULL)
-    call(CurrentEvent);
+    call(&CurrentEvent);
   GenericList_dispose(&item->response);
   if(item->base.action == Write)
   {
     osal_mem_free(item->item.write.pValue);
   }
   status = READY; 
-  Dispose(CurrentEvent);
-  CurrentEvent = NULL;
   osal_set_event(ConnectionManger_tarskID,DEQUEUE_EVENT);
 }
 
