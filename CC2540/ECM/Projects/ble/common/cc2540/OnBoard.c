@@ -116,7 +116,7 @@ void InitBoard( uint8 level )
     // Turn all LEDs off
     HalLedSet( HAL_LED_ALL, HAL_LED_MODE_OFF );
     // Check for Brown-Out reset
-//    ChkReset();
+    // ChkReset();
   }
   else  // !OB_COLD
   {

@@ -1,5 +1,6 @@
 #include "Uart.h"
 
+
 #if !defined NPI_UART_PORT
 #if ((defined HAL_UART_DMA) && (HAL_UART_DMA  == 1))
 #define NPI_UART_PORT                  HAL_UART_PORT_0

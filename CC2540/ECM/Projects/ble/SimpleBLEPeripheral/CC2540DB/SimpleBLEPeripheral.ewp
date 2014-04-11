@@ -8489,6 +8489,12 @@
       <file>
         <name>$PROJ_DIR$\..\Source\GenericValueManger.h</name>
       </file>
+      <file>
+        <name>$PROJ_DIR$\..\..\SimpleBLECentral\Source\ResetManager.c</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\..\..\SimpleBLECentral\Source\ResetManager.h</name>
+      </file>
     </group>
     <group>
       <name>State</name>

@@ -94,10 +94,10 @@ extern bool Uart_Send(uint8* buffer, uint8 len, uint8 command, CallBackFunction 
 
 extern bool Uart_Send_Response(uint8* buffer, uint8 len);
 
-bool Uart_Subscribe(uint8 tarskId,uint8 command);
+extern bool Uart_Subscribe(uint8 tarskId,uint8 command);
 
-bool Uart_Unsubscribe(uint8 tarskId,uint8 command);
+extern bool Uart_Unsubscribe(uint8 tarskId,uint8 command);
 
-PayloadBuffer Uart_getRXpayload();
+extern PayloadBuffer Uart_getRXpayload();
 
-uint8* Uart_TxGetDataBuffer();
+extern uint8* Uart_TxGetDataBuffer();

@@ -163,13 +163,14 @@ bStatus_t SimpleProfile_AddService( uint32 services )
   
   SmartCommandsManger_CompileServices();
   
-  
+  do
+  {
   status = GATTServApp_RegisterService( Testservice->llReg, 
                                           SmartCommandsManger_ElementsInService(Testservice),
                                           &simpleProfileCBs );
   
   
-  
+  }while(status != SUCCESS); 
   
   
   return ( status );
