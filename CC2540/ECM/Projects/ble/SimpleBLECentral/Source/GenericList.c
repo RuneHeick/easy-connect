@@ -154,6 +154,27 @@ ListItem* GenericList_First(List* list,Condition con)
   return NULL; 
 }
 
+uint8 GenericList_FirstAt(List* list,Condition con)
+{
+  uint8 i = 0; 
+  if(list->count>0) 
+  {
+    ListItem* item = list->first; 
+    if(con(item))
+       return i; 
+    
+    while(item->next != NULL)
+    {
+      item = item->next;
+      i++;
+      if(con(item))
+       return i; 
+    }
+  }
+    
+  return i; 
+}
+
 uint16 GenericList_TotalSize(List* list)
 {
   uint16 count = 0; 

@@ -28,3 +28,4 @@ extern ListItem* GenericList_First(List* list,Condition con);
 extern ListItem* GenericList_at(List* list,uint8 index);
 
 extern uint16 GenericList_TotalSize(List* list); 
+extern uint8 GenericList_FirstAt(List* list,Condition con);
