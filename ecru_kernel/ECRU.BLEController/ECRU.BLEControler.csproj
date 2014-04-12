@@ -58,6 +58,10 @@
     <Reference Include="System.IO" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\ECRU.EventBus\ECRU.EventBus.csproj">
+      <Project>{A161B854-6858-4A85-B70D-B949F042B2D4}</Project>
+      <Name>ECRU.EventBus</Name>
+    </ProjectReference>
     <ProjectReference Include="..\ECRU.Utilities\ECRU.Utilities.csproj">
       <Project>{5B778498-CDC7-4CE6-8CD3-FD20D04EBF93}</Project>
       <Name>ECRU.Utilities</Name>

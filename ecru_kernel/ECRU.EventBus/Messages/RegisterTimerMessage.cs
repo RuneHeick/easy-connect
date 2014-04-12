@@ -12,13 +12,6 @@ namespace EventBus.Messages
             Milliseconds = milliseconds;
         }
 
-        private const string _type = "ECRU.Timer.RegisterTimer";
-
-        public string Type
-        {
-            get { return _type; }
-        }
-
         public uint Milliseconds { get; private set; }
 
         public string EventType { get; private set; }

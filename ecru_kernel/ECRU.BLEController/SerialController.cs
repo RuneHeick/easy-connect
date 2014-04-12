@@ -11,37 +11,43 @@ namespace ECRU.BLEController
     {
 
         public Status SerialStatus { get; set; }
-        public event Recived PacketRecived; 
+        public event Recived PacketRecived;
+        private readonly object uartLock = new object(); 
 
         SerialPort serial = new SerialPort(SerialPorts.COM1, 115200, Parity.None, 8, StopBits.One);
        
 
         public void Start()
         {
-            try
+            lock (uartLock)
             {
-                serial.Open();
-                serial.DataReceived += serialport_DataReceived;
-                serial.ErrorReceived += serial_ErrorReceived;
-                SerialStatus = Status.Running; 
+                try
+                {
+                    serial.Open();
+                    serial.DataReceived += serialport_DataReceived;
+                    serial.ErrorReceived += serial_ErrorReceived;
+                    SerialStatus = Status.Running;
+                }
+                catch
+                {
+                    Stop();
+                    SerialStatus = Status.Error;
+                }
             }
-            catch
-            {
-                Stop();
-                SerialStatus = Status.Error; 
-            }
-
         }
 
         public void Stop()
         {
-            if (serial.IsOpen)
-                serial.Close();
+            lock (uartLock)
+            {
+                if (serial.IsOpen)
+                    serial.Close();
 
-            serial.DataReceived -= serialport_DataReceived;
-            serial.ErrorReceived -= serial_ErrorReceived;
+                serial.DataReceived -= serialport_DataReceived;
+                serial.ErrorReceived -= serial_ErrorReceived;
 
-            SerialStatus = Status.Stoped; 
+                SerialStatus = Status.Stoped;
+            }
         }
 
         public void Reset()
@@ -53,12 +59,23 @@ namespace ECRU.BLEController
 
         public bool SendByte(Byte[] data)
         {
-            if (serial.IsOpen)
+            lock (uartLock)
             {
-                serial.Write(data, 0, data.Length);
-                return true; 
+                if (serial.IsOpen)
+                {
+                    try
+                    {
+                        serial.Write(data, 0, data.Length);
+                        return true;
+                    }
+                    catch
+                    {
+                        return false; 
+                    }
+                   
+                }
+                return false;
             }
-            return false; 
         }
 
         ArrayList packet = new ArrayList(); 

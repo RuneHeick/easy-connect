@@ -3,6 +3,7 @@ using Microsoft.SPOT;
 using System.Collections;
 using ECRU.Utilities.LeadFollow;
 using ECRU.BLEController.Packets;
+using ECRU.Utilities.HelpFunction;
 
 namespace ECRU.BLEController
 {
@@ -169,6 +170,23 @@ namespace ECRU.BLEController
             response[5] = (byte)(crc);
 
             seriel.SendByte(response);
+        }
+
+        public void Send(IPacket packet)
+        {
+            byte[] data = new byte[packet.Payload.Length+5];
+            if (data.Length <= Def.MAX_PACKETSIZE)
+            {
+                data.Set(data, 3);
+                data[0] = Def.SYNC_WORD;
+                data[1] = (byte)(data.Length - 1);
+
+                ushort crc = CRC.CalcCrc(data, data.Length - 3);
+
+                data[data.Length - 2] = (byte)(crc >> 8);
+                data[data.Length - 1] = (byte)(crc);
+                seriel.SendByte(data);
+            }
         }
 
         private class SupscriptionPair

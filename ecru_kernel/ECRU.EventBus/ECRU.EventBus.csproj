@@ -33,7 +33,6 @@
     <Compile Include="Messages\RegisterTimerMessage.cs" />
     <Compile Include="Messages\Reset.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="EventBus.cs" />
     <Compile Include="TMessage.cs" />
     <Compile Include="TMessageHandler.cs" />
   </ItemGroup>

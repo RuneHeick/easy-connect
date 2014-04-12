@@ -21,24 +21,36 @@ namespace ECRU.netd
         static BroadcastNetworkDiscovery()
         {
             _socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
-
+            _socket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
+            _socket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.Broadcast, true);
         }
 
         public static void Broadcast(object state)
         {
 
-            ledPort.Write(!ledPort.Read());
-
             //Debug.Print("Broadcasting...");
             // This the address to local broadcast for me, may be different for others.
-            //var brodcastEndPoint = new IPEndPoint(IPAddress.Parse(BroadcastIP), UDPPort);
+            var brodcastEndPoint = new IPEndPoint(IPAddress.Parse(BroadcastIP), UDPPort);
 
-            //_socket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.Broadcast, 5);
             // Enable broadcast
             //Debug.Print(brodcastEndPoint.Address.ToString() + brodcastEndPoint.Port);
-            //var result = _socket.SendTo(Utilities.StringToBytes(BroadcastMessage), brodcastEndPoint);
+            try
+            {
+                ledPort.Write(!ledPort.Read());
+                var result = _socket.SendTo(Utilities.StringToBytes(BroadcastMessage), brodcastEndPoint);
+            }
+            catch (SocketException e)
+            {
+                
+                
+            }
+            catch (ObjectDisposedException)
+            {
+
+            }
             // This actually generates a Malformed Netbios response from the router, but it does demonstrate UDP Broadcast.
             //Debug.Print("result is: " + result);
+           
         }
 
     
