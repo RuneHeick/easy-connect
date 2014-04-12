@@ -30,8 +30,11 @@
   </PropertyGroup>
   <Import Project="$(NetMfTargetsBaseDir)$(TargetFrameworkVersion)\CSharp.Targets" />
   <ItemGroup>
+    <Compile Include="EventBus\EventBus.cs" />
     <Compile Include="Factories\ModuleFactory\IModule.cs" />
     <Compile Include="Factories\ModuleFactory\ModuleFactory.cs" />
+    <Compile Include="HelpFunction\ByteExtension.cs" />
+    <Compile Include="LeadFollow\WorkPool.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SD\Exceptions\ECRUSDFileNotFoundException.cs" />
     <Compile Include="SD\IConfigMessage.cs" />
@@ -52,8 +55,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Buttons\" />
+    <Folder Include="Buttons\Logging\" />
     <Folder Include="LEDs\" />
-    <Folder Include="Logging\" />
   </ItemGroup>
 </Project>
