@@ -10,6 +10,10 @@
     <ProjectGuid>{6B29AE16-6946-4943-BA13-A1E57605A963}</ProjectGuid>
     <TargetFrameworkVersion>v4.3</TargetFrameworkVersion>
     <NetMfTargetsBaseDir Condition="'$(NetMfTargetsBaseDir)'==''">$(MSBuildExtensionsPath32)\Microsoft\.NET Micro Framework\</NetMfTargetsBaseDir>
+    <SccProjectName>Svn</SccProjectName>
+    <SccLocalPath>Svn</SccLocalPath>
+    <SccAuxPath>Svn</SccAuxPath>
+    <SccProvider>SubversionScc</SccProvider>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -33,7 +37,14 @@
     <Compile Include="CRC.cs" />
     <Compile Include="Def.cs" />
     <Compile Include="PacketManager.cs" />
+    <Compile Include="Packets\AddDeviceEvent.cs" />
+    <Compile Include="Packets\DataEvent.cs" />
+    <Compile Include="Packets\DeviceEvent.cs" />
+    <Compile Include="Packets\DisconnectEvent.cs" />
     <Compile Include="Packets\IPacket.cs" />
+    <Compile Include="Packets\ReadEvent.cs" />
+    <Compile Include="Packets\ServiceEvent.cs" />
+    <Compile Include="Packets\WriteEvent.cs" />
     <Compile Include="SerialController.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="BLEModule.cs" />

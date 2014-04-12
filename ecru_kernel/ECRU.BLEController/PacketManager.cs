@@ -2,6 +2,7 @@
 using Microsoft.SPOT;
 using System.Collections;
 using ECRU.Utilities.LeadFollow;
+using ECRU.BLEController.Packets;
 
 namespace ECRU.BLEController
 {
@@ -17,7 +18,7 @@ namespace ECRU.BLEController
             this.seriel = seriel; 
         }
 
-        public bool Subscrib(byte command,PacketHandler handler)
+        public bool Subscrib(CommandType command,PacketHandler handler)
         {
             try
             {
@@ -36,7 +37,7 @@ namespace ECRU.BLEController
             }
         }
 
-        public bool Unsubscrib(byte command, PacketHandler handler)
+        public bool Unsubscrib(CommandType command, PacketHandler handler)
         {
             try
             {
@@ -71,27 +72,86 @@ namespace ECRU.BLEController
             }
         }
 
-
         void HandelPacket(byte[] packet)
         {
-            int command = packet[Def.COMMAND_INDEX];
+            CommandType command = (CommandType)packet[Def.COMMAND_INDEX];
             for (int i = 0; i < subscribers.Count; i++)
             {
                 SupscriptionPair item = (SupscriptionPair)subscribers[i];
                 if(item.Command == command && item.handler != null)
                 {
-                    workPool.EnqueueAction(()=> item.handler(parsePacket(packet)));
+                    IPacket evt = parsePacket(packet);
+                    if (evt != null)
+                        workPool.EnqueueAction(() => item.handler(evt));
                 }
-
             }
         }
 
         IPacket parsePacket(byte[] packet)
         {
+            IPacket ret = null; 
+            switch((CommandType)packet[Def.COMMAND_INDEX])
+            {
+                case CommandType.AddDeviceEvent:
+                    {
+                        ret = new AddDeviceEvent();
+                        ret.Payload = packet; 
+                    }
+                    break;
+                case CommandType.DataEvent:
+                    {
+                        ret = new DataEvent();
+                        ret.Payload = packet;
+                    }
+                    break;
+                case CommandType.DeviceEvent:
+                    {
+                        ret = new DeviceEvent();
+                        ret.Payload = packet;
+                    }
+                    break;
+                case CommandType.DisconnectEvent:
+                    {
+                        ret = new DisconnectEvent();
+                        ret.Payload = packet;
+                    }
+                    break;
+                case CommandType.ReadEvent:
+                    {
+                        ret = new ReadEvent();
+                        ret.Payload = packet;
+                    }
+                    break;
+                case CommandType.Reset:
+                    {
+                        //ret = new Res();
+                        //ret.Payload = packet;
+                    }
+                    break;
+                case CommandType.ServiceEvent:
+                    {
+                        ret = new ServiceEvent();
+                        ret.Payload = packet;
+                    }
+                    break;
+                case CommandType.SystemInfo:
+                    {
+                        //ret = new AddDeviceEvent();
+                        //ret.Payload = packet;
+                    }
+                    break;
+                case CommandType.WriteEvent:
+                    {
+                        ret = new WriteEvent();
+                        ret.Payload = packet;
+                    }
+                    break;
+                default:
+                    ret = null;
+                    break;
 
-
-
-            return null; 
+            }
+            return ret; 
         }
         
         public void SendAck(byte Cmd)
@@ -111,16 +171,15 @@ namespace ECRU.BLEController
             seriel.SendByte(response);
         }
 
-
         private class SupscriptionPair
         {
-            public SupscriptionPair(byte cmd ,PacketHandler handle )
+            public SupscriptionPair(CommandType cmd ,PacketHandler handle )
             {
                 Command = cmd;
                 handler = handle; 
             }
 
-            public byte Command {get; set;}
+            public CommandType Command {get; set;}
             public PacketHandler handler { get; set; }
         }
 
