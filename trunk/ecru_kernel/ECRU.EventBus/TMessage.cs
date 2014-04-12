@@ -2,6 +2,6 @@
 {
     public interface TMessage
     {
-        string Type { get; }
+        
     }
 }

@@ -1,11 +1,9 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
-VisualStudioVersion = 12.0.30110.0
+VisualStudioVersion = 12.0.21005.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "logging", "logging\logging.csproj", "{F14A6673-B599-4C8B-A0F9-FBC115329966}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ECRU.EventBus.Test", "ECRU.EventBus.Test\ECRU.EventBus.Test.csproj", "{9A19AF0B-B14E-4244-8066-B7AB46E5B9CC}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ECRU", "ECRU\ECRU.csproj", "{D1EFA9D6-C2D5-4C75-8A37-748B5AD9C576}"
 EndProject
@@ -22,6 +20,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ECRU.Utilities", "ECRU.Util
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ECRU.Timer", "ECRU.Timer\ECRU.Timer.csproj", "{DDF52C13-879F-4741-B95D-C47BD26155F6}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ECRU.BLEControler", "ECRU.BLEController\ECRU.BLEControler.csproj", "{6B29AE16-6946-4943-BA13-A1E57605A963}"
+EndProject
 Global
 	GlobalSection(SubversionScc) = preSolution
 		Svn-Managed = True
@@ -36,10 +36,6 @@ Global
 		{F14A6673-B599-4C8B-A0F9-FBC115329966}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F14A6673-B599-4C8B-A0F9-FBC115329966}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F14A6673-B599-4C8B-A0F9-FBC115329966}.Release|Any CPU.Build.0 = Release|Any CPU
-		{9A19AF0B-B14E-4244-8066-B7AB46E5B9CC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{9A19AF0B-B14E-4244-8066-B7AB46E5B9CC}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{9A19AF0B-B14E-4244-8066-B7AB46E5B9CC}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{9A19AF0B-B14E-4244-8066-B7AB46E5B9CC}.Release|Any CPU.Build.0 = Release|Any CPU
 		{D1EFA9D6-C2D5-4C75-8A37-748B5AD9C576}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{D1EFA9D6-C2D5-4C75-8A37-748B5AD9C576}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D1EFA9D6-C2D5-4C75-8A37-748B5AD9C576}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
@@ -62,6 +58,10 @@ Global
 		{DDF52C13-879F-4741-B95D-C47BD26155F6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DDF52C13-879F-4741-B95D-C47BD26155F6}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DDF52C13-879F-4741-B95D-C47BD26155F6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6B29AE16-6946-4943-BA13-A1E57605A963}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6B29AE16-6946-4943-BA13-A1E57605A963}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6B29AE16-6946-4943-BA13-A1E57605A963}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6B29AE16-6946-4943-BA13-A1E57605A963}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -5,8 +5,9 @@ namespace ECRU.BLEController
 {
     static class Def
     {
-        public const int COMMAND_INDEX = 2; 
-
+        public const int COMMAND_INDEX = 2;
+        public const int SYNC_WORD = 0xEC;
+        public const int MAX_PACKETSIZE = 128;
 
     }
 

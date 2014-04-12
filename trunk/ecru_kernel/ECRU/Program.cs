@@ -3,6 +3,7 @@ using System.Threading;
 using ECRU.EventBus;
 using ECRU.EventBus.Messages;
 using ECRU.netd;
+using ECRU.BLEController;
 using Microsoft.SPOT;
 using Microsoft.SPOT.Hardware;
 using SecretLabs.NETMF.Hardware.Netduino;
@@ -15,6 +16,7 @@ namespace ECRU
     /// </summary>
     public class Program
     {
+
         /// <summary>
         /// Main Launches the ECRU kernel
         /// </summary>
@@ -22,10 +24,25 @@ namespace ECRU
         {
             // write your code here
 
-            var netDaemon = new Netd();
+            
 
+
+            BLEModule Test = new BLEModule();
+            Test.Start();
+
+
+
+            var netDaemon = new Netd();
             netDaemon.LoadConfig("");
             netDaemon.Start();
+
+
+            Thread.Sleep(Timeout.Infinite);
         }
     }
+
+
+
+
+
 }

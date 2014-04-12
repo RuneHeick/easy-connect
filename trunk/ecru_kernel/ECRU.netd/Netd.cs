@@ -37,6 +37,7 @@ namespace ECRU.netd
 
         public void Start()
         {
+            Thread.Sleep(2000);
             var networkAdapter = NetworkInterface.GetAllNetworkInterfaces()[0];
 
             //Debug.Print(networkAdapter.NetworkInterfaceType.ToString());
@@ -50,9 +51,9 @@ namespace ECRU.netd
             var networkConfig = new EthernetConfig {EthernetInterface = networkAdapter, DynamicIP = true};
             networkConfig.InitNetworkInterface();
 
-            //Debug.Print(networkAdapter.IPAddress);
-            //Debug.Print(networkAdapter.GatewayAddress);
-            //Debug.Print(networkAdapter.SubnetMask);
+            Debug.Print(networkAdapter.IPAddress);
+            Debug.Print(networkAdapter.GatewayAddress);
+            Debug.Print(networkAdapter.SubnetMask);
 
             
             
@@ -60,26 +61,20 @@ namespace ECRU.netd
             //  - Send Network Packets
             
             //Timer - Network Discovery
-            netd.BroadcastNetworkDiscovery.UDPPort = 11100;
+            netd.BroadcastNetworkDiscovery.UDPPort = 11000;
             netd.BroadcastNetworkDiscovery.BroadcastIP = "192.168.1.255";
-
-            while (true)
-            {
-                Thread.Sleep(5000);
-                netd.BroadcastNetworkDiscovery.Broadcast(null);
-            }
-            
+          
 
             var callback = new TimerCallback(netd.BroadcastNetworkDiscovery.Broadcast);
 
-            var networkDiscoveryTimer = new Timer(callback, null, 0, 5000);
+            //var networkDiscoveryTimer = new Timer(callback, null, 0, 5000);
 
 
             //Setup thread for getting packets
 
 
             var s = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
-            var endPoint = new IPEndPoint(IPAddress.Any, 11100);
+            var endPoint = new IPEndPoint(IPAddress.Any, 11000);
 
             s.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
             s.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.Broadcast, true);
@@ -95,8 +90,17 @@ namespace ECRU.netd
             // This call blocks.
             while (true)
             {
-                s.ReceiveFrom(msg, ref sender);
-                //Debug.Print(Utilities.GetString(msg));
+                try
+                {
+                    s.ReceiveFrom(msg, ref sender);
+                    Debug.Print(Utilities.GetString(msg));
+
+                }
+                catch(Exception e)
+                {
+
+                }
+
             }
             
             

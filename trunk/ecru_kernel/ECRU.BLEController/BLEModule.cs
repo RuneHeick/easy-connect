@@ -2,6 +2,7 @@
 using Microsoft.SPOT;
 using ECRU.Utilities;
 using ECRU.Utilities.Factories.ModuleFactory;
+using ECRU.Utilities.EventBus;
 
 namespace ECRU.BLEController
 {
@@ -23,10 +24,16 @@ namespace ECRU.BLEController
         public void Start()
         {
             serial.Start();
-            packetmanager.Subscrib(0x11, handel);
+
+            Utilities.EventBus.EventBus.Subscribe(typeof(int), test);
+            Utilities.EventBus.EventBus.Subscribe(typeof(object), test);
+
+        
+            Utilities.EventBus.EventBus.Publish(2);
+            Utilities.EventBus.EventBus.Publish(new EventBus.Messages.Reset());
         }
 
-        public void handel(IPacket b)
+        void test(object msg)
         {
 
         }
