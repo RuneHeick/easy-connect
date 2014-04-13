@@ -332,8 +332,6 @@ static uint8 ECConnect_WriteAttrCB( uint16 connHandle, gattAttribute_t *pAttr,
   
   if ( pAttr->type.len == ATT_BT_UUID_SIZE )
   {
-    if(offset!=0)
-     return ATT_ERR_INVALID_OFFSET;
    
     // 16-bit UUID
     uint16 uuid = BUILD_UINT16( pAttr->type.uuid[0], pAttr->type.uuid[1]);
@@ -341,6 +339,9 @@ static uint8 ECConnect_WriteAttrCB( uint16 connHandle, gattAttribute_t *pAttr,
     {
       case UPDATETIME_CHARA_UUID:
         {
+            if(offset!=0)
+              return ATT_ERR_INVALID_OFFSET;
+     
             if(len == 4)
               osal_memcpy(&UpdateTime,pValue,len);
             else
