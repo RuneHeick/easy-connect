@@ -1091,6 +1091,12 @@
         <name>$PROJ_DIR$\..\Source\GenericList.h</name>
       </file>
       <file>
+        <name>$PROJ_DIR$\..\..\SimpleBLEPeripheral\Source\GenericValueManger.c</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\..\..\SimpleBLEPeripheral\Source\GenericValueManger.h</name>
+      </file>
+      <file>
         <name>$PROJ_DIR$\..\Source\ResetManager.c</name>
       </file>
       <file>

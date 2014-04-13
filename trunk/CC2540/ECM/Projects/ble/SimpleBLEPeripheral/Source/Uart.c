@@ -195,7 +195,7 @@ uint16 Uart_ProcessEvent( uint8 task_id, uint16 events )
   
   else if ( events & UART_RETRANSMIT_EVENT )
   {
-    if(bufferTX.status==Waiting_For_Reply)
+    if(bufferTX.status==Waiting_For_Reply || bufferTX.status == Transmitting)
     {
       if(TransmitRetryCount<RETRY_COUNT)
       {

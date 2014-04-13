@@ -23,7 +23,7 @@
 #define START_DEVICE_EVENT (1<<3)
 #define LINKTIMEOUT_EVENT (1<<4)
 
-#define LINKTIMEOUT_TIME 1000
+#define LINKTIMEOUT_TIME 500
 
 static void ConnectionManger_handel(ConnectionEvents_t* item);
 static void EstablishLink(ConnectedDevice_t* conContainor);
@@ -402,6 +402,7 @@ static void cancelLinkEstablishment()
           connectedDevices[i].status = NOTCONNECTED;
       }
   }
+  GAPCentralRole_TerminateLink(GAP_CONNHANDLE_INIT); // terminate pending Connections. 
 }
 
 //***********************************************************
@@ -491,7 +492,7 @@ void Queue_addServiceDiscovery(uint8* addr, Callback call ,Callback ecall,Discov
   osal_memcpy(item.base.addr,addr,B_ADDR_LEN);
   item.base.callback = call; 
   item.serviceDir.type = range; 
-  item.serviceDir.result = NULL; 
+  item.serviceDir.result = GenericList_create(); 
   item.serviceDir.startHandle = startHandle;
   item.serviceDir.endHandle = endHandle;
   Enqueue(&item);
@@ -799,28 +800,13 @@ static void BLEGATTDiscoveryEvent( gattMsgEvent_t *pMsg )
       
       for(i=0;i<pMsg->msg.readByGrpTypeRsp.numGrps;i++)
       {
-        DiscoveryResult* tmp;
+        DiscoveryItem item;
+
+        item.service.handle = (pMsg->msg.readByGrpTypeRsp.dataList[0+(i*6)]<<8)+pMsg->msg.readByGrpTypeRsp.dataList[1+(i*6)];
+        item.service.endHandle = (pMsg->msg.readByGrpTypeRsp.dataList[2+(i*6)]<<8)+pMsg->msg.readByGrpTypeRsp.dataList[3+(i*6)];
+        item.service.ServiceUUID = (pMsg->msg.readByGrpTypeRsp.dataList[4+(i*6)]<<8)+pMsg->msg.readByGrpTypeRsp.dataList[5+(i*6)];
         
-        DiscoveryResult* item = (DiscoveryResult*)osal_mem_alloc(sizeof(DiscoveryResult));
-        if(item==NULL)
-          return; 
-        item->item.service.handle = (pMsg->msg.readByGrpTypeRsp.dataList[0+(i*6)]<<8)+pMsg->msg.readByGrpTypeRsp.dataList[1+(i*6)];
-        item->item.service.endHandle = (pMsg->msg.readByGrpTypeRsp.dataList[2+(i*6)]<<8)+pMsg->msg.readByGrpTypeRsp.dataList[3+(i*6)];
-        item->item.service.ServiceUUID = (pMsg->msg.readByGrpTypeRsp.dataList[4+(i*6)]<<8)+pMsg->msg.readByGrpTypeRsp.dataList[5+(i*6)];
-        item->next = NULL; 
-        
-        if(extitem->result==NULL)
-        {
-          extitem->result = item;
-        }
-        else
-        {
-          tmp = extitem->result; 
-          while(tmp->next!=NULL)
-            tmp = tmp->next;
-          tmp->next = item;
-        }
-        
+        GenericList_add(&extitem->result,&item,sizeof(DiscoveryItem));
        }
     }
   
@@ -832,26 +818,11 @@ static void BLEGATTDiscoveryEvent( gattMsgEvent_t *pMsg )
       
         for(i=0;i<pMsg->msg.readByGrpTypeRsp.numGrps;i++)
         {
-            DiscoveryResult* tmp;
-            
-            DiscoveryResult* item = (DiscoveryResult*)osal_mem_alloc(sizeof(DiscoveryResult));
-            if(item==NULL)
-              return; 
-            item->item.characteristic.Handle = (pMsg->msg.readByTypeRsp.dataList[3+(i*pMsg->msg.readByTypeRsp.len)]<<8)+pMsg->msg.readByTypeRsp.dataList[4+(i*pMsg->msg.readByTypeRsp.len)];
-            item->item.characteristic.UUID = (pMsg->msg.readByTypeRsp.dataList[5+(i*pMsg->msg.readByTypeRsp.len)]<<8)+pMsg->msg.readByTypeRsp.dataList[6+(i*pMsg->msg.readByTypeRsp.len)];
-            item->next = NULL; 
-            
-            if(extitem->result==NULL)
-            {
-              extitem->result = item;
-            }
-            else
-            {
-              tmp = extitem->result; 
-              while(tmp->next!=NULL)
-                tmp = tmp->next;
-              tmp->next = item;
-            }
+            DiscoveryItem item;
+
+            item.characteristic.Handle = (pMsg->msg.readByTypeRsp.dataList[3+(i*pMsg->msg.readByTypeRsp.len)]<<8)+pMsg->msg.readByTypeRsp.dataList[4+(i*pMsg->msg.readByTypeRsp.len)];
+            item.characteristic.UUID = (pMsg->msg.readByTypeRsp.dataList[5+(i*pMsg->msg.readByTypeRsp.len)]<<8)+pMsg->msg.readByTypeRsp.dataList[6+(i*pMsg->msg.readByTypeRsp.len)];
+            GenericList_add(&extitem->result,&item,sizeof(DiscoveryItem));
          }
     }
   
@@ -865,26 +836,12 @@ static void BLEGATTDiscoveryEvent( gattMsgEvent_t *pMsg )
         {
           for(i=0;i<pMsg->msg.findInfoRsp.numInfo;i++)
           {
-              DiscoveryResult* tmp;
+              DiscoveryItem item;
+
+              item.descriptors.Handle = pMsg->msg.findInfoRsp.info.btPair[i].handle;
+              item.descriptors.UUID = (pMsg->msg.findInfoRsp.info.btPair[i].uuid[0]<<8)+pMsg->msg.findInfoRsp.info.btPair[i].uuid[1];
               
-              DiscoveryResult* item = (DiscoveryResult*)osal_mem_alloc(sizeof(DiscoveryResult));
-              if(item==NULL)
-                return; 
-              item->item.descriptors.Handle = pMsg->msg.findInfoRsp.info.btPair[i].handle;
-              item->item.descriptors.UUID = (pMsg->msg.findInfoRsp.info.btPair[i].uuid[0]<<8)+pMsg->msg.findInfoRsp.info.btPair[i].uuid[1];
-              item->next = NULL; 
-              if(extitem->result==NULL)
-              {
-                extitem->result = item;
-              }
-              else
-              {
-                tmp = extitem->result; 
-                while(tmp->next!=NULL)
-                  tmp = tmp->next;
-                tmp->next = item;
-              }
-              
+              GenericList_add(&extitem->result,&item,sizeof(DiscoveryItem));
            }
         }
     }
@@ -894,35 +851,12 @@ static void BLEGATTDiscoveryEvent( gattMsgEvent_t *pMsg )
     }
 }
 
-static void disposeDiscoveryList(EventQueueServiceDirItem_t* item)
-{
-  DiscoveryResult* last = NULL;
-  DiscoveryResult* dir = item->result; 
-  if(item->result == NULL)
-    return; 
-  
-  while(dir->next != NULL)
-  {
-    last = dir; 
-    dir = dir->next; 
-  }
-  
-  osal_mem_free((uint8*)dir); 
-  
-  if(last != NULL )
-    last->next = NULL; 
-  else
-    item->result = NULL; 
-  
-  disposeDiscoveryList(item);
-}
-
 static void discoveryComplete()
 {
   EventQueueServiceDirItem_t* item = &CurrentEvent.serviceDir;
   if(item->base.callback != NULL)
     item->base.callback(&CurrentEvent);
-  disposeDiscoveryList(item); 
+  GenericList_dispose(&item->result);
   status = READY; 
   osal_set_event(ConnectionManger_tarskID,DEQUEUE_EVENT);
 }
@@ -932,7 +866,7 @@ static void discoveryCompleteError()
   EventQueueServiceDirItem_t* item = &CurrentEvent.serviceDir;
   if(item->base.errorcall != NULL)
     item->base.errorcall(&CurrentEvent);
-  disposeDiscoveryList(item);
+  GenericList_dispose(&item->result);
   status = READY;
   osal_set_event(ConnectionManger_tarskID,DEQUEUE_EVENT);
 }

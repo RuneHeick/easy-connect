@@ -97,6 +97,7 @@ extern void SimpleBLECentral_Init( uint8 task_id );
  */
 extern uint16 SimpleBLECentral_ProcessEvent( uint8 task_id, uint16 events );
 
+
 /*********************************************************************
 *********************************************************************/
 

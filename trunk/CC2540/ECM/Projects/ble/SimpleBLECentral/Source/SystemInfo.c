@@ -2,4 +2,4 @@
 
 uint8 SystemID[SYSIDSIZE];
 
-
+GenericValue DeviceName; 
