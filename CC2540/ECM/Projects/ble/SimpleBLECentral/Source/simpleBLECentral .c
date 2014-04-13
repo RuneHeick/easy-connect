@@ -174,13 +174,8 @@ void DecrimentUpdateWait(uint32 Ticks)
 
 
 static void system_Startup(ResetType_t startupCode)
-{
-  
-  Uart_Send("hej",3,0x11,NULL);
-  if(startupCode==Watchdog)
-  {
-    volatile ResetType_t t = startupCode;
-  }
+{ 
+  SendResetCommand();
 }
 
 /*********************************************************************
@@ -205,7 +200,7 @@ void SimpleBLECentral_Init( uint8 task_id )
   osal_set_event( simpleBLETaskId, START_DEVICE_EVT );
   ResetManager_RegistreResetCallBack(system_Startup); 
   osal_start_reload_timer( simpleBLETaskId, PERIODIC_SCAN_START, PERIODIC_SCAN_PERIOD );
-  UartManager_Init();
+  UartManager_Init(task_id);
 }
 
 
@@ -234,7 +229,7 @@ uint16 SimpleBLECentral_ProcessEvent( uint8 task_id, uint16 events )
     if ( (pMsg = osal_msg_receive( simpleBLETaskId )) != NULL )
     {
       simpleBLECentral_ProcessOSALMsg( (osal_event_hdr_t *)pMsg );
-
+      
       // Release the OSAL message
       VOID osal_msg_deallocate( pMsg );
     }
@@ -254,14 +249,14 @@ uint16 SimpleBLECentral_ProcessEvent( uint8 task_id, uint16 events )
     //char string[] = "There have been several claims for the longest sentence in the English language";
     
     uint8 adress[] = {0xE6,0x81,0x70,0xE5,0xc5,0x78};
-    service_addUnknownDevice(adress,0x001b,0x0019,0x020);
+    //service_addUnknownDevice(adress,0x001b,0x0019,0x020);
     
     return ( events ^ START_DEVICE_EVT );
   }
   
   if ( events & PERIODIC_SCAN_START )
   {
-    Queue_Scan(scanComplete,NULL); 
+    //Queue_Scan(scanComplete,NULL); 
     return ( events ^ PERIODIC_SCAN_START );
   }
   
@@ -298,7 +293,10 @@ static void simpleBLECentral_ProcessOSALMsg( osal_event_hdr_t *pMsg )
   { 
     case DO_SERVICE_MSG:
       service_doService(((DoServiceEvent_t*)pMsg)->device); 
-    break;
+      break;
+    case UART_RQ:
+      UartManager_HandelUartPacket(pMsg);
+      break;
   }
 }
 
@@ -426,4 +424,105 @@ static void ReadUpdateHandelsComplete(void* event)
     GenericList_remove(&item->response,0);
     
   }  
+}
+
+
+static void ServiceDirComplete(void* event)
+{
+  EventQueueServiceDirItem_t* item = (EventQueueServiceDirItem_t*)event;
+  SendServicesCommand(item);
+}
+
+//*****************************************************************************
+//     Received command 
+//*****************************************************************************
+
+static void handle_sysInfo(PayloadBuffer* rx)
+{
+  if(rx->count>SYSIDSIZE+2)
+  {
+   osal_memcpy(SystemID,rx->bufferPtr,SYSIDSIZE);
+   uint8 status = rx->bufferPtr[SYSIDSIZE];
+   GenericValue_SetValue(&DeviceName,rx->bufferPtr,rx->count-SYSIDSIZE-1);
+  }
+}
+
+static void handle_Reset(PayloadBuffer* rx)
+{
+  ResetManager_Reset(false);
+}
+
+static void handle_AddDevice(PayloadBuffer* rx)
+{
+  if(rx->count >= B_ADDR_LEN+3*ATT_BT_UUID_SIZE)
+  {
+    uint16 UpdateHandle = (rx->bufferPtr[B_ADDR_LEN]<<8)+ rx->bufferPtr[B_ADDR_LEN+1];
+    uint16 TimeHandle = (rx->bufferPtr[B_ADDR_LEN+2]<<8)+ rx->bufferPtr[B_ADDR_LEN+3];
+    uint16 PassCodeHandle = (rx->bufferPtr[B_ADDR_LEN+4]<<8)+ rx->bufferPtr[B_ADDR_LEN+5];
+    
+    service_addUnknownDevice(rx->bufferPtr,TimeHandle,PassCodeHandle,UpdateHandle);
+  }
+}
+
+static void handle_Read(PayloadBuffer* rx)
+{
+  if(rx->count >= B_ADDR_LEN+ATT_BT_UUID_SIZE)
+  {
+    uint16 Handle = (rx->bufferPtr[B_ADDR_LEN]<<8)+ rx->bufferPtr[B_ADDR_LEN+1];
+    Queue_addRead(rx->bufferPtr,Handle,ReadValueComplete,ReadValueCompleteFail);
+  }
+}
+
+static void handle_Write(PayloadBuffer* rx)
+{
+  if(rx->count >= B_ADDR_LEN+ATT_BT_UUID_SIZE)
+  {
+    uint16 Handle = (rx->bufferPtr[B_ADDR_LEN]<<8)+ rx->bufferPtr[B_ADDR_LEN+1];
+    Queue_addWrite(&rx->bufferPtr[B_ADDR_LEN+ATT_BT_UUID_SIZE],rx->count-B_ADDR_LEN-ATT_BT_UUID_SIZE,rx->bufferPtr,Handle,NULL,ReadValueCompleteFail);
+  }
+}
+
+static void handle_Discover(PayloadBuffer* rx)
+{
+  if(rx->count >= B_ADDR_LEN+1+2*ATT_BT_UUID_SIZE)
+  {
+    DiscoveryRange type = (DiscoveryRange)rx->bufferPtr[B_ADDR_LEN];
+    uint16 startHandel = (rx->bufferPtr[B_ADDR_LEN+1]<<8)+rx->bufferPtr[B_ADDR_LEN+2];
+    uint16 endHandel = (rx->bufferPtr[B_ADDR_LEN+3]<<8)+rx->bufferPtr[B_ADDR_LEN+4];
+    
+    Queue_addServiceDiscovery(rx->bufferPtr,ServiceDirComplete,ReadValueCompleteFail,type,startHandel,endHandel);
+  }
+}
+
+void UartManager_HandelUartPacket(osal_event_hdr_t * msg)
+{
+  RqMsg* pMsg = (RqMsg*) msg; 
+  PayloadBuffer RX = Uart_getRXpayload();
+  uint8 ack[1] =
+  {
+    0x01, // ack
+  };
+  Uart_Send_Response(ack,sizeof(ack));
+  
+  
+  switch(pMsg->command)
+  {
+    case SystemInfo:
+      handle_sysInfo(&RX);
+      break;
+    case Reset:
+      handle_Reset(&RX);
+      break;
+    case AddDeviceEvent:
+      handle_AddDevice(&RX);
+      break; 
+    case ReadEvent:
+      handle_Read(&RX);
+      break;
+    case WriteEvent:
+      handle_Write(&RX);
+      break;
+    case DiscoverEvent:
+      handle_Discover(&RX);
+  }
 }

@@ -38,9 +38,9 @@ typedef struct
 
 typedef enum DiscoveryRange
 {
-  Primary,
-  Characteristic,
-  Descriptor
+  Primary = 0x00,
+  Characteristic = 0x01,
+  Descriptor = 0x02
 }DiscoveryRange;
 
 typedef struct primary_ServiceItem
@@ -64,11 +64,6 @@ typedef union
   ValueHandelPair descriptors; 
 }DiscoveryItem;
 
-typedef struct DiscoveryResult
-{
-  DiscoveryItem item; 
-  struct DiscoveryResult* next;
-}DiscoveryResult; 
 //***********************************************************
 //      Queue Structs 
 //***********************************************************
@@ -146,7 +141,7 @@ typedef struct EventQueueServiceDirItem_t
   uint16 startHandle;
   uint16 endHandle; 
   
-  DiscoveryResult* result; 
+  List result; 
   
 }EventQueueServiceDirItem_t;
 

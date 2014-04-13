@@ -31,10 +31,10 @@ void ResetManager_RegistreResetCallBack(ResetCallBack call)
 
 void ResetManager_StartWatchDog()
 {
-   WD_START();
+   //WD_START();
 }
 
 void ResetManager_ClearWatchDog()
 {
-  WD_KICK();
+  //WD_KICK();
 }

@@ -10,7 +10,7 @@ bool GenericValue_SetValue(GenericValue* item, uint8* value, uint8 len)
   
   if(item->status==READY)
   {
-    if(item->size==len && memcmp(item->pValue,value,len))
+    if(item->size==len && osal_memcpy(item->pValue,value,len))
       return true; 
     GenericValue_DeleteValue(item);
   }
