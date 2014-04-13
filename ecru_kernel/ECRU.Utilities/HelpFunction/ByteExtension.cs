@@ -1,5 +1,6 @@
 ﻿using System;
 using Microsoft.SPOT;
+using System.Text;
 
 namespace ECRU.Utilities.HelpFunction
 {
@@ -29,6 +30,16 @@ namespace ECRU.Utilities.HelpFunction
                     str[index + i] = data[i];
                 }
             }
+        }
+
+        public static byte[] StringToBytes(this string input)
+        {
+            return Encoding.UTF8.GetBytes(input);
+        }
+
+        public static string GetString(this byte[] bytes)
+        {
+            return new string(Encoding.UTF8.GetChars(bytes));
         }
 
     }
