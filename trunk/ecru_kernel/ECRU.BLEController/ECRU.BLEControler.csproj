@@ -35,8 +35,11 @@
   <Import Project="$(NetMfTargetsBaseDir)$(TargetFrameworkVersion)\CSharp.Targets" />
   <ItemGroup>
     <Compile Include="CRC.cs" />
+    <Compile Include="DataManager.cs" />
     <Compile Include="Def.cs" />
     <Compile Include="PacketManager.cs" />
+    <Compile Include="Packets\DiscoverEvent.cs" />
+    <Compile Include="Packets\SystemInfoEvent.cs" />
     <Compile Include="Packets\AddDeviceEvent.cs" />
     <Compile Include="Packets\DataEvent.cs" />
     <Compile Include="Packets\DeviceEvent.cs" />
@@ -44,6 +47,7 @@
     <Compile Include="Packets\IPacket.cs" />
     <Compile Include="Packets\ReadEvent.cs" />
     <Compile Include="Packets\ServiceEvent.cs" />
+    <Compile Include="Packets\ResetEvent.cs" />
     <Compile Include="Packets\WriteEvent.cs" />
     <Compile Include="SerialController.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
