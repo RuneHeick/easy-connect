@@ -31,6 +31,7 @@
   <Import Project="$(NetMfTargetsBaseDir)$(TargetFrameworkVersion)\CSharp.Targets" />
   <ItemGroup>
     <Compile Include="EventBus\EventBus.cs" />
+    <Compile Include="EventBus\Events\ResetEvent.cs" />
     <Compile Include="Factories\ModuleFactory\IModule.cs" />
     <Compile Include="Factories\ModuleFactory\ModuleFactory.cs" />
     <Compile Include="HelpFunction\ByteExtension.cs" />
@@ -41,12 +42,15 @@
     <Compile Include="SD\SD.cs" />
     <Compile Include="SD\Types\IConfigurationFile.cs" />
     <Compile Include="SD\Types\IFile.cs" />
+    <Compile Include="SystemInfo\SystemInfo.cs" />
     <Compile Include="Timers\Timer.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="Microsoft.SPOT.Native">
     </Reference>
+    <Reference Include="Microsoft.SPOT.Security.PKCS11" />
     <Reference Include="System.IO" />
+    <Reference Include="System.Security" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ECRU.EventBus\ECRU.EventBus.csproj">
