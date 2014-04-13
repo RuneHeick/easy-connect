@@ -13,15 +13,16 @@ namespace ECRU.BLEController
 
     public enum CommandType
     {
-        AddDeviceEvent = 0x1,
-        DataEvent = 0x5,
-        DeviceEvent =0x7,
-        DisconnectEvent = 0x6,
-        ReadEvent = 0x3,
-        WriteEvent = 0x4,
-        ServiceEvent = 0x2,
-        SystemInfo = 0x8, 
-        Reset = 0xF,
+        AddDeviceEvent = 0x10,
+        DataEvent = 0x50,
+        DeviceEvent =0x70,
+        DisconnectEvent = 0x60,
+        ReadEvent = 0x30,
+        WriteEvent = 0x40,
+        ServiceEvent = 0x20,
+        SystemInfo = 0x80, 
+        DiscoverEvent = 0x90,
+        Reset = 0xF0,
     }
 
 

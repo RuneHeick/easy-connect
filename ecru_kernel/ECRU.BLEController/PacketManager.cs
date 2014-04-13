@@ -81,6 +81,7 @@ namespace ECRU.BLEController
                 SupscriptionPair item = (SupscriptionPair)subscribers[i];
                 if(item.Command == command && item.handler != null)
                 {
+
                     IPacket evt = parsePacket(packet);
                     if (evt != null)
                         workPool.EnqueueAction(() => item.handler(evt));
@@ -96,43 +97,43 @@ namespace ECRU.BLEController
                 case CommandType.AddDeviceEvent:
                     {
                         ret = new AddDeviceEvent();
-                        ret.Payload = packet; 
+                        ret.Payload = packet.GetPart(3, packet.Length - 3 - 2); 
                     }
                     break;
                 case CommandType.DataEvent:
                     {
                         ret = new DataEvent();
-                        ret.Payload = packet;
+                        ret.Payload = packet.GetPart(3, packet.Length - 3 - 2);
                     }
                     break;
                 case CommandType.DeviceEvent:
                     {
                         ret = new DeviceEvent();
-                        ret.Payload = packet;
+                        ret.Payload = packet.GetPart(3, packet.Length - 3 - 2);
                     }
                     break;
                 case CommandType.DisconnectEvent:
                     {
                         ret = new DisconnectEvent();
-                        ret.Payload = packet;
+                        ret.Payload = packet.GetPart(3, packet.Length - 3 - 2);
                     }
                     break;
                 case CommandType.ReadEvent:
                     {
                         ret = new ReadEvent();
-                        ret.Payload = packet;
+                        ret.Payload = packet.GetPart(3, packet.Length - 3 - 2);
                     }
                     break;
                 case CommandType.Reset:
                     {
-                        //ret = new Res();
-                        //ret.Payload = packet;
+                        ret = new ResetEvent();
+                        ret.Payload = packet.GetPart(3, packet.Length - 3 - 2);
                     }
                     break;
                 case CommandType.ServiceEvent:
                     {
                         ret = new ServiceEvent();
-                        ret.Payload = packet;
+                        ret.Payload = packet.GetPart(3, packet.Length - 3 - 2);
                     }
                     break;
                 case CommandType.SystemInfo:
@@ -144,7 +145,7 @@ namespace ECRU.BLEController
                 case CommandType.WriteEvent:
                     {
                         ret = new WriteEvent();
-                        ret.Payload = packet;
+                        ret.Payload = packet.GetPart(3, packet.Length - 3 - 2);
                     }
                     break;
                 default:
@@ -180,8 +181,8 @@ namespace ECRU.BLEController
                 data.Set(data, 3);
                 data[0] = Def.SYNC_WORD;
                 data[1] = (byte)(data.Length - 1);
-
-                ushort crc = CRC.CalcCrc(data, data.Length - 3);
+                data[2] = (byte)packet.Command;
+                ushort crc = CRC.CalcCrc(data, data.Length - 2);
 
                 data[data.Length - 2] = (byte)(crc >> 8);
                 data[data.Length - 1] = (byte)(crc);
