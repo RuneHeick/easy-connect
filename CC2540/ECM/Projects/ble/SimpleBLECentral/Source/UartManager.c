@@ -20,7 +20,7 @@ void UartManager_Init(uint8 TarskId)
   Uart_Subscribe(TarskId,ReadEvent);
   Uart_Subscribe(TarskId,WriteEvent);
   Uart_Subscribe(TarskId,DiscoverEvent);
-
+  Uart_Subscribe(TarskId,AddDeviceEvent);
 }
 
 
