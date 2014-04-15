@@ -256,7 +256,7 @@ uint16 SimpleBLECentral_ProcessEvent( uint8 task_id, uint16 events )
   
   if ( events & PERIODIC_SCAN_START )
   {
-    //Queue_Scan(scanComplete,NULL); 
+    Queue_Scan(scanComplete,NULL); 
     return ( events ^ PERIODIC_SCAN_START );
   }
   
@@ -524,5 +524,6 @@ void UartManager_HandelUartPacket(osal_event_hdr_t * msg)
       break;
     case DiscoverEvent:
       handle_Discover(&RX);
+      break;
   }
 }
