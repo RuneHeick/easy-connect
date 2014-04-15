@@ -107,11 +107,7 @@ bStatus_t GAP_DeviceInit(  uint8 taskID,
       break;
 
     case GAP_PROFILE_PERIPHERAL:
-      #if ( HOST_CONFIG & PERIPHERAL_CFG )
-      {
         stat = SUCCESS;
-      }
-      #endif
       break;
 
     case GAP_PROFILE_CENTRAL:
@@ -166,7 +162,7 @@ bStatus_t GAP_DeviceInit(  uint8 taskID,
         GAP_SecParamsInit( pIRK, pSRK, pSignCounter );
       }
       #endif
-
+      
       #if ( HOST_CONFIG & ( CENTRAL_CFG | OBSERVER_CFG ) )
       {
         if ( (profileRole == GAP_PROFILE_BROADCASTER) ||

@@ -14,7 +14,6 @@
 #include "hci.h"
 #include "gapgattserver.h"
 #include "gattservapp.h"
-#include "central.h"
 #include "gapbondmgr.h"
 #include "simpleGATTprofile.h"
 #include "simpleBLECentral.h"
@@ -78,6 +77,7 @@ static void service_addUnknownDevice(uint8* addr, uint16 UpdateTimeHandel,uint16
 void service_doService(AcceptedDeviceInfo* device);
 static void ReadValueCompleteFail(void* event);
 static void ReadValueComplete(void* event);
+static void handle_sysInfo(PayloadBuffer* rx);
 
 //***** SCHEDULE NEXT DEVICE UPDATETIME UPDATE *******// 
 static void scheduleUpdate()
@@ -201,6 +201,7 @@ void SimpleBLECentral_Init( uint8 task_id )
   ResetManager_RegistreResetCallBack(system_Startup); 
   osal_start_reload_timer( simpleBLETaskId, PERIODIC_SCAN_START, PERIODIC_SCAN_PERIOD );
   UartManager_Init(task_id);
+  
 }
 
 
@@ -245,11 +246,11 @@ uint16 SimpleBLECentral_ProcessEvent( uint8 task_id, uint16 events )
     //test
     
     //uint8 adress[] = {0x62,0xEE,0xD4,0xF7,0xB1,0x34};
-    //uint8 adress[] = {0xF8,0x3A,0x22,0x8C,0xBA,0x1C};
+    uint8 adress[] = {0xF8,0x3A,0x22,0x8C,0xBA,0x1C};
     //char string[] = "There have been several claims for the longest sentence in the English language";
     
-    uint8 adress[] = {0xE6,0x81,0x70,0xE5,0xc5,0x78};
-    //service_addUnknownDevice(adress,0x001b,0x0019,0x020);
+    //uint8 adress[] = {0xE6,0x81,0x70,0xE5,0xc5,0x78};
+    service_addUnknownDevice(adress,0x001b,0x0019,0x020);
     
     return ( events ^ START_DEVICE_EVT );
   }
@@ -330,7 +331,7 @@ static void RecivedAdvertisment(ScanResponse_t* item)
       {
         if(item->pEvtData[i+2]==0xEC && item->pEvtData[i+3]==0xDA && dev->UpdateHandel != 0)
         {
-          Queue_addRead(dev->addr,dev->UpdateHandel,ReadUpdateHandelsComplete,NULL);
+          Queue_addRead(dev->addr,dev->UpdateHandel,ReadUpdateHandelsComplete,ReadValueCompleteFail);
           break; 
         }
       }
@@ -403,7 +404,7 @@ static void ReadUpdateHandelsComplete(void* event)
     {
       len--; 
       handel = (handel) + (value[0]<<8);
-      Queue_addRead(item->base.addr,handel,ReadValueComplete,NULL);
+      Queue_addRead(item->base.addr,handel,ReadValueComplete,ReadValueCompleteFail);
       value = &value[1];
     }
     
@@ -443,7 +444,13 @@ static void handle_sysInfo(PayloadBuffer* rx)
   {
    osal_memcpy(SystemID,rx->bufferPtr,SYSIDSIZE);
    uint8 status = rx->bufferPtr[SYSIDSIZE];
-   GenericValue_SetValue(&DeviceName,rx->bufferPtr,rx->count-SYSIDSIZE-1);
+   GenericValue_SetValue(&DeviceName,&rx->bufferPtr[SYSIDSIZE+1],rx->count-SYSIDSIZE-1);
+   if(status == 0)
+   {
+    ConnectionManager_Start(false);
+   }
+   else
+     ConnectionManager_Start(true);
   }
 }
 

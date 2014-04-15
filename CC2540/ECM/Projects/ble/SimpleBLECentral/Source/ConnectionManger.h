@@ -5,6 +5,7 @@
 //***********************************************************
 //      Connection Structs 
 //***********************************************************
+
 typedef enum
 {
   NOTCONNECTED,
@@ -160,8 +161,12 @@ typedef union
 //      Functions 
 //***********************************************************
 
+extern bool IsCentral; 
+
 void ConnectionManger_Init( uint8 task_id);
 uint16 ConnectionManger_ProcessEvent( uint8 task_id, uint16 events );
+
+void ConnectionManager_Start(bool Central);
 
 void Queue_addWrite(uint8* write, uint8 len, uint8* addr, uint16 handel, Callback call, Callback ecall);
 void Queue_Scan(Callback call, Callback ecall);
