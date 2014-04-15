@@ -6,5 +6,6 @@
 
 
 extern uint8 SystemID[SYSIDSIZE];
+extern GenericValue DeviceName, Password; 
 
-extern GenericValue DeviceName; 
+extern void InfoProfile_AddService();

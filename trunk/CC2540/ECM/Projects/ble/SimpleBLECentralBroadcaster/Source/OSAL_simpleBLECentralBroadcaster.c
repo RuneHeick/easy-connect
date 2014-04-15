@@ -71,13 +71,11 @@
 #include "gattservapp.h"
 
 /* Profiles */
-#include "central.h"
-#include "peripheral.h"
+#include "centralBroadcasterProfile.h"
 
 /* Application */
-#include "simpleBLECentral.h"
-#include "ConnectionManger.h"
-#include "Uart.h"
+#include "simpleBLECentralBroadcaster.h"
+
 /*********************************************************************
  * GLOBAL VARIABLES
  */
@@ -96,12 +94,9 @@ const pTaskEventHandlerFn tasksArr[] =
   GATT_ProcessEvent,
   SM_ProcessEvent,
   GAPCentralRole_ProcessEvent,
-  GAPRole_ProcessEvent,
   GAPBondMgr_ProcessEvent,
   GATTServApp_ProcessEvent,
-  Uart_ProcessEvent,
-  SimpleBLECentral_ProcessEvent,
-  ConnectionManger_ProcessEvent
+  SimpleBLECentral_ProcessEvent
 };
 
 const uint8 tasksCnt = sizeof( tasksArr ) / sizeof( tasksArr[0] );
@@ -156,17 +151,12 @@ void osalInitTasks( void )
 
   /* Profiles */
   GAPCentralRole_Init( taskID++ );
-  GAPRole_Init( taskID++);
   GAPBondMgr_Init( taskID++ );
 
   GATTServApp_Init( taskID++ );
 
   /* Application */
-  Uart_Init( taskID++ );
-  
-  SimpleBLECentral_Init( taskID++ );
-  
-  ConnectionManger_Init(taskID++ );
+  SimpleBLECentral_Init( taskID );
 }
 
 /*********************************************************************

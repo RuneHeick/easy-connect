@@ -11,19 +11,31 @@
 #include "gapgattserver.h"
 #include "gattservapp.h"
 #include "central.h"
+#include "peripheral.h"
 #include "gapbondmgr.h"
 #include "simpleGATTprofile.h"
 #include "simpleBLECentral.h"
-
 #include "ConnectionManger.h"
 #include "BLEparameters.h"
+#include "SystemInfo.h"
+#include "ResetManager.h"
 
 #define DEQUEUE_EVENT (1<<1)
 #define PROCESSQUEUEITEM_EVENT (1<<2)
 #define START_DEVICE_EVENT (1<<3)
 #define LINKTIMEOUT_EVENT (1<<4)
+#define RESTART_DEVICE_EVENT (1<<6)
 
 #define LINKTIMEOUT_TIME 500
+
+// What is the advertising interval when device is discoverable (units of 625us, 160=100ms)
+#define DEFAULT_ADVERTISING_INTERVAL          200
+
+// Minimum connection interval (units of 1.25ms, 80=100ms) if automatic parameter update request is enabled
+#define DEFAULT_DESIRED_MIN_CONN_INTERVAL     80
+
+// Maximum connection interval (units of 1.25ms, 800=1000ms) if automatic parameter update request is enabled
+#define DEFAULT_DESIRED_MAX_CONN_INTERVAL     800
 
 static void ConnectionManger_handel(ConnectionEvents_t* item);
 static void EstablishLink(ConnectedDevice_t* conContainor);
@@ -45,20 +57,80 @@ static void discoveryCompleteError();
 static void RWComplete(Callback call);
 static void disposeScanList(List* item);
 static void TerminateALLLinks();
+static void peripheralStateNotificationCB( gaprole_States_t newState );
 
 static uint8 NULLaddr[B_ADDR_LEN] = {0x00, 0x00, 0x00, 0x00, 0x00 , 0x00}; 
 static uint8 ConnectionManger_tarskID;
 static ConnectedDevice_t connectedDevices[MAX_HW_SUPPORTED_DEVICES]; 
 
+bool IsCentral = true;
 
 typedef enum
 {
-  READY,
-  BUSY, 
-  ERROR
+  C_READY,
+  C_BUSY, 
+  C_ERROR
 }ConnectionManger_status;
 
-static ConnectionManger_status status = READY; // is item in queue bein processed 
+
+// GAP - SCAN RSP data (max size = 31 bytes)
+static uint8 scanRspData[31] =
+{
+  // complete name
+  0x16,   // length of this data
+  GAP_ADTYPE_LOCAL_NAME_COMPLETE,
+  'E',
+  'a',
+  's',
+  'y',
+  'C',
+  'o',
+  'n',
+  'n',
+  'e',
+  'c',
+  't',
+  ' ',
+  'R',
+  'o',
+  'o',
+  'm',
+  ' ',
+  'U',
+  'n',
+  'i',
+  't',
+  
+  // connection interval range
+  0x05,   // length of this data
+  GAP_ADTYPE_SLAVE_CONN_INTERVAL_RANGE,
+  LO_UINT16( DEFAULT_DESIRED_MIN_CONN_INTERVAL ),   // 100ms
+  HI_UINT16( DEFAULT_DESIRED_MIN_CONN_INTERVAL ),  
+  LO_UINT16( DEFAULT_DESIRED_MAX_CONN_INTERVAL ),   // 1s
+  HI_UINT16( DEFAULT_DESIRED_MAX_CONN_INTERVAL ),  
+  
+};
+
+// GAP - Advertisement data (max size = 31 bytes, though this is
+// best kept short to conserve power while advertisting)
+static uint8 advertData[] = 
+{ 
+  // Flags; this sets the device to use limited discoverable
+  // mode (advertises for 30 seconds at a time) instead of general
+  // discoverable mode (advertises indefinitely)
+  0x02,   // length of this data
+  GAP_ADTYPE_FLAGS,
+  GAP_ADTYPE_FLAGS_BREDR_NOT_SUPPORTED|GAP_ADTYPE_FLAGS_GENERAL,
+
+  // three-byte broadcast of the data "1 2 3"
+  0x04,   // length of this data including the data type byte
+  GAP_ADTYPE_MANUFACTURER_SPECIFIC,      // manufacturer specific advertisement data type
+  1,
+  2,
+  3
+};
+
+static ConnectionManger_status status = C_READY; // is item in queue bein processed 
 static ConnectionEvents_t CurrentEvent; //event there is working on from queue 
 static List EventQueue; 
 
@@ -81,6 +153,12 @@ static const gapBondCBs_t simpleBLEBondCB =
   simpleBLECentralPairStateCB
 };
 
+// GAP Role Callbacks
+static gapRolesCBs_t simpleBLEPeripheral_PeripheralCBs =
+{
+  peripheralStateNotificationCB,  // Profile State Change Callbacks
+  NULL                            // When a valid RSSI is read from controller (not used by application)
+};
 
 //***********************************************************
 //      Setup
@@ -91,6 +169,57 @@ void ConnectionManger_Init( uint8 task_id)
   uint8 i; 
   ConnectionManger_tarskID = task_id;
   EventQueue = GenericList_create();
+  
+  
+      //////////////////////////////////////////////////////////////////
+// Broadcaster
+  
+  // Setup the GAP Broadcaster Role Profile
+  {
+    uint8 initial_advertising_enable = TRUE;
+    
+    // By setting this to zero, the device will go into the waiting state after
+    // being discoverable for 30.72 second, and will not being advertising again
+    // until the enabler is set back to TRUE
+    uint16 gapRole_AdvertOffTime = 0;
+
+    // Set the GAP Role Parameters
+    GAPRole_SetParameter( GAPROLE_ADVERT_ENABLED, sizeof( uint8 ), &initial_advertising_enable );
+    GAPRole_SetParameter( GAPROLE_ADVERT_OFF_TIME, sizeof( uint16 ), &gapRole_AdvertOffTime );
+    
+    GAPRole_SetParameter( GAPROLE_SCAN_RSP_DATA, sizeof ( scanRspData ), scanRspData );
+    GAPRole_SetParameter( GAPROLE_ADVERT_DATA, sizeof( advertData ), advertData );
+
+    
+    
+    
+    uint8 enable_update_request = DEFAULT_ENABLE_UPDATE_REQUEST;
+    uint16 desired_min_interval = DEFAULT_DESIRED_MIN_CONN_INTERVAL;
+    uint16 desired_max_interval = DEFAULT_DESIRED_MAX_CONN_INTERVAL;
+    uint16 desired_slave_latency = DEFAULT_DESIRED_SLAVE_LATENCY;
+    uint16 desired_conn_timeout = DEFAULT_DESIRED_CONN_TIMEOUT;
+    
+    GAPRole_SetParameter( GAPROLE_PARAM_UPDATE_ENABLE, sizeof( uint8 ), &enable_update_request );
+    GAPRole_SetParameter( GAPROLE_MIN_CONN_INTERVAL, sizeof( uint16 ), &desired_min_interval );
+    GAPRole_SetParameter( GAPROLE_MAX_CONN_INTERVAL, sizeof( uint16 ), &desired_max_interval );
+    GAPRole_SetParameter( GAPROLE_SLAVE_LATENCY, sizeof( uint16 ), &desired_slave_latency );
+    GAPRole_SetParameter( GAPROLE_TIMEOUT_MULTIPLIER, sizeof( uint16 ), &desired_conn_timeout );
+  }
+
+  // Set advertising interval
+  {
+    uint16 advInt = DEFAULT_ADVERTISING_INTERVAL;
+
+    GAP_SetParamValue( TGAP_LIM_DISC_ADV_INT_MIN, advInt );
+    GAP_SetParamValue( TGAP_LIM_DISC_ADV_INT_MAX, advInt );
+    GAP_SetParamValue( TGAP_GEN_DISC_ADV_INT_MIN, advInt );
+    GAP_SetParamValue( TGAP_GEN_DISC_ADV_INT_MAX, advInt );
+  }
+  
+  
+
+//////////////////////////////////////////////////////////////
+  
   // Setup Central Profile
   {
     uint8 scanRes = DEFAULT_MAX_SCAN_RES;
@@ -100,12 +229,13 @@ void ConnectionManger_Init( uint8 task_id)
   // Setup GAP
   GAP_SetParamValue( TGAP_GEN_DISC_SCAN, DEFAULT_SCAN_DURATION );
   GAP_SetParamValue( TGAP_LIM_DISC_SCAN, DEFAULT_SCAN_DURATION );
+  
   GGS_SetParameter( GGS_DEVICE_NAME_ATT, 7, (uint8 *) "TEST RU" ); // make So generic name can be used 
   
   // Setup the GAP Bond Manager
   {
     uint32 passkey = DEFAULT_PASSCODE;
-    uint8 pairMode = DEFAULT_PAIRING_MODE;
+    uint8 pairMode = GAPBOND_PAIRING_MODE_INITIATE;
     uint8 mitm = DEFAULT_MITM_MODE;
     uint8 ioCap = DEFAULT_IO_CAPABILITIES;
     uint8 bonding = DEFAULT_BONDING_MODE;
@@ -126,14 +256,15 @@ void ConnectionManger_Init( uint8 task_id)
   GGS_AddService( GATT_ALL_SERVICES );         // GAP
   GATTServApp_AddService( GATT_ALL_SERVICES ); // GATT attributes
   
-  // Setup a delayed profile startup
-  osal_set_event( ConnectionManger_tarskID, START_DEVICE_EVENT );
  
     for(i = 0; i<MAX_HW_SUPPORTED_DEVICES; i++)
     {
       connectedDevices[i].ConnHandel = GAP_CONNHANDLE_INIT;
       connectedDevices[i].status = NOTCONNECTED;
     }
+    
+    
+   
 }
 
 
@@ -161,25 +292,50 @@ uint16 ConnectionManger_ProcessEvent( uint8 task_id, uint16 events )
   
   if ( events & START_DEVICE_EVENT )
   {
-    // Start the Device
-    VOID GAPCentralRole_StartDevice( (gapCentralRoleCB_t *) &simpleBLERoleCB );
-
+      // Start the Device
+     osal_set_event(ConnectionManger_tarskID,RESTART_DEVICE_EVENT);
     // Register with bond manager after starting device
-    GAPBondMgr_Register( (gapBondCBs_t *) &simpleBLEBondCB );
+     GAPBondMgr_Register( (gapBondCBs_t *) &simpleBLEBondCB );
     
     return ( events ^ START_DEVICE_EVENT );
   }
   
+  if ( events & RESTART_DEVICE_EVENT )
+  {
+      // Start the Device
+    uint8 new_adv_enabled_status = TRUE;
+    ConnectionManger_Init(ConnectionManger_tarskID);
+    
+    
+    if(IsCentral)
+    {
+      uint8 advType = GAP_ADTYPE_ADV_NONCONN_IND; 
+      GAPRole_SetParameter( GAPROLE_ADV_EVENT_TYPE, sizeof( uint8 ), &advType );
+      GAPRole_SetParameter( GAPROLE_ADVERT_ENABLED, sizeof( uint8 ), &new_adv_enabled_status );
+      VOID GAPCentralRole_StartDevice( (gapCentralRoleCB_t *) &simpleBLERoleCB);
+    }
+    else
+    {
+      uint8 advType = GAP_ADTYPE_ADV_IND; 
+      GAPRole_SetParameter( GAPROLE_ADV_EVENT_TYPE, sizeof( uint8 ), &advType );
+      GAPRole_SetParameter( GAPROLE_ADVERT_ENABLED, sizeof( uint8 ), &new_adv_enabled_status );
+      InfoProfile_AddService();
+      VOID GAPRole_StartDevice(&simpleBLEPeripheral_PeripheralCBs);
+    }
+    
+    return ( events ^ RESTART_DEVICE_EVENT );
+  }
+  
   if ( events & DEQUEUE_EVENT )
   {
-    if(status==READY)
+    if(status==C_READY)
     {
       if(EventQueue.count>0)
       {
         Dequeue(&CurrentEvent);
         if(CurrentEvent.base.action != None) 
         {
-          status = BUSY; 
+          status = C_BUSY; 
           osal_set_event(ConnectionManger_tarskID,PROCESSQUEUEITEM_EVENT);
         }
       }
@@ -195,7 +351,7 @@ uint16 ConnectionManger_ProcessEvent( uint8 task_id, uint16 events )
   
   if ( events & PROCESSQUEUEITEM_EVENT )
   {
-    if(CurrentEvent.base.action != None && status==BUSY)
+    if(CurrentEvent.base.action != None && status==C_BUSY)
     {
       if(HasConnection(CurrentEvent.base.addr)==false)
       {
@@ -203,7 +359,7 @@ uint16 ConnectionManger_ProcessEvent( uint8 task_id, uint16 events )
         {
           if(CurrentEvent.base.errorcall != NULL)
             CurrentEvent.base.errorcall(&CurrentEvent); // if no connection can be established. 
-          status = READY; 
+          status = C_READY; 
           osal_set_event(ConnectionManger_tarskID,DEQUEUE_EVENT);
         }
       }
@@ -218,11 +374,11 @@ uint16 ConnectionManger_ProcessEvent( uint8 task_id, uint16 events )
   if ( events & LINKTIMEOUT_EVENT )
   {
     cancelLinkEstablishment();
-    if(CurrentEvent.base.action != None && status==BUSY && CurrentEvent.base.errorcall != NULL)
+    if(CurrentEvent.base.action != None && status==C_BUSY && CurrentEvent.base.errorcall != NULL)
     {
       CurrentEvent.base.errorcall(&CurrentEvent); 
     }
-    status = READY;
+    status = C_READY;
     osal_set_event(ConnectionManger_tarskID,DEQUEUE_EVENT);
     return (events ^ LINKTIMEOUT_EVENT);
   }
@@ -411,19 +567,22 @@ static void cancelLinkEstablishment()
 
 static void Enqueue(ConnectionEvents_t* item)
 {
-  if(EventQueue.count<20)
+  if(IsCentral)
   {
-  
-  
-  if(GenericList_add(&EventQueue,(uint8*)item,sizeof(ConnectionEvents_t))==false &&
-     item->base.errorcall != NULL)
-        item->base.errorcall(item);
+    if(EventQueue.count<20)
+    {
+    
+    
+    if(GenericList_add(&EventQueue,(uint8*)item,sizeof(ConnectionEvents_t))==false &&
+       item->base.errorcall != NULL)
+          item->base.errorcall(item);
+    }
+    else
+    {
+      ResetManager_Reset(false);
+    }
+    osal_set_event(ConnectionManger_tarskID,DEQUEUE_EVENT);
   }
-  else
-  {
-    ResetManager_Reset(false);
-  }
-  osal_set_event(ConnectionManger_tarskID,DEQUEUE_EVENT);
 }
 
 static void Dequeue(ConnectionEvents_t* item)
@@ -566,7 +725,7 @@ static void BLE_CentralEventCB( gapCentralRoleEvent_t *pEvent )
             item->base.callback(&CurrentEvent); 
          }
          disposeScanList(&item->response);
-         status = READY; 
+         status = C_READY; 
        }
        osal_set_event(ConnectionManger_tarskID,DEQUEUE_EVENT); 
      }
@@ -857,7 +1016,7 @@ static void discoveryComplete()
   if(item->base.callback != NULL)
     item->base.callback(&CurrentEvent);
   GenericList_dispose(&item->result);
-  status = READY; 
+  status = C_READY; 
   osal_set_event(ConnectionManger_tarskID,DEQUEUE_EVENT);
 }
 
@@ -867,7 +1026,7 @@ static void discoveryCompleteError()
   if(item->base.errorcall != NULL)
     item->base.errorcall(&CurrentEvent);
   GenericList_dispose(&item->result);
-  status = READY;
+  status = C_READY;
   osal_set_event(ConnectionManger_tarskID,DEQUEUE_EVENT);
 }
 
@@ -881,7 +1040,7 @@ static void RWComplete(Callback call)
   {
     osal_mem_free(item->item.write.pValue);
   }
-  status = READY; 
+  status = C_READY; 
   osal_set_event(ConnectionManger_tarskID,DEQUEUE_EVENT);
 }
 
@@ -894,4 +1053,32 @@ static void disposeScanList(List* list)
      osal_mem_free(item->pEvtData);
      GenericList_remove(list,0); 
   }
+}
+
+
+static void peripheralStateNotificationCB( gaprole_States_t newState )
+{
+  switch ( newState )
+  {
+    case GAPROLE_STARTED:
+      {
+      
+      }
+      break;
+      
+   case GAPROLE_CONNECTED:
+    {
+      volatile int a = 5; 
+    }
+  }
+
+
+}
+
+void ConnectionManager_Start(bool Central)
+{
+  if(IsCentral)
+    GAPCentralRole_TerminateLink( 0XFFFE );
+  IsCentral = Central; 
+  osal_set_event(ConnectionManger_tarskID,RESTART_DEVICE_EVENT);
 }

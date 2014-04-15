@@ -3,7 +3,7 @@
 <project>
   <fileVersion>2</fileVersion>
   <configuration>
-    <name>CC2540EM</name>
+    <name>CC2541EM</name>
     <toolchain>
       <name>8051</name>
     </toolchain>
@@ -17,15 +17,15 @@
         <debug>1</debug>
         <option>
           <name>DerivativeDescriptionFile</name>
-          <state>$TOOLKIT_DIR$\config\devices\Texas Instruments\CC2540F256.i51</state>
+          <state>$TOOLKIT_DIR$\config\devices\Texas Instruments\CC2541F256.i51</state>
         </option>
         <option>
           <name>Previous Derivative File</name>
-          <state>$TOOLKIT_DIR$\config\devices\Texas Instruments\CC2540F256.i51</state>
+          <state>$TOOLKIT_DIR$\config\devices\Texas Instruments\CC2541F256.i51</state>
         </option>
         <option>
           <name>Showed Derivative</name>
-          <state>CC2540F256</state>
+          <state>CC2541F256</state>
         </option>
         <option>
           <name>CPU Core</name>
@@ -126,15 +126,15 @@
         </option>
         <option>
           <name>ExePath</name>
-          <state>CC2540EM\Exe</state>
+          <state>CC2541EM\Exe</state>
         </option>
         <option>
           <name>ObjPath</name>
-          <state>CC2540EM\Obj</state>
+          <state>CC2541EM\Obj</state>
         </option>
         <option>
           <name>ListPath</name>
-          <state>CC2540EM\List</state>
+          <state>CC2541EM\List</state>
         </option>
         <option>
           <name>GOutputBinary</name>
@@ -265,11 +265,10 @@
         </option>
         <option>
           <name>CCDefines</name>
-          <state>INT_HEAP_LEN=2500</state>
+          <state>INT_HEAP_LEN=2000</state>
           <state>HALNODEBUG</state>
           <state>OSAL_CBTIMER_NUM_TASKS=1</state>
           <state>HAL_AES_DMA=TRUE</state>
-          <state>POWER_SAVING</state>
           <state>HAL_DMA=TRUE</state>
           <state>HAL_LCD=FALSE</state>
           <state>HAL_LED=FALSE</state>
@@ -464,8 +463,11 @@
           <state>$PROJ_DIR$\..\..\common\npi\npi_np</state>
           <state>$PROJ_DIR$\..\..\Include</state>
           <state>$PROJ_DIR$\..\..\Profiles\Roles</state>
+          <state>$PROJ_DIR$\..\..\Profiles\DevInfo</state>
           <state>$PROJ_DIR$\..\..\Profiles\SimpleProfile</state>
+          <state>$PROJ_DIR$\..\..\Profiles\EasyConnectService</state>
           <state>$PROJ_DIR$\..\..\SimpleBLEPeripheral\Source</state>
+          <state>$PROJ_DIR$\..\..\SimpleBLECentral\Source</state>
           <state>$PROJ_DIR$\..\Source</state>
         </option>
         <option>
@@ -717,7 +719,7 @@
         <debug>1</debug>
         <option>
           <name>XOutOverride</name>
-          <state>0</state>
+          <state>1</state>
         </option>
         <option>
           <name>OutputFile</name>
@@ -1063,7 +1065,7 @@
   <group>
     <name>APP</name>
     <group>
-      <name>Communications</name>
+      <name>Com</name>
       <file>
         <name>$PROJ_DIR$\..\..\SimpleBLEPeripheral\Source\Uart.c</name>
       </file>
@@ -1071,25 +1073,37 @@
         <name>$PROJ_DIR$\..\..\SimpleBLEPeripheral\Source\Uart.h</name>
       </file>
       <file>
-        <name>$PROJ_DIR$\..\Source\UartManager.c</name>
+        <name>$PROJ_DIR$\..\..\SimpleBLECentral\Source\UartManager.c</name>
       </file>
       <file>
-        <name>$PROJ_DIR$\..\Source\UartManager.h</name>
+        <name>$PROJ_DIR$\..\..\SimpleBLECentral\Source\UartManager.h</name>
       </file>
     </group>
     <group>
       <name>Manager</name>
       <file>
-        <name>$PROJ_DIR$\..\Source\ConnectionManger.c</name>
+        <name>$PROJ_DIR$\..\..\SimpleBLECentral\Source\ConnectionManger.c</name>
       </file>
       <file>
-        <name>$PROJ_DIR$\..\Source\ConnectionManger.h</name>
+        <name>$PROJ_DIR$\..\..\SimpleBLECentral\Source\ConnectionManger.h</name>
       </file>
       <file>
-        <name>$PROJ_DIR$\..\Source\GenericList.c</name>
+        <name>$PROJ_DIR$\..\..\SimpleBLECentral\Source\ResetManager.c</name>
       </file>
       <file>
-        <name>$PROJ_DIR$\..\Source\GenericList.h</name>
+        <name>$PROJ_DIR$\..\..\SimpleBLECentral\Source\ResetManager.h</name>
+      </file>
+    </group>
+    <group>
+      <name>Util</name>
+      <file>
+        <name>$PROJ_DIR$\..\..\SimpleBLECentral\Source\BLEparameters.h</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\..\..\SimpleBLECentral\Source\GenericList.c</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\..\..\SimpleBLECentral\Source\GenericList.h</name>
       </file>
       <file>
         <name>$PROJ_DIR$\..\..\SimpleBLEPeripheral\Source\GenericValueManger.c</name>
@@ -1098,32 +1112,29 @@
         <name>$PROJ_DIR$\..\..\SimpleBLEPeripheral\Source\GenericValueManger.h</name>
       </file>
       <file>
-        <name>$PROJ_DIR$\..\Source\ResetManager.c</name>
+        <name>$PROJ_DIR$\..\..\Profiles\EasyConnectService\SmartCommandsProperties.c</name>
       </file>
       <file>
-        <name>$PROJ_DIR$\..\Source\ResetManager.h</name>
+        <name>$PROJ_DIR$\..\..\Profiles\EasyConnectService\SmartCommandsProperties.h</name>
       </file>
       <file>
-        <name>$PROJ_DIR$\..\Source\SystemInfo.c</name>
+        <name>$PROJ_DIR$\..\..\SimpleBLECentral\Source\SystemInfo.c</name>
       </file>
       <file>
-        <name>$PROJ_DIR$\..\Source\SystemInfo.h</name>
+        <name>$PROJ_DIR$\..\..\SimpleBLECentral\Source\SystemInfo.h</name>
       </file>
     </group>
     <file>
-      <name>$PROJ_DIR$\..\Source\BLEparameters.h</name>
+      <name>$PROJ_DIR$\..\..\SimpleBLECentral\Source\OSAL_simpleBLECentral.c</name>
     </file>
     <file>
-      <name>$PROJ_DIR$\..\Source\OSAL_simpleBLECentral.c</name>
+      <name>$PROJ_DIR$\..\..\SimpleBLECentral\Source\simpleBLECentral .c</name>
     </file>
     <file>
-      <name>$PROJ_DIR$\..\Source\simpleBLECentral .c</name>
+      <name>$PROJ_DIR$\..\..\SimpleBLECentral\Source\simpleBLECentral.h</name>
     </file>
     <file>
-      <name>$PROJ_DIR$\..\Source\simpleBLECentral.h</name>
-    </file>
-    <file>
-      <name>$PROJ_DIR$\..\Source\simpleBLECentral_Main.c</name>
+      <name>$PROJ_DIR$\..\..\SimpleBLECentral\Source\simpleBLECentral_Main.c</name>
     </file>
   </group>
   <group>
@@ -1263,13 +1274,13 @@
     <file>
       <name>$PROJ_DIR$\..\..\common\npi\npi_np\npi_spi.c</name>
       <excluded>
-        <configuration>CC2540EM</configuration>
+        <configuration>CC2541EM</configuration>
       </excluded>
     </file>
     <file>
       <name>$PROJ_DIR$\..\..\common\npi\npi_np\npi_uart.c</name>
       <excluded>
-        <configuration>CC2540EM</configuration>
+        <configuration>CC2541EM</configuration>
       </excluded>
     </file>
   </group>
@@ -1306,10 +1317,10 @@
   <group>
     <name>PROFILES</name>
     <file>
-      <name>$PROJ_DIR$\..\..\Profiles\Roles\centralBroadcasterProfile.c</name>
+      <name>$PROJ_DIR$\..\..\Profiles\Roles\central.c</name>
     </file>
     <file>
-      <name>$PROJ_DIR$\..\..\Profiles\Roles\centralBroadcasterProfile.h</name>
+      <name>$PROJ_DIR$\..\..\Profiles\Roles\central.h</name>
     </file>
     <file>
       <name>$PROJ_DIR$\..\..\Profiles\Roles\gap.c</name>
@@ -1328,6 +1339,12 @@
     </file>
     <file>
       <name>$PROJ_DIR$\..\..\Include\gattservapp.h</name>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\Profiles\Roles\peripheral.c</name>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\Profiles\Roles\peripheral.h</name>
     </file>
   </group>
   <group>
