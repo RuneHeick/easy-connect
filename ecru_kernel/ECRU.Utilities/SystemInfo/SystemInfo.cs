@@ -1,6 +1,5 @@
 using System;
 using Microsoft.SPOT;
-using System.Security.Cryptography;
 using System.Text; 
 
 namespace ECRU.Utilities
@@ -36,9 +35,11 @@ namespace ECRU.Utilities
 
         static byte[] doHash(string input)
         {
+            /*
             HashAlgorithm Hash = new HashAlgorithm(HashAlgorithmType.SHA1);
             return Hash.ComputeHash(Encoding.UTF8.GetBytes(input));
-            
+            */
+            return null;
         }
 
 
