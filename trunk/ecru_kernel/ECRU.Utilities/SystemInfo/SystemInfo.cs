@@ -39,6 +39,7 @@ namespace ECRU.Utilities
             HashAlgorithm Hash = new HashAlgorithm(HashAlgorithmType.SHA1);
             return Hash.ComputeHash(Encoding.UTF8.GetBytes(input));
             */
+
             return null;
         }
 
