@@ -48,9 +48,7 @@
   <ItemGroup>
     <Reference Include="Microsoft.SPOT.Native">
     </Reference>
-    <Reference Include="Microsoft.SPOT.Security.PKCS11" />
     <Reference Include="System.IO" />
-    <Reference Include="System.Security" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ECRU.EventBus\ECRU.EventBus.csproj">

@@ -31,11 +31,11 @@ namespace ECRU
             Test.Start();
 
 
-
+    /*
             var netDaemon = new Netd();
             netDaemon.LoadConfig("");
             netDaemon.Start();
-
+            */
 
             Thread.Sleep(Timeout.Infinite);
         }
