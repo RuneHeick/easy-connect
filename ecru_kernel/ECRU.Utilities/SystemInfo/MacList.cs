@@ -8,17 +8,20 @@ namespace ECRU.Utilities
     public class MacList
     {
         ArrayList mackList = new ArrayList();
-
+        readonly object Lock = new object(); 
         public void Add(byte[] mac)
         {
             try
             {
-                int index = 0;
-                if (!HasElement(out index, mac))
+                lock (Lock)
                 {
-                    mackList.Add(mac);
-                    if (MacAdded != null)
-                        MacAdded(mac);
+                    int index = 0;
+                    if (!HasElement(out index, mac))
+                    {
+                        mackList.Add(mac);
+                        if (MacAdded != null)
+                            MacAdded(mac);
+                    }
                 }
             }
             catch
@@ -31,18 +34,21 @@ namespace ECRU.Utilities
         {
             try
             {
-                for (int i = 0; i < mackList.Count;i++ )
+                lock (Lock)
                 {
-                    int index = 0; 
-                    if(HasElement(out index,mac))
+                    for (int i = 0; i < mackList.Count; i++)
                     {
-                        if (MacStartRemoved != null)
-                            MacStartRemoved(mac);
-                        mackList.RemoveAt(index);
-                        if (MacRemoved != null)
-                            MacRemoved(mac);
+                        int index = 0;
+                        if (HasElement(out index, mac))
+                        {
+                            if (MacStartRemoved != null)
+                                MacStartRemoved(mac);
+                            mackList.RemoveAt(index);
+                            if (MacRemoved != null)
+                                MacRemoved(mac);
+                        }
                     }
-                }    
+                }
             }
             catch
             {
@@ -68,8 +74,11 @@ namespace ECRU.Utilities
 
         public bool Contains(byte[] mac)
         {
-            int index = 0;
-            return HasElement(out index, mac);
+            lock (Lock)
+            {
+                int index = 0;
+                return HasElement(out index, mac);
+            }
         }
 
         public event MacListChange MacAdded;

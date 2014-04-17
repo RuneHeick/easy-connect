@@ -12,24 +12,28 @@ namespace ECRU.Utilities
 
         public void Add(byte[] master, byte[] unit )
         {
-            lock (Lock)
+            if (unit != null)
             {
-                string masterMac = master.ToHex();
-                if (data.Contains(masterMac))
+                lock (Lock)
                 {
-                    MacList list = (MacList)data[masterMac];
-                    list.Add(unit);
+                    string masterMac = master.ToHex();
+                    Remove(unit);
+                    if (data.Contains(masterMac))
+                    {
+                        MacList list = (MacList)data[masterMac];
+                        list.Add(unit);
+                    }
+                    else
+                    {
+                        MacList list = new MacList();
+                        list.Add(unit);
+                        data.Add(masterMac, list);
+                        list.MacAdded += ((o) => list_MacChanged(o, UnitAdded));
+                        list.MacStartRemoved += ((o) => list_MacChanged(o, UnitRemoved));
+                    }
+                    if (UnitAdded != null)
+                        UnitAdded(master, unit);
                 }
-                else
-                {
-                    MacList list = new MacList();
-                    list.Add(unit);
-                    data.Add(masterMac, list);
-                    list.MacAdded += ((o) => list_MacChanged(o, UnitAdded));
-                    list.MacStartRemoved += ((o) => list_MacChanged(o, UnitRemoved)); 
-                }
-                if (UnitAdded != null)
-                    UnitAdded(master, unit);
             }
         }
 
@@ -88,7 +92,21 @@ namespace ECRU.Utilities
 
         public void Remove(byte[] unit)
         {
-            
+            lock (Lock)
+            {
+                    ICollection keyCollection = data.Keys;
+                    string[] keys = new string[keyCollection.Count];
+                    keyCollection.CopyTo(keys, 0);
+
+                    for (int i = 0; i < data.Count; i++)
+                    {
+                        MacList maclist = (MacList)data[keys[i]];
+                        if (maclist.Contains(unit))
+                        {
+                            maclist.Remove(unit); // Event Will triger remove event. 
+                        }
+                    }
+            }
         }
 
 
