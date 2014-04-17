@@ -42,6 +42,8 @@
     <Compile Include="SD\SD.cs" />
     <Compile Include="SD\Types\IConfigurationFile.cs" />
     <Compile Include="SD\Types\IFile.cs" />
+    <Compile Include="SystemInfo\MacHierarchy.cs" />
+    <Compile Include="SystemInfo\MacList.cs" />
     <Compile Include="SystemInfo\SystemInfo.cs" />
     <Compile Include="Timers\Timer.cs" />
   </ItemGroup>
