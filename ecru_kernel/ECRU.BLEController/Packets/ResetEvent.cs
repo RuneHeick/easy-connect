@@ -6,7 +6,7 @@ namespace ECRU.BLEController.Packets
 {
     class ResetEvent:IPacket
     {
-        private byte[] payload;
+        private byte[] payload = new byte[1];
 
         public byte[] Payload
         {

@@ -68,20 +68,19 @@ namespace ECRU.BLEController
             ushort packetcrc = (ushort)((packet[packet.Length - 2] << 8) + packet[packet.Length - 1]);
             if(packetcrc == crc)
             {
-                HandelPacket(packet);
                 SendAck(packet[Def.COMMAND_INDEX]);
+                HandelPacket(packet);
             }
         }
 
         void HandelPacket(byte[] packet)
         {
-            CommandType command = (CommandType)packet[Def.COMMAND_INDEX];
+            byte command = packet[Def.COMMAND_INDEX];
             for (int i = 0; i < subscribers.Count; i++)
             {
                 SupscriptionPair item = (SupscriptionPair)subscribers[i];
-                if(item.Command == command && item.handler != null)
+                if (item.Command == (CommandType)(command & 0xf0) && item.handler != null)
                 {
-
                     IPacket evt = parsePacket(packet);
                     if (evt != null)
                         workPool.EnqueueAction(() => item.handler(evt));
@@ -92,7 +91,7 @@ namespace ECRU.BLEController
         IPacket parsePacket(byte[] packet)
         {
             IPacket ret = null; 
-            switch((CommandType)packet[Def.COMMAND_INDEX])
+            switch((CommandType)(packet[Def.COMMAND_INDEX]&0xf0))
             {
                 case CommandType.AddDeviceEvent:
                     {
@@ -134,6 +133,7 @@ namespace ECRU.BLEController
                     {
                         ret = new ServiceEvent();
                         ret.Payload = packet.GetPart(3, packet.Length - 3 - 2);
+                        (ret as ServiceEvent).Type = (DiscoverType)(packet[2] & 0x0f); 
                     }
                     break;
                 case CommandType.SystemInfo:
@@ -178,7 +178,7 @@ namespace ECRU.BLEController
             byte[] data = new byte[packet.Payload.Length+5];
             if (data.Length <= Def.MAX_PACKETSIZE)
             {
-                data.Set(data, 3);
+                data.Set(packet.Payload, 3);
                 data[0] = Def.SYNC_WORD;
                 data[1] = (byte)(data.Length - 1);
                 data[2] = (byte)packet.Command;

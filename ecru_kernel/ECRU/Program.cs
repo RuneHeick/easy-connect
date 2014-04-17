@@ -6,7 +6,7 @@ using ECRU.netd;
 using ECRU.BLEController;
 using Microsoft.SPOT;
 using Microsoft.SPOT.Hardware;
-using SecretLabs.NETMF.Hardware.Netduino;
+using SecretLabs.NETMF.Hardware.NetduinoPlus;
 
 
 namespace ECRU
@@ -31,7 +31,7 @@ namespace ECRU
             Test.Start();
 
 
-    /*
+            /*
             var netDaemon = new Netd();
             netDaemon.LoadConfig("");
             netDaemon.Start();
