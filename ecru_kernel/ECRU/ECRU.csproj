@@ -55,6 +55,10 @@
     <Reference Include="System.IO" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\ECRU.BLEController\ECRU.BLEControler.csproj">
+      <Project>{6B29AE16-6946-4943-BA13-A1E57605A963}</Project>
+      <Name>ECRU.BLEControler</Name>
+    </ProjectReference>
     <ProjectReference Include="..\ECRU.netd\ECRU.netd.csproj">
       <Project>{CC50D845-8A55-4787-81F4-16793837A047}</Project>
       <Name>ECRU.netd</Name>
