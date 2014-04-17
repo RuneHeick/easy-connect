@@ -4,7 +4,6 @@ namespace ECRU.netd
 {
     public static class Utilities
     {
-
         public static byte[] StringToBytes(this string input)
         {
             return Encoding.UTF8.GetBytes(input);
