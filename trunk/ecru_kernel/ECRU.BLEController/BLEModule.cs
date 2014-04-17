@@ -4,6 +4,7 @@ using ECRU.Utilities;
 using ECRU.Utilities.Factories.ModuleFactory;
 using ECRU.Utilities.EventBus;
 using ECRU.BLEController.Packets;
+using System.Threading;
 
 namespace ECRU.BLEController
 {
@@ -29,8 +30,21 @@ namespace ECRU.BLEController
             packetmanager.Subscrib(CommandType.DeviceEvent, FoundDevices);
             packetmanager.Subscrib(CommandType.Reset, BLEControllerReset);
             packetmanager.Subscrib(CommandType.DataEvent, RecivedDataEvnet);
+            packetmanager.Subscrib(CommandType.DisconnectEvent, RecivedDisconnectEvnet);
+            packetmanager.Subscrib(CommandType.ServiceEvent, DiscoverCompleteEvent);
 
-            SendSystemInfo();
+            SendReset();
+        }
+
+        private void DiscoverCompleteEvent(IPacket packet)
+        {
+            ServiceEvent Event = packet as ServiceEvent; 
+            if(Event != null)
+            {
+
+
+
+            }
         }
 
         void test(object msg)
@@ -68,13 +82,20 @@ namespace ECRU.BLEController
                 {
                     data.AddToSeenDevices(newDevice);
                 }
+
+                DiscoverEvent Event = new DiscoverEvent();
+                Event.Address = newDevice.Address;
+                Event.EndHandle = 0xFFFF;
+                Event.StartHandle = 0x0001;
+                Event.Type = DiscoverType.Descriptors;
+                packetmanager.Send(Event);
             }
         }
 
 
         public void BLEControllerReset(IPacket packet)
         {
-
+            SendSystemInfo();
         }
 
 
@@ -88,6 +109,19 @@ namespace ECRU.BLEController
         }
 
 
+        public void RecivedDisconnectEvnet(IPacket packet)
+        {
+            DisconnectEvent DisPacket = packet as DisconnectEvent;
+
+        }
+
+        public void RecivedDicoverEvnet(IPacket packet)
+        {
+            DisconnectEvent DisPacket = packet as DisconnectEvent;
+
+        }
+        
+
         //******************   Send **************************
 
 
@@ -100,6 +134,12 @@ namespace ECRU.BLEController
             info.SystemID = SystemInfo.SystemID;
             info.InitMode = false;
             packetmanager.Send(info);
+        }
+
+        public void SendReset()
+        {
+            ResetEvent reset = new ResetEvent();
+            packetmanager.Send(reset);
         }
 
 

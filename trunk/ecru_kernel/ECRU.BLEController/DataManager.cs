@@ -10,7 +10,7 @@ namespace ECRU.BLEController
 
         public bool IsSystemDevice(byte[] address)
         {
-            return true;
+            return false;
         }
 
         public void addConnectedDevice(byte[] address)

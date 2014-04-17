@@ -6,12 +6,6 @@ namespace ECRU.BLEController.Packets
 {
     class DiscoverEvent:IPacket
     {
-        public enum DiscoverType
-        {
-            Service = 0x00,
-            Characteristic = 0x01,
-            Descriptors = 0x02
-        }
 
         byte[] payload = new byte[11];
 
@@ -65,15 +59,18 @@ namespace ECRU.BLEController.Packets
         {
             get
             {
-                return CommandType.ServiceEvent;
+                return CommandType.DiscoverEvent;
             }
         }
         
-        public class ServicePair 
-        {
-            public UInt16 UUID {get; set;}
-            public UInt16 handle {get; set;}
-        }
 
     }
+
+    public enum DiscoverType
+    {
+        Service = 0x00,
+        Characteristic = 0x01,
+        Descriptors = 0x02
+    }
+
 }
