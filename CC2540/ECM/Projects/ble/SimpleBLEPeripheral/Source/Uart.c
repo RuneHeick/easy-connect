@@ -60,6 +60,11 @@ void Uart_Init( uint8 task_id )
 {
   uint8 index; 
   Uart_TaskID = task_id;
+  bufferRX.status = Ready;
+  bufferTX.status = Ready;
+  
+  bufferRX.count = 0;
+  bufferTX.count = 0;
   
   HalUARTInit();
   
@@ -162,13 +167,15 @@ uint16 Uart_ProcessEvent( uint8 task_id, uint16 events )
             bufferTX.status = Ready;
           }
         }
+        
       }
       else // request 
       {
          Uart_HandelRequest();
       } 
     }
-    
+    bufferRX.status = Ready;
+    bufferRX.count = 0; 
     return (events ^ UART_PACKET_EVENT);
   }
   

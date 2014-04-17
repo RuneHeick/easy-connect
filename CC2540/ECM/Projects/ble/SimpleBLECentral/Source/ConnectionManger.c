@@ -63,7 +63,7 @@ static uint8 NULLaddr[B_ADDR_LEN] = {0x00, 0x00, 0x00, 0x00, 0x00 , 0x00};
 static uint8 ConnectionManger_tarskID;
 static ConnectedDevice_t connectedDevices[MAX_HW_SUPPORTED_DEVICES]; 
 
-bool IsCentral = true;
+bool IsCentral = false;
 
 typedef enum
 {
@@ -569,7 +569,7 @@ static void Enqueue(ConnectionEvents_t* item)
 {
   if(IsCentral)
   {
-    if(EventQueue.count<20)
+    if(EventQueue.count<10)
     {
     
     

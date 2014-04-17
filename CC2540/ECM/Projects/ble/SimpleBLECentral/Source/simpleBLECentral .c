@@ -246,11 +246,11 @@ uint16 SimpleBLECentral_ProcessEvent( uint8 task_id, uint16 events )
     //test
     
     //uint8 adress[] = {0x62,0xEE,0xD4,0xF7,0xB1,0x34};
-    uint8 adress[] = {0xF8,0x3A,0x22,0x8C,0xBA,0x1C};
+    //uint8 adress[] = {0xF8,0x3A,0x22,0x8C,0xBA,0x1C};
     //char string[] = "There have been several claims for the longest sentence in the English language";
     
     //uint8 adress[] = {0xE6,0x81,0x70,0xE5,0xc5,0x78};
-    service_addUnknownDevice(adress,0x001b,0x0019,0x020);
+    //service_addUnknownDevice(adress,0x001b,0x0019,0x020);
     
     return ( events ^ START_DEVICE_EVT );
   }
@@ -352,7 +352,7 @@ static void DeviceFound(ScanResponse_t* item)
 static void scanComplete(void* event)
 {
   ConnectionEvents_t* scan_event = (ConnectionEvents_t*)event;
-  List* foundDevices = &scan_event->scan.response;
+   List* foundDevices = &scan_event->scan.response;
   ScanResponse_t* resp;
   
   for(uint8 i = 0; i<foundDevices->count;i++)
