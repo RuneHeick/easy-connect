@@ -1,29 +1,27 @@
-﻿using System;
-using Microsoft.SPOT;
-using System.Text;
+﻿using System.Text;
 
 namespace ECRU.Utilities.HelpFunction
 {
     public static class ByteExtension
     {
-        public static byte[] GetPart(this byte[] str,int startIndex, int Count)
+        public static byte[] GetPart(this byte[] str, int startIndex, int Count)
         {
-            if(str != null && str.Length>startIndex+Count)
+            if (str != null && str.Length > startIndex + Count)
             {
-                byte[] res = new byte[Count];
-                for(int i = 0; i < Count; i++)
+                var res = new byte[Count];
+                for (int i = 0; i < Count; i++)
                 {
                     res[i] = str[startIndex + i];
                 }
                 return res;
             }
-            return null; 
+            return null;
         }
 
 
         public static void Set(this byte[] str, byte[] data, int index)
         {
-            if (str != null && str.Length >= data.Length+index)
+            if (str != null && str.Length >= data.Length + index)
             {
                 for (int i = 0; i < data.Length; i++)
                 {
@@ -41,6 +39,5 @@ namespace ECRU.Utilities.HelpFunction
         {
             return new string(Encoding.UTF8.GetChars(bytes));
         }
-
     }
 }

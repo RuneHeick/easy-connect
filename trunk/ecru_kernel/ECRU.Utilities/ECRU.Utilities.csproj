@@ -51,12 +51,6 @@
     <Reference Include="System.IO" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\ECRU.EventBus\ECRU.EventBus.csproj">
-      <Project>{A161B854-6858-4A85-B70D-B949F042B2D4}</Project>
-      <Name>ECRU.EventBus</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
     <Folder Include="Buttons\Logging\" />
     <Folder Include="LEDs\" />
   </ItemGroup>
