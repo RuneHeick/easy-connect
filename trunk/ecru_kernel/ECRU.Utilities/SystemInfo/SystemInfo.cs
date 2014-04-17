@@ -7,11 +7,6 @@ namespace ECRU.Utilities
         private static string passCode = "";
         private static byte[] sysId = new byte[SYSID_LENGTH];
 
-        static SystemInfo()
-        {
-            ConnectionOverview = new MacHierarchy();
-        }
-
         public static MacHierarchy ConnectionOverview { get; private set; }
 
         public static MacList ConnectedDevices { get; private set; }

@@ -8,6 +8,10 @@ namespace ECRU.BLEController
         public const int COMMAND_INDEX = 2;
         public const int SYNC_WORD = 0xEC;
         public const int MAX_PACKETSIZE = 128;
+        public const int STARTFIELD_INDEX = 1;
+        public const int STARTFIELD_MASK = 0x80;
+        public const int RETRANSMITTIME = 100;
+        public const int RETRANSMIT_MAXCOUNT = 3;
 
     }
 
