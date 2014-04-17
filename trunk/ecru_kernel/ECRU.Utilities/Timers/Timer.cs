@@ -1,18 +1,13 @@
-using System;
-using Microsoft.SPOT;
-
 namespace ECRU.Utilities.Timers
 {
-    interface ITimer
+    internal interface ITimer
     {
-        
     }
 
-    class Timer
+    internal class Timer
     {
-        Timer() 
+        private Timer()
         {
-            
         }
     }
 }

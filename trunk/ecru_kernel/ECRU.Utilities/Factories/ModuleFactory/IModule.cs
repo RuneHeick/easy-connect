@@ -1,6 +1,3 @@
-using System;
-using Microsoft.SPOT;
-
 namespace ECRU.Utilities.Factories.ModuleFactory
 {
     public interface IModule
@@ -10,5 +7,4 @@ namespace ECRU.Utilities.Factories.ModuleFactory
         void Stop();
         void Reset();
     }
-
 }

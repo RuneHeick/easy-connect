@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections;
-using Microsoft.SPOT;
 using ECRU.Utilities.LeadFollow;
+using Microsoft.SPOT;
 
 namespace ECRU.Utilities.EventBus
 {
@@ -12,7 +12,7 @@ namespace ECRU.Utilities.EventBus
     {
         private static readonly Hashtable Subscriptions = new Hashtable();
         private static readonly Object Lock = new object();
-        private static WorkPool ThreadPool = new WorkPool(5);
+        private static readonly WorkPool ThreadPool = new WorkPool(5);
 
         /// <summary>
         ///     Subscribe will add the subscriber to a Event.
@@ -34,7 +34,7 @@ namespace ECRU.Utilities.EventBus
                     var list = Subscriptions[messageType] as ArrayList;
                     if (list != null)
                     {
-                        ((ArrayList)Subscriptions[messageType]).Add(messageHandler);
+                        ((ArrayList) Subscriptions[messageType]).Add(messageHandler);
                     }
                 }
                 return true;
@@ -43,7 +43,7 @@ namespace ECRU.Utilities.EventBus
             Debug.Print("MessageBus - Message not subscriptions");
             lock (Lock)
             {
-                var list = new ArrayList { messageHandler };
+                var list = new ArrayList {messageHandler};
                 Subscriptions.Add(messageType, list);
             }
             return true;
@@ -103,7 +103,7 @@ namespace ECRU.Utilities.EventBus
                 {
                     foreach (EventHandler subscriber in subscribers)
                     {
-                        ThreadPool.EnqueueAction(()=>subscriber(message));
+                        ThreadPool.EnqueueAction(() => subscriber(message));
                     }
                 }
             }
@@ -111,6 +111,5 @@ namespace ECRU.Utilities.EventBus
     }
 
 
-    public delegate void EventHandler(object item); 
-
+    public delegate void EventHandler(object item);
 }

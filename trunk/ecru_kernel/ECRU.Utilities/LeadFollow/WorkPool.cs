@@ -1,24 +1,24 @@
 ﻿using System;
-using Microsoft.SPOT;
+using System.Collections;
 using System.Threading;
-using System.Collections; 
 
 namespace ECRU.Utilities.LeadFollow
 {
     public class WorkPool
     {
-        private Thread[] pool; 
-        private ArrayList actionQueue = new ArrayList();
-        private Object actionQueueLock = new object();
+        private readonly ArrayList actionQueue = new ArrayList();
+        private readonly Object actionQueueLock = new object();
+        private readonly Thread[] pool;
 
 
-        bool running = true; 
+        private bool running = true;
+
         public WorkPool(int ThreadPoolSize)
         {
             pool = new Thread[ThreadPoolSize];
-            for(int i = 0; i<pool.Length;i++)
+            for (int i = 0; i < pool.Length; i++)
             {
-                pool[i] = new Thread(new ThreadStart(Threadrun));
+                pool[i] = new Thread(Threadrun);
                 pool[i].Start();
             }
         }
@@ -44,9 +44,9 @@ namespace ECRU.Utilities.LeadFollow
 
         private void TryStart()
         {
-            foreach(Thread t in pool)
+            foreach (Thread t in pool)
             {
-                if(t.ThreadState == ThreadState.Suspended)
+                if (t.ThreadState == ThreadState.Suspended)
                 {
                     t.Resume();
                     break;
@@ -60,15 +60,15 @@ namespace ECRU.Utilities.LeadFollow
             {
                 if (actionQueue.Count > 0)
                 {
-                    Action item = (Action)actionQueue[0];
+                    var item = (Action) actionQueue[0];
                     actionQueue.RemoveAt(0);
                     return item;
                 }
-                return null; 
+                return null;
             }
         }
 
-        
+
         private void Threadrun()
         {
             while (running)
@@ -76,16 +76,13 @@ namespace ECRU.Utilities.LeadFollow
                 while (actionQueue.Count > 0)
                 {
                     Action item = getJob();
-                    if(item != null)
+                    if (item != null)
                         item();
                 }
                 Thread.CurrentThread.Suspend();
             }
         }
-
-
     }
 
-    public delegate void Action(); 
-
+    public delegate void Action();
 }

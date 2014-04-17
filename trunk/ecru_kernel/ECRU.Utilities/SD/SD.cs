@@ -7,11 +7,10 @@ namespace ECRU.Utilities.SD
 {
     public static class SD
     {
-
         public static string ReadJSONFromFile(string filePath)
         {
             string result = null;
-            
+
             lock (filePath)
             {
                 try
@@ -29,10 +28,8 @@ namespace ECRU.Utilities.SD
                 }
                 catch (Exception)
                 {
-                    
                     throw;
                 }
-                
             }
 
             return result;
@@ -57,10 +54,8 @@ namespace ECRU.Utilities.SD
                 }
                 catch (Exception exception)
                 {
-                    
                     throw;
                 }
-                
             }
             return true;
         }
@@ -76,7 +71,7 @@ namespace ECRU.Utilities.SD
                         var fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.None);
                         var streamWriter = new StreamWriter(fileStream);
 
-                        foreach (var key in configuration.Keys)
+                        foreach (object key in configuration.Keys)
                         {
                             streamWriter.WriteLine(key + "=" + configuration[key]);
                         }
@@ -87,7 +82,6 @@ namespace ECRU.Utilities.SD
                 }
                 catch (Exception)
                 {
-
                     throw;
                 }
             }
@@ -97,7 +91,6 @@ namespace ECRU.Utilities.SD
 
         public static Hashtable ReadConfugurationFromFile(string filePath)
         {
-
             var config = new Hashtable();
 
             lock (filePath)
@@ -109,14 +102,14 @@ namespace ECRU.Utilities.SD
                         var fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.None);
                         var streamreader = new StreamReader(fileStream);
 
-                        var line = streamreader.ReadLine();
+                        string line = streamreader.ReadLine();
                         if (line != null)
                         {
                             while (line != null)
                             {
                                 if (line[0] != '#')
                                 {
-                                    var splitVals = line.Split('=');
+                                    string[] splitVals = line.Split('=');
                                     if (splitVals.Length == 2)
                                     {
                                         config.Add(splitVals[0], splitVals[1]);
@@ -127,13 +120,10 @@ namespace ECRU.Utilities.SD
                         }
                         streamreader.Close();
                         fileStream.Close();
-
                     }
-                    
                 }
                 catch (Exception)
                 {
-                    
                     throw;
                 }
             }
@@ -144,10 +134,9 @@ namespace ECRU.Utilities.SD
         {
             if (File.Exists(filePath)) return true;
 
-            var splitValues = filePath.Split('\\');
-            var fileName = splitValues[splitValues.Length - 1];
+            string[] splitValues = filePath.Split('\\');
+            string fileName = splitValues[splitValues.Length - 1];
             throw new ECRUSDFileNotFoundException(filePath, fileName);
         }
-
     }
 }

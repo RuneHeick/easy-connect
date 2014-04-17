@@ -1,19 +1,17 @@
-using System;
 using System.Collections;
-using Microsoft.SPOT;
 
 namespace ECRU.Utilities.SD.Types
 {
     public interface IConfigurationFile : IFile
     {
-         //incase expansion
+        //incase expansion
     }
 
     public class ConfigurationFile : IConfigurationFile
     {
-        private string _filePath = null;
-        private string _fileName = null;
-        private Hashtable _fileContent = null;
+        private Hashtable _fileContent;
+        private string _fileName;
+        private string _filePath;
 
         public string FilePath
         {
@@ -50,6 +48,5 @@ namespace ECRU.Utilities.SD.Types
                 }
             }
         }
-
     }
 }

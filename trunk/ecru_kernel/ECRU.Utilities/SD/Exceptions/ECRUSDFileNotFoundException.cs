@@ -1,9 +1,8 @@
 using System;
-using Microsoft.SPOT;
 
 namespace ECRU.Utilities.SD.Exceptions
 {
-    class ECRUSDFileNotFoundException : Exception
+    internal class ECRUSDFileNotFoundException : Exception
     {
         public ECRUSDFileNotFoundException(string filePath, string fileName)
         {
@@ -13,6 +12,5 @@ namespace ECRU.Utilities.SD.Exceptions
 
         public string FilePath { get; private set; }
         public string FileName { get; private set; }
-
     }
 }

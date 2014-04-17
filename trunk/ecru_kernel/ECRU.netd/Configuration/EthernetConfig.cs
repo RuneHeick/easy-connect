@@ -1,9 +1,7 @@
 using System;
 using System.Net;
 using System.Threading;
-using Microsoft.SPOT;
 using Microsoft.SPOT.Net.NetworkInformation;
-
 
 namespace ECRU.netd.Configuration
 {
@@ -22,7 +20,6 @@ namespace ECRU.netd.Configuration
 
         public bool InitNetworkInterface()
         {
-
             if (DynamicIP)
             {
                 try
@@ -49,13 +46,8 @@ namespace ECRU.netd.Configuration
                     return false;
                 }
                 return true;
-
             }
-            else
-            {
-                return false;
-            }
-
+            return false;
         }
     }
 }
