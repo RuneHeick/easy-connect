@@ -4,6 +4,8 @@ using System.Collections;
 using ECRU.Utilities.LeadFollow;
 using ECRU.BLEController.Packets;
 using ECRU.Utilities.HelpFunction;
+using System.Threading;
+using ECRU.Utilities.Timers;
 
 namespace ECRU.BLEController
 {
@@ -11,7 +13,20 @@ namespace ECRU.BLEController
     {
         SerialController seriel;
         ArrayList subscribers = new ArrayList();
-        WorkPool workPool = new WorkPool(3); 
+        WorkPool workPool = new WorkPool(1);
+        ArrayList SendQueue = new ArrayList();
+        ComState status = ComState.Ready;
+        ECTimer RetransmitTimer;
+
+        byte[] SendCommand; 
+
+        private enum ComState
+        {
+            Ready,
+            WaitingForReplay, 
+            Sending,
+            Error
+        }
 
         public PacketManager(SerialController seriel)
         {
@@ -68,8 +83,28 @@ namespace ECRU.BLEController
             ushort packetcrc = (ushort)((packet[packet.Length - 2] << 8) + packet[packet.Length - 1]);
             if(packetcrc == crc)
             {
-                SendAck(packet[Def.COMMAND_INDEX]);
-                HandelPacket(packet);
+                if ((packet[Def.STARTFIELD_INDEX] & Def.STARTFIELD_MASK) == 0)
+                {
+                    SendAck(packet[Def.COMMAND_INDEX]);
+                    HandelPacket(packet);
+                }
+                else
+                {
+                    HandelResponse(packet);
+                }
+            }
+        }
+
+        private void HandelResponse(byte[] packet)
+        {
+            if ((packet[Def.COMMAND_INDEX]) == SendCommand[Def.COMMAND_INDEX])
+            {
+                if (RetransmitTimer != null)
+                {
+                    RetransmitTimer.Stop(); 
+                }
+                status = ComState.Ready;
+                doSend(); 
             }
         }
 
@@ -175,6 +210,7 @@ namespace ECRU.BLEController
 
         public void Send(IPacket packet)
         {
+            
             byte[] data = new byte[packet.Payload.Length+5];
             if (data.Length <= Def.MAX_PACKETSIZE)
             {
@@ -186,8 +222,60 @@ namespace ECRU.BLEController
 
                 data[data.Length - 2] = (byte)(crc >> 8);
                 data[data.Length - 1] = (byte)(crc);
-                seriel.SendByte(data);
+                if (SendQueue.Count < 10)
+                {
+                    lock (SendQueue)
+                    {
+                        SendQueue.Add(data);
+                    }
+                    doSend();
+                }
             }
+        }
+
+        private void doSend()
+        {
+            if (SendQueue.Count > 0 && status == ComState.Ready)
+            {
+                lock (SendQueue)
+                {
+                    byte[] data = (byte[])SendQueue[0];
+                    SendQueue.RemoveAt(0);
+                    status = ComState.Sending;
+                    SendCommand = data;
+                    RetransmitTimer = new ECTimer(ReTransmit, 0, Def.RETRANSMITTIME, Def.RETRANSMITTIME);
+                    RetransmitTimer.Start(); 
+                    if (seriel.SendByte(data))
+                    {
+                        status = ComState.WaitingForReplay;
+                    }
+                    else
+                        status = ComState.Error;
+                }
+            }
+        }
+
+        private void ReTransmit(object TransmitCount)
+        {
+            int count = (int)(TransmitCount);
+
+            if (RetransmitTimer != null)
+            {
+                RetransmitTimer.Stop();
+                RetransmitTimer = null; 
+            }
+
+            if (count < Def.RETRANSMIT_MAXCOUNT && status == ComState.WaitingForReplay)
+            {
+                RetransmitTimer = new ECTimer(ReTransmit, count + 1, Def.RETRANSMITTIME, Def.RETRANSMITTIME);
+                RetransmitTimer.Start();
+                seriel.SendByte(SendCommand); 
+            }
+            else
+            {
+                status = ComState.Ready;
+            }
+
         }
 
         private class SupscriptionPair
