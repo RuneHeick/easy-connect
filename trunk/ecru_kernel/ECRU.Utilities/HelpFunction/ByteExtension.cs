@@ -58,14 +58,14 @@ namespace ECRU.Utilities.HelpFunction
             const string hex = "0123456789ABCDEF";
             int lowNibble = b & 0x0F;
             int highNibble = (b & 0xF0) >> 4;
-            string s = new string(new char[] { hex[highNibble], hex[lowNibble] });
+            var s = new string(new[] {hex[highNibble], hex[lowNibble]});
             return s;
         }
 
         public static string ToHex(this byte[] bytearray)
         {
             string returnStr = "";
-            foreach(byte b in bytearray)
+            foreach (byte b in bytearray)
             {
                 returnStr = returnStr + b.ToHex();
             }
@@ -74,23 +74,21 @@ namespace ECRU.Utilities.HelpFunction
 
         public static byte[] FromHex(this string s)
         {
-            int length = (s.Length + 1) / 2;
-            byte[] arr1 = new byte[length];
+            int length = (s.Length + 1)/2;
+            var arr1 = new byte[length];
             for (int i = 0; i < length; i++)
             {
-                char sixteen = s[2 * i];
-                if (sixteen > '9') sixteen = (char)(sixteen - 'A' + 10);
+                char sixteen = s[2*i];
+                if (sixteen > '9') sixteen = (char) (sixteen - 'A' + 10);
                 else sixteen -= '0';
 
-                char ones = s[2 * i + 1];
-                if (ones > '9') ones = (char)(ones - 'A' + 10);
+                char ones = s[2*i + 1];
+                if (ones > '9') ones = (char) (ones - 'A' + 10);
                 else ones -= '0';
 
-                arr1[i] = (byte)(16 * sixteen + ones);
+                arr1[i] = (byte) (16*sixteen + ones);
             }
             return arr1;
         }
-
-
     }
 }
