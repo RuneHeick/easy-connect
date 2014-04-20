@@ -6,20 +6,25 @@ namespace ECRU.Utilities.LeadFollow
 {
     public class WorkPool
     {
-        private readonly ArrayList actionQueue = new ArrayList();
+        private ArrayList actionQueue = new ArrayList();
         private readonly Object actionQueueLock = new object();
-        private readonly Thread[] pool;
+
+        private  Thread[] pool;
+        private readonly Object poolLock = new object();
 
 
         private bool running = true;
 
         public WorkPool(int ThreadPoolSize)
         {
-            pool = new Thread[ThreadPoolSize];
-            for (int i = 0; i < pool.Length; i++)
+            lock (poolLock)
             {
-                pool[i] = new Thread(Threadrun);
-                pool[i].Start();
+                pool = new Thread[ThreadPoolSize];
+                for (int i = 0; i < pool.Length; i++)
+                {
+                    pool[i] = new Thread(Threadrun);
+                    pool[i].Start();
+                }
             }
         }
 
@@ -41,15 +46,36 @@ namespace ECRU.Utilities.LeadFollow
             }
         }
 
+        public void AddThisThreadNoReturn()
+        {
+            Thread thisThread = Thread.CurrentThread;
+            Thread[] Temppool = new Thread[pool.Length + 1];
+            lock (poolLock)
+            {
+                for(int i = 0; i<pool.Length;i++)
+                {
+                    Temppool[i] = pool[i];
+                    if (pool[i] == thisThread)
+                        return;
+                }
+                Temppool[pool.Length] = thisThread;
+                pool = Temppool;
+            }
+            Threadrun();
+        }
+
 
         private void TryStart()
         {
-            foreach (Thread t in pool)
+            lock (poolLock)
             {
-                if (t.ThreadState == ThreadState.Suspended)
+                foreach (Thread t in pool)
                 {
-                    t.Resume();
-                    break;
+                    if (t.ThreadState == ThreadState.Suspended)
+                    {
+                        t.Resume();
+                        break;
+                    }
                 }
             }
         }
