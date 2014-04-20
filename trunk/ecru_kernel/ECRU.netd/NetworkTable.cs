@@ -2,64 +2,142 @@ using System;
 using System.Collections;
 using System.Net;
 using ECRU.Utilities;
+using ECRU.Utilities.HelpFunction;
+using Microsoft.SPOT;
 
 namespace ECRU.netd
 {
+
+    public delegate void NetworkStateChange(UInt64 netstate);
+
     public static class NetworkTable
     {
+        public static event NetworkStateChange NetstateChanged;
+   
         private static readonly Hashtable Neighbours = new Hashtable();
-        private static int Netstate = 0;
+        private static UInt64 _netstate = 0;
+        static readonly object Lock = new object(); 
+
+        private static string localMac;
+
+        private static event NetworkTableChange UpdatedUnit;
+        private static event NetworkTableChange RemovedUnit;
+        private delegate void NetworkTableChange(Neighbour neighbour);
 
 
-        public static void Update(IPAddress ipAddress, byte[] mac, byte[] netstate)
+        static NetworkTable()
         {
-            Neighbour neighbour = Neighbours[mac] as Neighbour ?? new Neighbour();
+            localMac = "B3E795DE1C11";
+            UpdatedUnit += (o => NetworkChanged(o, UpdatedUnit) );
+            RemovedUnit += (o=> NetworkChanged(o, RemovedUnit) );
+        }
+
+        private static void NetworkChanged(Neighbour neighbour, NetworkTableChange call)
+        {
+            UpdateNetstate();
+
+            // update MacHierachy / MacList
+            Debug.Print("NetworkChanged: " + call.GetType());
+        }
+
+        private static void Add(Neighbour neighbour)
+        {
+            //Add unit
+            Neighbours[neighbour.Mac] = neighbour;
+
+            //Call event
+            UpdatedUnit(neighbour);
+        }
+
+        private static void Remove(Neighbour neighbour)
+        {
+            //Remove unit
+            Neighbours.Remove(neighbour.Mac);
+
+            //Call Event
+            RemovedUnit(neighbour);
+        }
+
+        public static void UpdateNetworkTableEntry(IPAddress ipAddress, string mac, string netstate)
+        {
+            var neighbour = Neighbours[mac] as Neighbour ?? new Neighbour(mac);
 
             neighbour.IP = ipAddress;
             neighbour.Netstate = netstate;
             neighbour.Lastseen = DateTime.Now;
 
-            Neighbours[mac] = neighbour;
-            UpdateNetstate();
+            Add(neighbour);
         }
 
-        public static void Remove(byte[] mac)
+        public static IPAddress GetAddress(string mac)
         {
-            Neighbours.Remove(mac);
-            UpdateNetstate();
+            var neighbourIP = ((Neighbour) Neighbours[mac]).IP;
+
+            //check if address is valid
+            if (ValidAddress(mac))
+            {
+                return neighbourIP;
+            }
+            else
+            {
+                throw new IPAddressNotValidException();
+            }
         }
 
-
-        public static bool ValidAddress(IPAddress ipAddress)
+        public static bool ValidAddress(string mac)
         {
-            object lastSeen = Neighbours[ipAddress.ToString()];
+            var lastSeen = ((Neighbour) Neighbours[mac]).Lastseen;
 
-            TimeSpan timeDifference = DateTime.Now - (DateTime) lastSeen;
+            TimeSpan timeDifference = DateTime.Now - lastSeen;
 
             return timeDifference.Minutes <= 5;
         }
 
-        public static int UpdateNetstate()
+        public static void UpdateNetstate()
         {
-            string data = SystemInfo.SystemMAC.GetString();
-            foreach (object key in Neighbours.Keys)
+            var data = localMac;
+            foreach (var key in Neighbours.Keys)
             {
-                data += ((byte[]) key).GetString();
+                data += (string) key;
             }
 
-            return data.GetHashCode();
+            _netstate = Knuthhash.doHash(data);
+            Debug.Print("Netstate: " + _netstate);
+
+            NetstateChanged(_netstate);
         }
 
-        public static int GetNetstate()
+        public static UInt64 GetNetstate()
         {
-            return Netstate;
+            if(_netstate == 0)
+            {
+                UpdateNetstate();
+            }
+
+            return _netstate;
         }
+
     }
+
+    public class IPAddressNotValidException : Exception
+    {
+    }
+
 
     internal class Neighbour
     {
+
+        public Neighbour(string Mac)
+        {
+            _mac = Mac;
+        }
+
+        public String Mac { get { return _mac; } }
         public DateTime Lastseen;
-        public byte[] Netstate;
+        public String Netstate;
+        private string _mac;
         public IPAddress IP { get; set; }
     }
+
+
 }

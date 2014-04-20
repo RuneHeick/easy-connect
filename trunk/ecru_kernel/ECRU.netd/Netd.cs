@@ -29,7 +29,7 @@ namespace ECRU.netd
             //throw new NotImplementedException();
 
             //Network interface configuration
-            Thread.Sleep(5000);
+            
             NetworkInterface networkAdapter = NetworkInterface.GetAllNetworkInterfaces()[0];
 
             //Setup network configuration (Dynamic DNS/DCHP on ethernet interface)
@@ -43,10 +43,12 @@ namespace ECRU.netd
 
 
             //Network Discovery Configuration
-            netd.BroadcastNetworkDiscovery.UDPPort = 11000;
+            netd.BroadcastNetworkDiscovery.UDPPort = 4544;
             netd.BroadcastNetworkDiscovery.LocalIP = networkAdapter.IPAddress;
             netd.BroadcastNetworkDiscovery.SubnetMask = networkAdapter.SubnetMask;
-            netd.BroadcastNetworkDiscovery.BroadcastIntrevalSeconds = 30;
+            netd.BroadcastNetworkDiscovery.BroadcastIntrevalSeconds = 10;
+            netd.BroadcastNetworkDiscovery.EnableBroadcast = true;
+            netd.BroadcastNetworkDiscovery.EnableListener = true;
 
             //Network Communication Configuration
         }

@@ -21,28 +21,45 @@ namespace ECRU.netd
         public static string LocalIP { get; set; }
         public static string SubnetMask { get; set; }
         public static int BroadcastIntrevalSeconds { get; set; }
+        public static bool EnableBroadcast { get; set; }
+        public static bool EnableListener { get; set; }
+
+        private static string _broadcastMessage;
 
 
         public static void Start()
         {
-            //Start broadcast
-            Debug.Print("Starting boradcaster");
-            _broadcastEndPoint = new IPEndPoint(IPAddress.Parse(GetBroadcastAddress(LocalIP, SubnetMask)), UDPPort);
+            //Subscribe to network state changes
+            NetworkTable.NetstateChanged += UpdateBroadcastMessage;
+            
+            //first time fetch broadcastMessage
+            _broadcastMessage = SystemInfo.SystemMAC.ToHex() + NetworkTable.GetNetstate();
 
-            _sendSocket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
-            _sendSocket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.Broadcast, 5);
+            if (EnableBroadcast)
+            {
+                //Start broadcast
+                Debug.Print("Starting boradcaster");
+                _broadcastEndPoint = new IPEndPoint(IPAddress.Parse(GetBroadcastAddress(LocalIP, SubnetMask)), UDPPort);
 
-            _broadcastThread = new Thread(Broadcast);
-            _broadcastThread.Start();
+                _sendSocket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
+                _sendSocket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.Broadcast, 5);
 
-            //Start listening for broadcast
-            Debug.Print("Starting listener");
+                _broadcastThread = new Thread(Broadcast);
+                _broadcastThread.Start();
+            }
 
-            _receiveSocket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
-            _receiveSocket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.Broadcast, 5);
+            if (EnableListener)
+            {
+                //Start listening for broadcast
+                Debug.Print("Starting listener");
 
-            _listenerThread = new Thread(Listen);
-            _listenerThread.Start();
+                _receiveSocket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
+                _receiveSocket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.Broadcast, 5);
+
+                _listenerThread = new Thread(Listen);
+                _listenerThread.Start();
+            }
+            
         }
 
         private static void Broadcast()
@@ -50,23 +67,36 @@ namespace ECRU.netd
             while (_broadcastThread.IsAlive)
             {
                 Thread.Sleep(BroadcastIntrevalSeconds*1000);
-                string broadcastMessage = SystemInfo.SystemMAC.ToString() + NetworkTable.GetNetstate();
-                int result = _sendSocket.SendTo(broadcastMessage.StringToBytes(), _broadcastEndPoint);
+
+                try
+                {
+                    var result = _sendSocket.SendTo(_broadcastMessage.StringToBytes(), _broadcastEndPoint);
+
+                    Debug.Print("Broadcasting: " + _broadcastMessage);
+                }
+                catch (Exception exception)
+                {
+                    Debug.Print("Broadcast failed: " + exception);
+                }
+                
             }
         }
 
         private static void OnDataReceived(byte[] data, int length, EndPoint sender)
         {
+
             var ep = sender as IPEndPoint;
             if (ep == null) return;
             if (Equals(ep.Address, IPAddress.GetDefaultLocalAddress())) return;
 
-            byte[] mac = data.GetPart(0, 6);
+            Debug.Print(data.ToHex() + " received from: " + ep.Address + " with length: " + length);
 
-            byte[] netstate = data.GetPart(6, length - 6);
+            if (length != 32) return; // packet not correct size - discard it.
+            var mac = data.GetPart(0, 6);
+            var netstate = data.GetPart(6, 26);
 
             //routing table update here!
-            NetworkTable.Update(ep.Address, mac, netstate);
+            NetworkTable.UpdateNetworkTableEntry(ep.Address, mac.ToHex(), netstate.ToHex());
         }
 
         private static void Listen()
@@ -76,11 +106,10 @@ namespace ECRU.netd
 
             while (_receiveSocket.Poll(-1, SelectMode.SelectRead))
             {
-                Debug.Print("Listening");
 
                 var buffer = new byte[_receiveSocket.Available];
 
-                int length = _receiveSocket.ReceiveFrom(buffer, ref endpoint);
+                var length = _receiveSocket.ReceiveFrom(buffer, ref endpoint);
 
                 OnDataReceived(buffer, length, endpoint);
             }
@@ -106,6 +135,12 @@ namespace ECRU.netd
                 broadcastAddress[i] = (byte) (ipAdressBytes[i] | (subnetMaskBytes[i] ^ 255));
             }
             return new IPAddress(broadcastAddress).ToString();
+        }
+
+        private static void UpdateBroadcastMessage(UInt64 netstate)
+        {
+            _broadcastMessage = SystemInfo.SystemMAC.ToHex() + netstate;
+            Debug.Print("Broadcast Message Updated: " + _broadcastMessage);
         }
     }
 }
