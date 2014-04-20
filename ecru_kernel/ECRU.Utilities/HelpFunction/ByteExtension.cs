@@ -32,7 +32,14 @@ namespace ECRU.Utilities.HelpFunction
 
         public static byte[] StringToBytes(this string input)
         {
-            return Encoding.UTF8.GetBytes(input);
+            try
+            {
+                return Encoding.UTF8.GetBytes(input);
+            }
+            catch
+            {
+                return null;
+            }
         }
 
         public static string GetString(this byte[] bytes)

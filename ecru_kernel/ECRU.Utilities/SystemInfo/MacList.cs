@@ -81,6 +81,19 @@ namespace ECRU.Utilities
             }
         }
 
+        public void Clear()
+        {
+            lock(Lock)
+            {
+                while(mackList.Count >0)
+                {
+                    byte[] mac = (byte[])mackList[0];
+                    Remove(mac);
+                }
+
+            }
+        }
+            
         public event MacListChange MacAdded;
 
         public event MacListChange MacRemoved;
