@@ -6,7 +6,7 @@ namespace ECRU.Utilities.HelpFunction
     {
         public static byte[] GetPart(this byte[] str, int startIndex, int Count)
         {
-            if (str != null && str.Length > startIndex + Count)
+            if (str != null && str.Length >= startIndex + Count)
             {
                 var res = new byte[Count];
                 for (int i = 0; i < Count; i++)
