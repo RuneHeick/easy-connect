@@ -36,6 +36,8 @@
     <Compile Include="Factories\ModuleFactory\ModuleFactory.cs" />
     <Compile Include="HelpFunction\ByteExtension.cs" />
     <Compile Include="HelpFunction\Knuthhash.cs" />
+    <Compile Include="HelpFunction\MD5.cs" />
+    <Compile Include="HelpFunction\StringArrayExtension.cs" />
     <Compile Include="LeadFollow\WorkPool.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SD\Exceptions\ECRUSDFileNotFoundException.cs" />
