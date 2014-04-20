@@ -46,9 +46,12 @@ namespace ECRU.netd
             netd.BroadcastNetworkDiscovery.UDPPort = 4544;
             netd.BroadcastNetworkDiscovery.LocalIP = networkAdapter.IPAddress;
             netd.BroadcastNetworkDiscovery.SubnetMask = networkAdapter.SubnetMask;
-            netd.BroadcastNetworkDiscovery.BroadcastIntrevalSeconds = 10;
+            netd.BroadcastNetworkDiscovery.BroadcastIntrevalSeconds = 30;
             netd.BroadcastNetworkDiscovery.EnableBroadcast = true;
             netd.BroadcastNetworkDiscovery.EnableListener = true;
+
+            //Network Table Configuration
+            NetworkTable.SetLocalIP = networkConfig.EthernetInterface.IPAddress;
 
             //Network Communication Configuration
         }

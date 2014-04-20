@@ -33,12 +33,12 @@ namespace ECRU.netd
             NetworkTable.NetstateChanged += UpdateBroadcastMessage;
             
             //first time fetch broadcastMessage
-            _broadcastMessage = SystemInfo.SystemMAC.ToHex() + NetworkTable.GetNetstate();
+            _broadcastMessage = SystemInfo.SystemMAC.ToHex() + "cc9d4028d80b7d9c2255cf5fc8cb25f2";
 
             if (EnableBroadcast)
             {
                 //Start broadcast
-                Debug.Print("Starting boradcaster");
+                Debug.Print("Starting broadcaster");
                 _broadcastEndPoint = new IPEndPoint(IPAddress.Parse(GetBroadcastAddress(LocalIP, SubnetMask)), UDPPort);
 
                 _sendSocket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
@@ -91,9 +91,9 @@ namespace ECRU.netd
 
             Debug.Print(data.ToHex() + " received from: " + ep.Address + " with length: " + length);
 
-            if (length != 32) return; // packet not correct size - discard it.
+            if (length != 44) return; // packet not correct size - discard it.
             var mac = data.GetPart(0, 6);
-            var netstate = data.GetPart(6, 26);
+            var netstate = data.GetPart(6, 38);
 
             //routing table update here!
             NetworkTable.UpdateNetworkTableEntry(ep.Address, mac.ToHex(), netstate.ToHex());
@@ -137,7 +137,7 @@ namespace ECRU.netd
             return new IPAddress(broadcastAddress).ToString();
         }
 
-        private static void UpdateBroadcastMessage(UInt64 netstate)
+        private static void UpdateBroadcastMessage(string netstate)
         {
             _broadcastMessage = SystemInfo.SystemMAC.ToHex() + netstate;
             Debug.Print("Broadcast Message Updated: " + _broadcastMessage);

@@ -8,17 +8,17 @@ using Microsoft.SPOT;
 namespace ECRU.netd
 {
 
-    public delegate void NetworkStateChange(UInt64 netstate);
+    public delegate void NetworkStateChange(String netstate);
 
     public static class NetworkTable
     {
         public static event NetworkStateChange NetstateChanged;
    
         private static readonly Hashtable Neighbours = new Hashtable();
-        private static UInt64 _netstate = 0;
-        static readonly object Lock = new object(); 
+        private static string[] netstateIPList;
 
-        private static string localMac;
+        private static String _netstate;
+        static readonly object Lock = new object(); 
 
         private static event NetworkTableChange UpdatedUnit;
         private static event NetworkTableChange RemovedUnit;
@@ -27,10 +27,11 @@ namespace ECRU.netd
 
         static NetworkTable()
         {
-            localMac = "B3E795DE1C11";
             UpdatedUnit += (o => NetworkChanged(o, UpdatedUnit) );
             RemovedUnit += (o=> NetworkChanged(o, RemovedUnit) );
         }
+
+        public static string SetLocalIP { get; set; }
 
         private static void NetworkChanged(Neighbour neighbour, NetworkTableChange call)
         {
@@ -45,6 +46,9 @@ namespace ECRU.netd
             //Add unit
             Neighbours[neighbour.Mac] = neighbour;
 
+            //Update netstate ip list
+            netstateIPList = netstateIPList.Add(neighbour.IP.ToString());
+
             //Call event
             UpdatedUnit(neighbour);
         }
@@ -54,12 +58,20 @@ namespace ECRU.netd
             //Remove unit
             Neighbours.Remove(neighbour.Mac);
 
+            //Update netstate ip list
+            netstateIPList = netstateIPList.Remove(neighbour.IP.ToString());
+
             //Call Event
             RemovedUnit(neighbour);
         }
 
         public static void UpdateNetworkTableEntry(IPAddress ipAddress, string mac, string netstate)
         {
+            if (netstateIPList == null)
+            {
+                netstateIPList = new []{SetLocalIP};
+            }
+
             var neighbour = Neighbours[mac] as Neighbour ?? new Neighbour(mac);
 
             neighbour.IP = ipAddress;
@@ -93,30 +105,35 @@ namespace ECRU.netd
             return timeDifference.Minutes <= 5;
         }
 
-        public static void UpdateNetstate()
+        private static String UpdateNetstate()
         {
-            var data = localMac;
-            foreach (var key in Neighbours.Keys)
+            string data = null;
+
+            netstateIPList = netstateIPList.Quicksort(0, (netstateIPList.Length - 1) );
+
+            foreach (var s in netstateIPList)
             {
-                data += (string) key;
+                data += s;
             }
+            var buffer = data.StringToBytes();
 
-            _netstate = Knuthhash.doHash(data);
-            Debug.Print("Netstate: " + _netstate);
+            var md5State = new MD5();
 
-            NetstateChanged(_netstate);
+            md5State.HashCore(buffer, 0, buffer.Length);
+
+            var hashresult = md5State.HexStr();
+
+            Debug.Print("Netstate: " + hashresult);
+
+            NetstateChanged(hashresult);
+
+            return hashresult;
         }
 
-        public static UInt64 GetNetstate()
+        public static String GetNetstate()
         {
-            if(_netstate == 0)
-            {
-                UpdateNetstate();
-            }
-
-            return _netstate;
+            return _netstate ?? (_netstate = UpdateNetstate());
         }
-
     }
 
     public class IPAddressNotValidException : Exception
@@ -126,17 +143,20 @@ namespace ECRU.netd
 
     internal class Neighbour
     {
-
         public Neighbour(string Mac)
         {
             _mac = Mac;
         }
 
         public String Mac { get { return _mac; } }
+
         public DateTime Lastseen;
         public String Netstate;
+
         private string _mac;
+
         public IPAddress IP { get; set; }
+
     }
 
 
