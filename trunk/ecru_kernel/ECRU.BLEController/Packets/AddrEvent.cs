@@ -1,27 +1,19 @@
 ﻿using System;
 using Microsoft.SPOT;
+using System.Text;
 using ECRU.Utilities.HelpFunction;
 
 namespace ECRU.BLEController.Packets
 {
-    class ReadEvent:IPacket
+    class AddrEvent: IPacket
     {
-        private byte[] payload = new byte[8]; 
-
-        public UInt16 handel
-        {
-            set
-            {
-                payload[6] = (byte)(value >> 8);
-                payload[7] = (byte)(value);
-            }
-        }
+        private byte[] payload = new byte[6]; 
 
         public byte[] Address
         {
-            set
+            get
             {
-                Payload.Set(value, 0);
+                return Payload.GetPart(0, 6);
             }
         }
 
@@ -29,11 +21,11 @@ namespace ECRU.BLEController.Packets
         {
             get
             {
-                return payload;
+                return payload; 
             }
             set
             {
-                payload = value;
+                payload = value; 
             }
         }
 
@@ -41,7 +33,7 @@ namespace ECRU.BLEController.Packets
         {
             get
             {
-                return CommandType.ReadEvent;
+                return CommandType.AddrEvent;
             }
         }
     }

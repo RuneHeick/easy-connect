@@ -26,9 +26,13 @@ namespace ECRU.BLEController.Packets
                {
                    return ServiceList();
                }
-               else
+               else if(Type == DiscoverType.Descriptors)
                {
                    return handleUUIDList();
+               }
+               else
+               {
+                   return CharacteristicPairList();
                }
             
             }
@@ -51,9 +55,9 @@ namespace ECRU.BLEController.Packets
             for(int i = 6;i<Payload.Length;i=i+6)
             {
                 PrimaryServicePair pair = new PrimaryServicePair(); 
-                pair.handle = (ushort)((Payload[i]<<8) + Payload[i+1]);
-                pair.Endhandle = (ushort)((Payload[i + 2] << 8) + Payload[i + 3]);
-                pair.UUID = (ushort)((Payload[i + 4] << 8) + Payload[i + 5]);
+                pair.handle = (ushort)((Payload[i+1]<<8) + Payload[i]);
+                pair.Endhandle = (ushort)((Payload[i + 3] << 8) + Payload[i + 2]);
+                pair.UUID = (ushort)((Payload[i + 5] << 8) + Payload[i + 4]);
                 reslist[index++] = pair;
             }
 
@@ -66,9 +70,25 @@ namespace ECRU.BLEController.Packets
             int index = 0;
             for (int i = 6; i < Payload.Length; i = i + 4)
             {
-                ServicePair pair = new ServicePair();
-                pair.handle = (ushort)((Payload[i] << 8) + Payload[i + 1]);
-                pair.UUID = (ushort)((Payload[i + 2] << 8) + Payload[i + 3]);
+                DescriptorPair pair = new DescriptorPair();
+                pair.handle = (ushort)((Payload[i] << 8) + Payload[i+1]);
+                pair.UUID = (ushort)((Payload[i + 3] << 8) + Payload[i + 2]);
+                reslist[index++] = pair;
+            }
+
+            return reslist;
+        }
+
+        private ServiceDirRes[] CharacteristicPairList()
+        {
+            ServiceDirRes[] reslist = new ServiceDirRes[(Payload.Length - 6) / 5];
+            int index = 0;
+            for (int i = 6; i < Payload.Length; i = i + 5)
+            {
+                CharacteristicPair pair = new CharacteristicPair();
+                pair.ReadWriteProp = Payload[i];
+                pair.handle = (ushort)((Payload[i+2] << 8) + Payload[i + 1]);
+                pair.UUID = (ushort)((Payload[i + 4] << 8) + Payload[i + 3]);
                 reslist[index++] = pair;
             }
 
@@ -80,10 +100,15 @@ namespace ECRU.BLEController.Packets
 
 
 
-    public class ServicePair : ServiceDirRes
+    public class DescriptorPair : ServiceDirRes
     {
         public UInt16 UUID { get; set; }
         public UInt16 handle { get; set; }
+    }
+
+    public class CharacteristicPair: DescriptorPair
+    {
+        public byte ReadWriteProp { get; set;  }
     }
 
 
@@ -97,6 +122,8 @@ namespace ECRU.BLEController.Packets
     public interface ServiceDirRes
     {
         UInt16 UUID { get; set; }
+        UInt16 handle { get; set; }
+
 
     }
 
