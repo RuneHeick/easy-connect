@@ -4,25 +4,25 @@ using ECRU.Utilities.HelpFunction;
 
 namespace ECRU.BLEController.Packets
 {
-    class ReadEvent:IPacket
+    class PassCodeEvent : IPacket
     {
-        private byte[] payload = new byte[8]; 
 
-        public UInt16 handel
-        {
-            set
-            {
-                payload[6] = (byte)(value >> 8);
-                payload[7] = (byte)(value);
-            }
-        }
+        byte[] payload = new byte[9];
 
-        public byte[] Address
+        public string Code
         {
-            set
+            get
             {
-                Payload.Set(value, 0);
+                try
+                {
+                    return Payload.GetString();
+                }
+                catch
+                {
+                    return "";
+                }
             }
+
         }
 
         public byte[] Payload
@@ -41,7 +41,7 @@ namespace ECRU.BLEController.Packets
         {
             get
             {
-                return CommandType.ReadEvent;
+                return CommandType.PassCode;
             }
         }
     }

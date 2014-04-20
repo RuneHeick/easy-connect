@@ -7,17 +7,17 @@ namespace ECRU.BLEController.Packets
     class AddDeviceEvent:IPacket
     {
 
-        private byte[] address = new byte[12]; 
+        private byte[] address = new byte[10]; 
 
         public byte[] Address
         {
             set
             {
-                address = value; 
+                address.Set(value,0); 
             }
         }
 
-        public UInt16 UpdateHandle
+        public UInt16 PassCodeHandle
         {
             set
             {
@@ -35,14 +35,6 @@ namespace ECRU.BLEController.Packets
             }
         }
 
-        public UInt16 PassCodeHandle
-        {
-            set
-            {
-                Payload[10] = (byte)(value >> 8);
-                Payload[11] = (byte)(value);
-            }
-        }
 
         public byte[] Payload
         {

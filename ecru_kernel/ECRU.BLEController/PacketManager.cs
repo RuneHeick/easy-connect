@@ -13,7 +13,7 @@ namespace ECRU.BLEController
     {
         SerialController seriel;
         ArrayList subscribers = new ArrayList();
-        WorkPool workPool = new WorkPool(1);
+        WorkPool workPool = new WorkPool(3);
         ArrayList SendQueue = new ArrayList();
         ComState status = ComState.Ready;
         ECTimer RetransmitTimer;
@@ -183,6 +183,28 @@ namespace ECRU.BLEController
                         ret.Payload = packet.GetPart(3, packet.Length - 3 - 2);
                     }
                     break;
+                case CommandType.Info:
+                    {
+                        switch ((CommandType)packet[Def.COMMAND_INDEX])
+                        {
+                            case CommandType.NameEvent:
+                                ret = new NameEvent();
+                                break;
+                            case CommandType.PassCode:
+                                ret = new PassCodeEvent();
+                                break; 
+                            default:
+                                return null; 
+                        }
+                        ret.Payload = packet.GetPart(3, packet.Length - 3 - 2);
+                    }
+                    break;
+                case CommandType.AddrEvent:
+                    {
+                        ret = new AddrEvent();
+                        ret.Payload = packet.GetPart(3, packet.Length - 3 - 2);
+                    }
+                    break;
                 default:
                     ret = null;
                     break;
@@ -243,6 +265,8 @@ namespace ECRU.BLEController
                     SendQueue.RemoveAt(0);
                     status = ComState.Sending;
                     SendCommand = data;
+                    if (RetransmitTimer != null)
+                        RetransmitTimer.Stop(); 
                     RetransmitTimer = new ECTimer(ReTransmit, 0, Def.RETRANSMITTIME, Def.RETRANSMITTIME);
                     RetransmitTimer.Start(); 
                     if (seriel.SendByte(data))
@@ -274,6 +298,7 @@ namespace ECRU.BLEController
             else
             {
                 status = ComState.Ready;
+                doSend(); 
             }
 
         }

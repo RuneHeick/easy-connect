@@ -14,6 +14,10 @@ namespace ECRU.BLEController.Packets
             {
                 address = value;
             }
+            get
+            {
+                return address; 
+            }
         }
 
         public byte[] Payload
