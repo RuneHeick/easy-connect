@@ -102,19 +102,25 @@ namespace ECRU.netd
         private static void Listen()
         {
             EndPoint endpoint = new IPEndPoint(IPAddress.Any, UDPPort);
-            _receiveSocket.Bind(endpoint);
-
-            while (_receiveSocket.Poll(-1, SelectMode.SelectRead))
+            try
             {
+                _receiveSocket.Bind(endpoint);
 
-                var buffer = new byte[_receiveSocket.Available];
+                while (_receiveSocket.Poll(-1, SelectMode.SelectRead))
+                {
 
-                var length = _receiveSocket.ReceiveFrom(buffer, ref endpoint);
+                    var buffer = new byte[_receiveSocket.Available];
 
-                OnDataReceived(buffer, length, endpoint);
+                    var length = _receiveSocket.ReceiveFrom(buffer, ref endpoint);
+
+                    OnDataReceived(buffer, length, endpoint);
+                }
             }
-
-            Debug.Print("Somewthing broke :(");
+            catch (Exception exception)
+            {
+                Debug.Print("Listen failed: "+ exception);
+                throw;
+            }
         }
 
         private static string GetBroadcastAddress(string ipAddress, string subnetMask)
