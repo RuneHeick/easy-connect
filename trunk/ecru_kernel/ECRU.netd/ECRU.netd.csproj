@@ -32,6 +32,9 @@
   <ItemGroup>
     <Compile Include="BroadcastNetworkDiscovery.cs" />
     <Compile Include="Configuration\EthernetConfig.cs" />
+    <Compile Include="FileSync\BroadcastMessage.cs" />
+    <Compile Include="FileSync\SendBroadcast.cs" />
+    <Compile Include="NetworkStatusMessage.cs" />
     <Compile Include="NetworkTable.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Netd.cs" />
