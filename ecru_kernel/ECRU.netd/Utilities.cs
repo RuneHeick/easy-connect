@@ -13,5 +13,25 @@ namespace ECRU.netd
         {
             return new string(Encoding.UTF8.GetChars(bytes));
         }
+
+        public static string GetBroadcastAddress(string ipAddress, string subnetMask)
+        {
+            //determines a broadcast address from an ip and subnet
+            IPAddress ip = IPAddress.Parse(ipAddress);
+            IPAddress mask = IPAddress.Parse(subnetMask);
+
+            byte[] ipAdressBytes = ip.GetAddressBytes();
+            byte[] subnetMaskBytes = mask.GetAddressBytes();
+
+            if (ipAdressBytes.Length != subnetMaskBytes.Length)
+                throw new ArgumentException("Lengths of IP address and subnet mask do not match.");
+
+            var broadcastAddress = new byte[ipAdressBytes.Length];
+            for (int i = 0; i < broadcastAddress.Length; i++)
+            {
+                broadcastAddress[i] = (byte)(ipAdressBytes[i] | (subnetMaskBytes[i] ^ 255));
+            }
+            return new IPAddress(broadcastAddress).ToString();
+        }
     }
 }

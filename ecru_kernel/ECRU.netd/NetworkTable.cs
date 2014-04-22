@@ -4,6 +4,7 @@ using System.Net;
 using ECRU.Utilities;
 using ECRU.Utilities.HelpFunction;
 using Microsoft.SPOT;
+using ECRU.Utilities.EventBus;
 
 namespace ECRU.netd
 {
@@ -18,13 +19,15 @@ namespace ECRU.netd
         private static string[] netstateIPList;
 
         private static String _netstate;
+        private static bool _isInSync;
+
         static readonly object Lock = new object(); 
 
         private static event NetworkTableChange UpdatedUnit;
         private static event NetworkTableChange RemovedUnit;
         private delegate void NetworkTableChange(Neighbour neighbour);
 
-
+        
         static NetworkTable()
         {
             UpdatedUnit += (o => NetworkChanged(o, UpdatedUnit) );
@@ -38,6 +41,11 @@ namespace ECRU.netd
             UpdateNetstate();
 
             // update MacHierachy / MacList
+
+
+            // network status -> eventbus
+            EventBus.Publish(new NetworkStatusMessage{isinsync = _isInSync, NetState = _netstate});
+
             Debug.Print("NetworkChanged: " + call.GetType());
         }
 
@@ -105,7 +113,7 @@ namespace ECRU.netd
             return timeDifference.Minutes <= 5;
         }
 
-        private static String UpdateNetstate()
+        private static void UpdateNetstate()
         {
             string data = null;
 
@@ -125,15 +133,16 @@ namespace ECRU.netd
 
             Debug.Print("Netstate: " + hashresult);
 
+            foreach (Neighbour neighbour in Neighbours)
+            {
+                if (neighbour.Netstate == _netstate) continue;
+                _isInSync = false;
+                return;
+            }
+
             NetstateChanged(hashresult);
-
-            return hashresult;
         }
 
-        public static String GetNetstate()
-        {
-            return _netstate ?? (_netstate = UpdateNetstate());
-        }
     }
 
     public class IPAddressNotValidException : Exception

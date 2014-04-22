@@ -3,6 +3,8 @@ using System.Threading;
 using ECRU.netd.Configuration;
 using ECRU.Utilities.Factories.ModuleFactory;
 using Microsoft.SPOT.Net.NetworkInformation;
+using ECRU.Utilities;
+using ECRU.Utilities.EventBus;
 
 namespace ECRU.netd
 {
@@ -54,11 +56,16 @@ namespace ECRU.netd
             NetworkTable.SetLocalIP = networkConfig.EthernetInterface.IPAddress;
 
             //Network Communication Configuration
+
+
+            
+
         }
 
         public void Start()
         {
             netd.BroadcastNetworkDiscovery.Start();
+            EventBus.Subscribe(typeof(FileSync.BroadcastMessage), FileSync.SendBroadcast.Send);
         }
 
         public void Stop()

@@ -39,7 +39,7 @@ namespace ECRU.netd
             {
                 //Start broadcast
                 Debug.Print("Starting broadcaster");
-                _broadcastEndPoint = new IPEndPoint(IPAddress.Parse(GetBroadcastAddress(LocalIP, SubnetMask)), UDPPort);
+                _broadcastEndPoint = new IPEndPoint(IPAddress.Parse(Utilities.GetBroadcastAddress(LocalIP, SubnetMask)), UDPPort);
 
                 _sendSocket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
                 _sendSocket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.Broadcast, 5);
@@ -70,6 +70,7 @@ namespace ECRU.netd
 
                 try
                 {
+
                     var result = _sendSocket.SendTo(_broadcastMessage.StringToBytes(), _broadcastEndPoint);
 
                     Debug.Print("Broadcasting: " + _broadcastMessage);
@@ -94,6 +95,7 @@ namespace ECRU.netd
             if (length != 44) return; // packet not correct size - discard it.
             var mac = data.GetPart(0, 6);
             var netstate = data.GetPart(6, 38);
+            //exspand with passcode for networkcheck only 6 bytes
 
             //routing table update here!
             NetworkTable.UpdateNetworkTableEntry(ep.Address, mac.ToHex(), netstate.ToHex());
@@ -123,28 +125,9 @@ namespace ECRU.netd
             }
         }
 
-        private static string GetBroadcastAddress(string ipAddress, string subnetMask)
-        {
-            //determines a broadcast address from an ip and subnet
-            IPAddress ip = IPAddress.Parse(ipAddress);
-            IPAddress mask = IPAddress.Parse(subnetMask);
-
-            byte[] ipAdressBytes = ip.GetAddressBytes();
-            byte[] subnetMaskBytes = mask.GetAddressBytes();
-
-            if (ipAdressBytes.Length != subnetMaskBytes.Length)
-                throw new ArgumentException("Lengths of IP address and subnet mask do not match.");
-
-            var broadcastAddress = new byte[ipAdressBytes.Length];
-            for (int i = 0; i < broadcastAddress.Length; i++)
-            {
-                broadcastAddress[i] = (byte) (ipAdressBytes[i] | (subnetMaskBytes[i] ^ 255));
-            }
-            return new IPAddress(broadcastAddress).ToString();
-        }
-
         private static void UpdateBroadcastMessage(string netstate)
         {
+            //MD5 Hash systeminformation pascode and use 6 bytes for the broadcast message
             _broadcastMessage = SystemInfo.SystemMAC.ToHex() + netstate;
             Debug.Print("Broadcast Message Updated: " + _broadcastMessage);
         }
