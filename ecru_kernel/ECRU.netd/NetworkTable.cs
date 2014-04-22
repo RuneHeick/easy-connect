@@ -30,23 +30,33 @@ namespace ECRU.netd
         
         static NetworkTable()
         {
-            UpdatedUnit += (o => NetworkChanged(o, UpdatedUnit) );
-            RemovedUnit += (o=> NetworkChanged(o, RemovedUnit) );
+            UpdatedUnit += (NeighbourAdded);
+            RemovedUnit += (NeighbourRemoved);
         }
 
         public static string SetLocalIP { get; set; }
 
-        private static void NetworkChanged(Neighbour neighbour, NetworkTableChange call)
+        private static void NeighbourAdded(Neighbour neighbour)
         {
             UpdateNetstate();
 
             // update MacHierachy / MacList
-
+            SystemInfo.ConnectionOverview.Add(neighbour.Mac);
 
             // network status -> eventbus
             EventBus.Publish(new NetworkStatusMessage{isinsync = _isInSync, NetState = _netstate});
 
-            Debug.Print("NetworkChanged: " + call.GetType());
+        }
+
+        private static void NeighbourRemoved(Neighbour neighbour)
+        {
+            UpdateNetstate();
+
+            // update MacHierachy / MacList
+            SystemInfo.ConnectionOverview.Remove(neighbour.Mac);
+
+            // network status -> eventbus
+            EventBus.Publish(new NetworkStatusMessage{isinsync = _isInSync, NetState = _netstate});
         }
 
         private static void Add(Neighbour neighbour)
@@ -73,7 +83,7 @@ namespace ECRU.netd
             RemovedUnit(neighbour);
         }
 
-        public static void UpdateNetworkTableEntry(IPAddress ipAddress, string mac, string netstate)
+        public static void UpdateNetworkTableEntry(IPAddress ipAddress, byte[] mac, string netstate)
         {
             if (netstateIPList == null)
             {
@@ -133,6 +143,7 @@ namespace ECRU.netd
 
             Debug.Print("Netstate: " + hashresult);
 
+            _isInSync = true;
             foreach (Neighbour neighbour in Neighbours)
             {
                 if (neighbour.Netstate == _netstate) continue;
@@ -152,17 +163,17 @@ namespace ECRU.netd
 
     internal class Neighbour
     {
-        public Neighbour(string Mac)
+        public Neighbour(byte[] Mac)
         {
             _mac = Mac;
         }
 
-        public String Mac { get { return _mac; } }
+        public byte[] Mac { get { return _mac; } }
 
         public DateTime Lastseen;
         public String Netstate;
 
-        private string _mac;
+        private byte[] _mac;
 
         public IPAddress IP { get; set; }
 

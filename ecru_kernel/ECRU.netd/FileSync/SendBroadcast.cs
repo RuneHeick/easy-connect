@@ -9,7 +9,7 @@ namespace ECRU.netd.FileSync
     {
 
         private static IPEndPoint _broadcastEndPoint;
-        private static string UDPPort;
+        private static int UDPPort;
         private static string _broadcastMessage;
         private static string SubnetMask;
         private static string LocalIP;
