@@ -5,30 +5,28 @@ using System.Net.Sockets;
 
 namespace ECRU.netd.FileSync
 {
-    public static class SendBroadcast
+    public static class Broadcast
     {
 
         private static IPEndPoint _broadcastEndPoint;
-        private static int UDPPort;
         private static string _broadcastMessage;
         public static string SubnetMask { private get; set; }
         public static string LocalIP { private get; set; }
-        private static object _lock = new object();
+        private static object _sendlock = new object();
         private static Socket _sendSocket;
 
         public static void Send(object message)
         {
-            lock (_lock)
+            lock (_sendlock)
             {
                 try
                 {
                     var msg = message as BroadcastMessage;
                     if (msg != null)
                     {
-                        UDPPort = msg.Port;
                         _broadcastMessage = msg.Content;
 
-                        _broadcastEndPoint = new IPEndPoint(IPAddress.Parse(Utilities.GetBroadcastAddress(LocalIP, SubnetMask)), UDPPort);
+                        _broadcastEndPoint = new IPEndPoint(IPAddress.Parse(Utilities.GetBroadcastAddress(LocalIP, SubnetMask)), msg.Port);
 
                         _sendSocket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
                         _sendSocket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.Broadcast, 5);
@@ -45,5 +43,7 @@ namespace ECRU.netd.FileSync
 
             }
         }
+
+
     }
 }

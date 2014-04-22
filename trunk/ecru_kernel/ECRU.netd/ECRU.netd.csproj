@@ -33,7 +33,7 @@
     <Compile Include="BroadcastNetworkDiscovery.cs" />
     <Compile Include="Configuration\EthernetConfig.cs" />
     <Compile Include="FileSync\BroadcastMessage.cs" />
-    <Compile Include="FileSync\SendBroadcast.cs" />
+    <Compile Include="FileSync\Broadcast.cs" />
     <Compile Include="NetworkStatusMessage.cs" />
     <Compile Include="NetworkTable.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -54,5 +54,8 @@
       <Project>{5B778498-CDC7-4CE6-8CD3-FD20D04EBF93}</Project>
       <Name>ECRU.Utilities</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="ConnectionTypes\" />
   </ItemGroup>
 </Project>
