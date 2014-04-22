@@ -70,6 +70,7 @@ namespace ECRU.netd
 
                 try
                 {
+                    NetworkTable.CheckTable();
 
                     var result = _sendSocket.SendTo(_broadcastMessage.StringToBytes(), _broadcastEndPoint);
 

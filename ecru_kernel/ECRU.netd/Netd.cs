@@ -60,8 +60,8 @@ namespace ECRU.netd
             //Network Communication Configuration
 
             //Filesync sentbroadcast config
-            SendBroadcast.LocalIP = networkConfig.EthernetInterface.IPAddress;
-            SendBroadcast.SubnetMask = networkConfig.EthernetInterface.SubnetMask;
+            Broadcast.LocalIP = networkConfig.EthernetInterface.IPAddress;
+            Broadcast.SubnetMask = networkConfig.EthernetInterface.SubnetMask;
 
 
         }
@@ -69,7 +69,8 @@ namespace ECRU.netd
         public void Start()
         {
             netd.BroadcastNetworkDiscovery.Start();
-            EventBus.Subscribe(typeof(FileSync.BroadcastMessage), FileSync.SendBroadcast.Send);
+            EventBus.Subscribe(typeof(BroadcastMessage), FileSync.Broadcast.Send);
+            EventBus.Subscribe(typeof())
         }
 
         public void Stop()

@@ -41,7 +41,7 @@ namespace ECRU.netd
             UpdateNetstate();
 
             // update MacHierachy / MacList
-            SystemInfo.ConnectionOverview.Add(neighbour.Mac);
+            SystemInfo.ConnectionOverview.Add(neighbour.Mac.FromHex());
 
             // network status -> eventbus
             EventBus.Publish(new NetworkStatusMessage{isinsync = _isInSync, NetState = _netstate});
@@ -53,7 +53,7 @@ namespace ECRU.netd
             UpdateNetstate();
 
             // update MacHierachy / MacList
-            SystemInfo.ConnectionOverview.Remove(neighbour.Mac);
+            SystemInfo.ConnectionOverview.Remove(neighbour.Mac.FromHex());
 
             // network status -> eventbus
             EventBus.Publish(new NetworkStatusMessage{isinsync = _isInSync, NetState = _netstate});
@@ -90,7 +90,7 @@ namespace ECRU.netd
                 netstateIPList = new []{SetLocalIP};
             }
 
-            var neighbour = Neighbours[mac] as Neighbour ?? new Neighbour(mac);
+            var neighbour = Neighbours[mac] as Neighbour ?? new Neighbour(mac.ToHex());
 
             neighbour.IP = ipAddress;
             neighbour.Netstate = netstate;
@@ -114,14 +114,26 @@ namespace ECRU.netd
             }
         }
 
+        public static void CheckTable()
+        {
+            foreach (Neighbour neighbour in Neighbours)
+            {
+                if (!ValidAddress(neighbour.Mac))
+                {
+                    Remove(neighbour);
+                }
+            }
+        }
+
         public static bool ValidAddress(string mac)
         {
             var lastSeen = ((Neighbour) Neighbours[mac]).Lastseen;
 
             TimeSpan timeDifference = DateTime.Now - lastSeen;
 
-            return timeDifference.Minutes <= 5;
+            return timeDifference.Minutes <= 3;
         }
+
 
         private static void UpdateNetstate()
         {
@@ -163,17 +175,17 @@ namespace ECRU.netd
 
     internal class Neighbour
     {
-        public Neighbour(byte[] Mac)
+        public Neighbour(string Mac)
         {
             _mac = Mac;
         }
 
-        public byte[] Mac { get { return _mac; } }
+        public string Mac { get { return _mac; } }
 
         public DateTime Lastseen;
         public String Netstate;
 
-        private byte[] _mac;
+        private string _mac;
 
         public IPAddress IP { get; set; }
 
