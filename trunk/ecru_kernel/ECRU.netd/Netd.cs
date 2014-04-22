@@ -70,7 +70,6 @@ namespace ECRU.netd
         {
             netd.BroadcastNetworkDiscovery.Start();
             EventBus.Subscribe(typeof(BroadcastMessage), FileSync.Broadcast.Send);
-            EventBus.Subscribe(typeof())
         }
 
         public void Stop()
