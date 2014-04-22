@@ -11,8 +11,8 @@ namespace ECRU.netd.FileSync
         private static IPEndPoint _broadcastEndPoint;
         private static int UDPPort;
         private static string _broadcastMessage;
-        private static string SubnetMask;
-        private static string LocalIP;
+        public static string SubnetMask { private get; set; }
+        public static string LocalIP { private get; set; }
         private static object _lock = new object();
         private static Socket _sendSocket;
 
@@ -20,27 +20,29 @@ namespace ECRU.netd.FileSync
         {
             lock (_lock)
             {
-                var msg = message as BroadcastMessage;
-                UDPPort = msg.Port;
-                _broadcastMessage = msg.Content;
-
-                Debug.Print("Starting broadcast");
-                _broadcastEndPoint = new IPEndPoint(IPAddress.Parse(Utilities.GetBroadcastAddress(LocalIP, SubnetMask)), UDPPort);
-
-                _sendSocket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
-                _sendSocket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.Broadcast, 5);
-
                 try
                 {
+                    var msg = message as BroadcastMessage;
+                    if (msg != null)
+                    {
+                        UDPPort = msg.Port;
+                        _broadcastMessage = msg.Content;
 
-                    var result = _sendSocket.SendTo(_broadcastMessage.StringToBytes(), _broadcastEndPoint);
+                        _broadcastEndPoint = new IPEndPoint(IPAddress.Parse(Utilities.GetBroadcastAddress(LocalIP, SubnetMask)), UDPPort);
 
-                    Debug.Print("Broadcasting: " + _broadcastMessage);
+                        _sendSocket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
+                        _sendSocket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.Broadcast, 5);
+
+                        var result = _sendSocket.SendTo(_broadcastMessage.StringToBytes(), _broadcastEndPoint);
+
+                        Debug.Print("Broadcasting: " + _broadcastMessage);
+                    }
                 }
                 catch (Exception exception)
                 {
-                    Debug.Print("Broadcast failed: " + exception);
+                    Debug.Print("FileSync broadcast message failed: " + exception);
                 }
+
             }
         }
     }
