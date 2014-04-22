@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading;
 using ECRU.netd.Configuration;
+using ECRU.netd.FileSync;
 using ECRU.Utilities.Factories.ModuleFactory;
 using Microsoft.SPOT.Net.NetworkInformation;
 using ECRU.Utilities;
@@ -44,9 +45,10 @@ namespace ECRU.netd
             networkConfig.InitNetworkInterface();
 
 
+
             //Network Discovery Configuration
             netd.BroadcastNetworkDiscovery.UDPPort = 4544;
-            netd.BroadcastNetworkDiscovery.LocalIP = networkAdapter.IPAddress;
+            netd.BroadcastNetworkDiscovery.LocalIP = networkConfig.EthernetInterface.IPAddress;
             netd.BroadcastNetworkDiscovery.SubnetMask = networkAdapter.SubnetMask;
             netd.BroadcastNetworkDiscovery.BroadcastIntrevalSeconds = 30;
             netd.BroadcastNetworkDiscovery.EnableBroadcast = true;
@@ -57,8 +59,10 @@ namespace ECRU.netd
 
             //Network Communication Configuration
 
+            //Filesync sentbroadcast config
+            SendBroadcast.LocalIP = networkConfig.EthernetInterface.IPAddress;
+            SendBroadcast.SubnetMask = networkConfig.EthernetInterface.SubnetMask;
 
-            
 
         }
 
