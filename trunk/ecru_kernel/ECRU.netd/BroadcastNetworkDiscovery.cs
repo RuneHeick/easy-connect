@@ -98,7 +98,7 @@ namespace ECRU.netd
             //exspand with passcode for networkcheck only 6 bytes
 
             //routing table update here!
-            NetworkTable.UpdateNetworkTableEntry(ep.Address, mac.ToHex(), netstate.ToHex());
+            NetworkTable.UpdateNetworkTableEntry(ep.Address, mac, netstate.ToHex());
         }
 
         private static void Listen()
