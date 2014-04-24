@@ -9,6 +9,7 @@ import android.os.Bundle;
 import android.app.Activity;
 import android.app.Fragment;
 import android.app.FragmentManager;
+import android.content.Intent;
 import android.content.res.Configuration;
 import android.content.res.TypedArray;
 import android.support.v4.app.ActionBarDrawerToggle;
@@ -24,7 +25,6 @@ public class MainActivity extends Activity {
 	private static final String TAG = "MainActivity"; 
 
 	private Fragment fragment;
-	private Fragment profileList;
 	
 	private DrawerLayout mDrawerLayout;
 	private ListView mDrawerList;
@@ -48,8 +48,29 @@ public class MainActivity extends Activity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
 		Log.i(TAG, "made it to OnCreate()");
+		
 		// code to select current fragment
-		fragment = new ModuleListFragment();
+		Bundle extras = getIntent().getExtras();
+		if (extras != null) {
+			int tgtFragment = extras.getInt("TargetFragment");
+			switch (tgtFragment){
+				case 0:
+					fragment = new ModuleListFragment();
+					break;
+				case LoaderActivity.CREATE_PROFILE:
+					fragment = new CreateProfileFragment();
+					break;
+				case LoaderActivity.MODULE_LIST:
+					fragment = new ModuleListFragment();
+					break;
+				case LoaderActivity.PROFILE_LIST:
+					fragment = new ProfileListFragment();
+					break;
+				default:
+					fragment = new ModuleListFragment();
+					break;
+			}
+		}
 		displayView();
 		
 		mTitle = mDrawerTitle = getTitle();
@@ -131,10 +152,7 @@ public class MainActivity extends Activity {
 				fragment = new ModuleListFragment();
 				break;
 			case 1:
-				if (profileList == null){
-					profileList = new ProfileListFragment();
-				}
-				fragment = profileList;
+				ShowProfileListFragment();
 				break;
 			case 2:
 				fragment = new SetupRoomUnitFragment();
@@ -243,15 +261,18 @@ public class MainActivity extends Activity {
 		FragmentManager fragmentManager = getFragmentManager();
 		Fragment temp = (Fragment) fragmentManager.findFragmentById(R.id.frame_container);
 		if (temp.toString() == "CreateProfileFragment"){
-			if (profileList == null){
-				profileList = new ProfileListFragment();
-			}
-			fragment = profileList;
+			ShowProfileListFragment();
 		} else if (temp.toString() == "ModuleListFragment"){
 			Log.i("onBackPressed", "ModuleListFragment");
 		} else {
 			fragment = new ModuleListFragment();
 		}
 		displayView();
+	}
+	
+	public void ShowProfileListFragment(){
+		Intent done = new Intent(this, MainActivity.class);
+		done.putExtra("TargetFragment", LoaderActivity.PROFILE_LIST);
+	    startActivity(done);
 	}
 }
