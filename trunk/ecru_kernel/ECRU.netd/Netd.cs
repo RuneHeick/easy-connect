@@ -3,6 +3,7 @@ using System.Threading;
 using ECRU.netd.Configuration;
 using ECRU.netd.FileSync;
 using ECRU.Utilities.Factories.ModuleFactory;
+using Microsoft.SPOT;
 using Microsoft.SPOT.Net.NetworkInformation;
 using ECRU.Utilities;
 using ECRU.Utilities.EventBus;
@@ -33,7 +34,7 @@ namespace ECRU.netd
 
             //Network interface configuration
             
-            NetworkInterface networkAdapter = NetworkInterface.GetAllNetworkInterfaces()[0];
+            var networkAdapter = NetworkInterface.GetAllNetworkInterfaces()[0];
 
             //Setup network configuration (Dynamic DNS/DCHP on ethernet interface)
             if (networkAdapter.NetworkInterfaceType != NetworkInterfaceType.Ethernet)
@@ -42,9 +43,16 @@ namespace ECRU.netd
             }
 
             var networkConfig = new EthernetConfig {EthernetInterface = networkAdapter, DynamicIP = true};
-            networkConfig.InitNetworkInterface();
 
-
+            try
+            {
+                networkConfig.InitNetworkInterface();
+            }
+            catch (Exception exception)
+            {
+                Debug.Print("Network Config error: " + exception.Message + " stacktrace: " + exception.StackTrace);
+                throw;
+            }
 
             //Network Discovery Configuration
             netd.BroadcastNetworkDiscovery.UDPPort = 4544;
