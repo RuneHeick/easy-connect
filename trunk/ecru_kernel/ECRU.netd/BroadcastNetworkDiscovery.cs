@@ -27,7 +27,7 @@ namespace ECRU.netd
         public static bool EnableBroadcast { get; set; }
         public static bool EnableListener { get; set; }
 
-        private static string _broadcastMessage;
+        private static byte[] _broadcastMessage = new byte[38];
 
         public static void Stop()
         {
@@ -68,8 +68,10 @@ namespace ECRU.netd
             //Subscribe to network state changes
             NetworkTable.NetstateChanged += UpdateBroadcastMessage;
             
-            //first time fetch broadcastMessage
-            _broadcastMessage = SystemInfo.SystemMAC.ToHex() + "00000000000000000000000000000000";
+            //first time broadcastMessage
+            Array.Copy(SystemInfo.SystemMAC, _broadcastMessage, SystemInfo.SystemMAC.Length);
+            Array.Copy("00000000000000000000000000000000".StringToBytes(), 0, _broadcastMessage, 6, "00000000000000000000000000000000".StringToBytes().Length);
+
 
             if (EnableBroadcast)
             {
@@ -100,7 +102,7 @@ namespace ECRU.netd
 
                 try
                 {
-                    var result = _sendSocket.SendTo(_broadcastMessage.StringToBytes(), _broadcastEndPoint);
+                    var result = _sendSocket.SendTo(_broadcastMessage, _broadcastEndPoint);
 
                     Debug.Print("Broadcasting: " + _broadcastMessage + " length: " + result);
                 }
@@ -123,7 +125,7 @@ namespace ECRU.netd
             try
             {
                 var mac = data.GetPart(0, 6);
-                var netstate = data.GetPart(6, 38);
+                var netstate = data.GetPart(6, 32);
 
                 //routing table update here!
                 NetworkTable.UpdateNetworkTableEntry(ep.Address, mac.ToHex(), netstate.GetString());
@@ -162,7 +164,8 @@ namespace ECRU.netd
 
         private static void UpdateBroadcastMessage(string netstate)
         {
-            _broadcastMessage = SystemInfo.SystemMAC.ToHex() + netstate;
+            Array.Copy(SystemInfo.SystemMAC, _broadcastMessage, SystemInfo.SystemMAC.Length);
+            Array.Copy(netstate.StringToBytes(), 0, _broadcastMessage, 6, netstate.StringToBytes().Length);
             Debug.Print("Broadcast Message Updated: " + _broadcastMessage);
         }
 
@@ -188,7 +191,7 @@ namespace ECRU.netd
 
                     var endpoint1 = endpoint as IPEndPoint;
 
-                    if (endpoint1 == null || Equals(endpoint1.Address, IPAddress.GetDefaultLocalAddress()) || length != 44) continue; // packet not correct size - discard it.
+                    if (endpoint1 == null || Equals(endpoint1.Address, IPAddress.GetDefaultLocalAddress()) || length != 38) continue; // packet not correct size - discard it.
 
                     var t = new Thread(() => OnDataReceived(buffer, length, endpoint1));
                     _listenerThreadsArrayList.Add(t);

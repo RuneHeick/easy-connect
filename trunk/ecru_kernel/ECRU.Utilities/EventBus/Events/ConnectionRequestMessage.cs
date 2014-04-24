@@ -1,8 +1,6 @@
-using System;
 using System.Net.Sockets;
-using Microsoft.SPOT;
 
-namespace ECRU.netd.Messages
+namespace ECRU.Utilities.EventBus.Events
 {
     public delegate Socket GetRequestSocket(); 
 
