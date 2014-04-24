@@ -83,14 +83,14 @@ namespace ECRU.netd
             RemovedUnit(neighbour);
         }
 
-        public static void UpdateNetworkTableEntry(IPAddress ipAddress, byte[] mac, string netstate)
+        public static void UpdateNetworkTableEntry(IPAddress ipAddress, string mac, string netstate)
         {
             if (netstateIPList == null)
             {
                 netstateIPList = new []{SetLocalIP};
             }
 
-            var neighbour = Neighbours[mac] as Neighbour ?? new Neighbour(mac.ToHex());
+            var neighbour = Neighbours[mac] as Neighbour ?? new Neighbour(mac);
 
             neighbour.IP = ipAddress;
             neighbour.Netstate = netstate;
@@ -116,7 +116,9 @@ namespace ECRU.netd
 
         public static void CheckTable()
         {
-            foreach (Neighbour neighbour in Neighbours)
+            if (Neighbours.Count < 1) return;
+
+            foreach (Neighbour neighbour in Neighbours.Values)
             {
                 if (!ValidAddress(neighbour.Mac))
                 {
@@ -129,9 +131,9 @@ namespace ECRU.netd
         {
             var lastSeen = ((Neighbour) Neighbours[mac]).Lastseen;
 
-            TimeSpan timeDifference = DateTime.Now - lastSeen;
+            var timeDifference = DateTime.Now - lastSeen;
 
-            return timeDifference.Minutes <= 3;
+            return timeDifference.Ticks <= (TimeSpan.TicksPerMinute*3);
         }
 
 
@@ -145,6 +147,7 @@ namespace ECRU.netd
             {
                 data += s;
             }
+            
             var buffer = data.StringToBytes();
 
             var md5State = new MD5();
@@ -156,11 +159,11 @@ namespace ECRU.netd
             Debug.Print("Netstate: " + hashresult);
 
             _isInSync = true;
-            foreach (Neighbour neighbour in Neighbours)
+
+            foreach (Neighbour neighbour in Neighbours.Values)
             {
                 if (neighbour.Netstate == _netstate) continue;
                 _isInSync = false;
-                return;
             }
 
             NetstateChanged(hashresult);

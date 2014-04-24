@@ -2,6 +2,7 @@
 using System.Collections;
 using ECRU.Utilities.LeadFollow;
 using Microsoft.SPOT;
+using Microsoft.SPOT.Messaging;
 
 namespace ECRU.Utilities.EventBus
 {
@@ -97,6 +98,7 @@ namespace ECRU.Utilities.EventBus
         {
             lock (Lock)
             {
+                Debug.Print("Publishing type: " + message.GetType());
                 var subscribers = Subscriptions[message.GetType()] as ArrayList;
 
                 if (subscribers != null)

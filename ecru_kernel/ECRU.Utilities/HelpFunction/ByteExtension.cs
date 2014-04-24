@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System;
+using System.Text;
 
 namespace ECRU.Utilities.HelpFunction
 {
@@ -18,6 +19,23 @@ namespace ECRU.Utilities.HelpFunction
             return null;
         }
 
+
+        public static byte[] ToBytes(this int intValue)
+        {
+            byte[] bytes = new byte[4];
+
+            bytes[0] = (byte)(intValue >> 24);
+            bytes[1] = (byte)(intValue >> 16);
+            bytes[2] = (byte)(intValue >> 8);
+            bytes[3] = (byte)intValue;
+
+            return bytes;
+        }
+
+        public static int ToInt(this Byte[] byteValue)
+        {
+            return (byteValue[0] << 24) + (byteValue[1] << 16) + (byteValue[2] << 8) + byteValue[3];
+        }
 
         public static void Set(this byte[] str, byte[] data, int index)
         {

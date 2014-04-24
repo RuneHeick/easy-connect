@@ -6,6 +6,7 @@ namespace ECRU.Utilities
         public const int SYSID_LENGTH = 20;
         private static string passCode = "";
         private static byte[] sysId = new byte[SYSID_LENGTH];
+        private static byte[] sysMac;
 
         public static MacHierarchy ConnectionOverview { get; private set; }
 
@@ -45,7 +46,15 @@ namespace ECRU.Utilities
             }
         }
 
-        public static byte[] SystemMAC { get; set; }
+        public static byte[] SystemMAC
+        {
+            get { return sysMac; }
+            set
+            {
+                sysMac = value;
+                Init();
+            }
+        }
 
         private static byte[] doHash(string input)
         {
