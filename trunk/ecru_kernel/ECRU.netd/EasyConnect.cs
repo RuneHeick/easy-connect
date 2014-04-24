@@ -8,6 +8,7 @@ using ECRU.netd.Messages;
 using ECRU.Utilities.HelpFunction;
 using Microsoft.SPOT;
 using ECRU.Utilities.EventBus;
+using Microsoft.SPOT.Hardware;
 
 namespace ECRU.netd
 {
@@ -49,7 +50,9 @@ namespace ECRU.netd
             {
                  _listenerThread.Abort();
             }
-           
+
+            EventBus.Unsubscribe(typeof (NewConnectionMessage), SendRequest);
+
         }
 
         private static void SendRequest(object message)
@@ -60,7 +63,7 @@ namespace ECRU.netd
                 if (msg == null) return;
 
                 //Start Sender for EasyConnect
-                Debug.Print("Starting EasyConnect sender");
+                Debug.Print("Starting EasyConnect SendRequest");
 
                 var send = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
 
@@ -98,7 +101,6 @@ namespace ECRU.netd
             catch (Exception exception)
             {
                 Debug.Print("SendRequest failed: " + exception.Message + " Stacktrace: " + exception.StackTrace);
-                throw;
             }
             
         }
@@ -111,19 +113,29 @@ namespace ECRU.netd
 
             Debug.Print(data.ToHex() + " received from: " + ep.Address + " with length: " + length);
 
-            var connectionType = data.GetString();
-            
-            var timer = new Timer(ConnectionTimeout, connection, 0, 5000);
+            var transmissionLength = data.ToInt();
 
-            var msg = new ConnectionRequestMessage() {connectionType = connectionType, GetSocket = () => GetSocket(connection)};
+            var connectionTypeBuffer = new Byte[transmissionLength];
 
-            lock (_lock)
+            var compare = connection.Receive(connectionTypeBuffer);
+
+            if (compare == transmissionLength)
             {
-                _connectionRequests[connection] = timer;
+                var connectionType = data.GetString();
+
+                var timer = new Timer(ConnectionTimeout, connection, 0, 5000);
+
+                var msg = new ConnectionRequestMessage() { connectionType = connectionType, GetSocket = () => GetSocket(connection) };
+
+                lock (_lock)
+                {
+                    _connectionRequests[connection] = timer;
+                }
+
+                //new eventbus event with
+                EventBus.Publish(msg);
             }
-            
-            //new eventbus event with
-            EventBus.Publish(msg);
+
         }
 
         private static void ConnectionTimeout(object connection)

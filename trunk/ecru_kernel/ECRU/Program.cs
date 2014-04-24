@@ -4,6 +4,7 @@ using ECRU.netd;
 using ECRU.Utilities;
 using ECRU.Utilities.HelpFunction;
 using Microsoft.SPOT;
+using Microsoft.SPOT.Net.NetworkInformation;
 
 namespace ECRU
 {
@@ -12,6 +13,37 @@ namespace ECRU
     /// </summary>
     public class Program
     {
+
+        private static Netd _netDaemon = new Netd();
+
+        private static void NetworkAvailabilityChangedHandler(object sender, NetworkAvailabilityEventArgs e)
+        {
+            if (e.IsAvailable)
+            {
+                try
+                {
+                    _netDaemon.LoadConfig("");
+                    _netDaemon.Start();
+                }
+                catch (Exception exception)
+                {
+                    Debug.Print("Network error: " + exception.Message + " stacktrace: " + exception.StackTrace);
+                }
+                
+            }
+            else
+            {
+                try
+                {
+                    _netDaemon.Stop();
+                }
+                catch (Exception exception)
+                {
+                    Debug.Print("Network error: " + exception.Message + " stacktrace: " + exception.StackTrace);
+                }
+            }
+        }
+
         /// <summary>
         ///     Main Launches the ECRU kernel
         /// </summary>
@@ -19,22 +51,20 @@ namespace ECRU
         {
             // write your code here
             Thread.Sleep(5000);
-            SystemInfo.SystemMAC = "B3E795DE1C11".FromHex();
 
-            var netDaemon = new Netd();
+            SystemInfo.SystemMAC = "B3E795DE1C11".FromHex();
+            NetworkChange.NetworkAvailabilityChanged += NetworkAvailabilityChangedHandler;
+            
             try
             {
-                netDaemon.LoadConfig("");
+                _netDaemon.LoadConfig("");
+                _netDaemon.Start();
             }
             catch (Exception exception)
             {
-                Debug.Print("Network Config error: " + exception.Message + " stacktrace: " + exception.StackTrace);
-                throw;
+                _netDaemon.Stop();
+                Debug.Print("Network error: " + exception.Message + " stacktrace: " + exception.StackTrace);
             }
-            
-            
-            netDaemon.Start();
-
 
             Thread.Sleep(Timeout.Infinite);
         }

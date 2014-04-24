@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Net;
 using System.Threading;
 using ECRU.netd.Configuration;
 using ECRU.netd.FileSync;
@@ -20,9 +21,11 @@ namespace ECRU.netd
         //get broadcast packets
         //
 
-
         public void LoadConfig(string configFilePath)
         {
+
+
+            
             //wait for interfaces (Magic number dont change)
             //Thread.Sleep(3000);
 
@@ -44,6 +47,7 @@ namespace ECRU.netd
 
             var networkConfig = new EthernetConfig {EthernetInterface = networkAdapter, DynamicIP = true};
 
+
             try
             {
                 networkConfig.InitNetworkInterface();
@@ -55,7 +59,7 @@ namespace ECRU.netd
             }
 
             //Network Discovery Configuration
-            netd.BroadcastNetworkDiscovery.UDPPort = 4544;
+            netd.BroadcastNetworkDiscovery.UDPPort = 4543;
             netd.BroadcastNetworkDiscovery.LocalIP = networkConfig.EthernetInterface.IPAddress;
             netd.BroadcastNetworkDiscovery.SubnetMask = networkAdapter.SubnetMask;
             netd.BroadcastNetworkDiscovery.BroadcastIntrevalSeconds = 30;
@@ -82,7 +86,8 @@ namespace ECRU.netd
 
         public void Stop()
         {
-            throw new NotImplementedException();
+            netd.BroadcastNetworkDiscovery.Stop();
+            EventBus.Unsubscribe(typeof (BroadcastMessage), Broadcast.Send);
         }
 
         public void Reset()
