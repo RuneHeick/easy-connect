@@ -1,7 +1,11 @@
 ﻿using System;
+using System.Net;
+using System.Net.Sockets;
 using System.Threading;
 using ECRU.netd;
 using ECRU.Utilities;
+using ECRU.Utilities.EventBus;
+using ECRU.Utilities.EventBus.Events;
 using ECRU.Utilities.HelpFunction;
 using Microsoft.SPOT;
 using Microsoft.SPOT.Net.NetworkInformation;
@@ -66,7 +70,15 @@ namespace ECRU
                 Debug.Print("Network error: " + exception.Message + " stacktrace: " + exception.StackTrace);
             }
 
+            EventBus.Publish(new NewConnectionMessage { ConnectionCallback = test, ConnectionType = "hello", Receiver = "B3E795DE1C11".FromHex(), Sender = "B3E795DE1C11".FromHex()});
+
             Thread.Sleep(Timeout.Infinite);
+        }
+
+        public static void test(Socket s)
+        {
+            var connectioninfo = s.RemoteEndPoint as IPEndPoint;
+            Debug.Print("Connected to: " + connectioninfo.Address + ":" + connectioninfo.Port);
         }
     }
 }

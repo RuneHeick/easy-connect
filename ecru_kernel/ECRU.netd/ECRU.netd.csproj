@@ -35,8 +35,6 @@
     <Compile Include="EasyConnect.cs" />
     <Compile Include="FileSync\BroadcastMessage.cs" />
     <Compile Include="FileSync\Broadcast.cs" />
-    <Compile Include="Messages\ConnectionRequestMessage.cs" />
-    <Compile Include="Messages\NewConnectionMessage.cs" />
     <Compile Include="NetworkStatusMessage.cs" />
     <Compile Include="NetworkTable.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -60,5 +58,6 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="ConnectionTypes\" />
+    <Folder Include="Messages\" />
   </ItemGroup>
 </Project>

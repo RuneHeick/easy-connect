@@ -4,7 +4,7 @@ using System.IO.Ports;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading;
-using ECRU.netd.Messages;
+using ECRU.Utilities.EventBus.Events;
 using ECRU.Utilities.HelpFunction;
 using ECRU.Utilities.Timers;
 using Microsoft.SPOT;
@@ -73,25 +73,17 @@ namespace ECRU.netd
             try
             {
                 _receiveSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-
-                EndPoint endpoint = new IPEndPoint(IPAddress.Any, Port);
-
-                _receiveSocket.Bind(endpoint);
-
-                _receiveSocket.Listen(1);
+                _receiveSocket.Bind(new IPEndPoint(IPAddress.Any, Port));
+                _receiveSocket.Listen(10);
 
                 while (true)
                 {
                     var connection = _receiveSocket.Accept();
-                    var buffer = new byte[_receiveSocket.Available];
+                    var buffer = new byte[4];
 
-                    var length = _receiveSocket.ReceiveFrom(buffer, ref endpoint);
+                    var length = _receiveSocket.Receive(buffer);
 
-                    var endpoint1 = endpoint as IPEndPoint;
-
-                    if (endpoint1 == null || Equals(endpoint1.Address, IPAddress.GetDefaultLocalAddress())) continue; // packet not correct size - discard it.
-
-                    var t = new Thread(() => OnDataReceived(buffer, length, endpoint1, connection));
+                    var t = new Thread(() => OnDataReceived(buffer, length, connection));
                     _listenerThreadsArrayList.Add(t);
                     t.Start();
                 }
@@ -129,7 +121,9 @@ namespace ECRU.netd
                 
                 using (send)
                 {
-                    var ip = NetworkTable.GetAddress(msg.Receiver.ToHex());
+                    //var ip = NetworkTable.GetAddress(msg.Receiver.ToHex());
+
+                    var ip = IPAddress.GetDefaultLocalAddress();
 
                     var destination = new IPEndPoint(ip, Port);
 
@@ -148,6 +142,8 @@ namespace ECRU.netd
                     var buffer = new byte[receivedLength.ToInt()];
 
                     send.Receive(buffer);
+
+                    Debug.Print("SendRequest buffer: " + buffer.GetString());
 
                     switch (buffer.GetString())
                     {
@@ -169,11 +165,9 @@ namespace ECRU.netd
             
         }
 
-        private static void OnDataReceived(byte[] data, int length, EndPoint sender, Socket connection)
+        private static void OnDataReceived(byte[] data, int length, Socket connection)
         {
-            var ep = sender as IPEndPoint;
-            if (ep == null) return;
-            if (Equals(ep.Address, IPAddress.GetDefaultLocalAddress())) return;
+            var ep = connection.RemoteEndPoint as IPEndPoint;
 
             Debug.Print(data.ToHex() + " received from: " + ep.Address + " with length: " + length);
 
