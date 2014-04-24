@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading;
@@ -10,7 +11,7 @@ namespace ECRU.netd
 {
     public static class BroadcastNetworkDiscovery
     {
-        private static Thread _listenerThread;
+        private static ArrayList _listenerThreadsArrayList = new ArrayList();
         private static Thread _broadcastThread;
 
         private static Socket _sendSocket;
@@ -26,6 +27,33 @@ namespace ECRU.netd
 
         private static string _broadcastMessage;
 
+        public static void Stop()
+        {
+            if (_receiveSocket != null && _receiveSocket.Poll(-1,SelectMode.SelectRead) )
+            {
+                _receiveSocket.Close();
+            }
+
+            if ( _sendSocket != null && _sendSocket.Poll(-1, SelectMode.SelectWrite))
+            {
+                _sendSocket.Close();
+            }
+            if (_broadcastThread != null && _broadcastThread.IsAlive)
+            {
+                _broadcastThread.Abort();
+            }
+            
+            foreach (Thread thread in _listenerThreadsArrayList)
+            {
+                if (thread.IsAlive)
+                {
+                    thread.Abort();
+                }
+            }
+
+            NetworkTable.NetstateChanged -= UpdateBroadcastMessage;
+
+        }
 
         public static void Start()
         {
@@ -38,7 +66,7 @@ namespace ECRU.netd
             if (EnableBroadcast)
             {
                 //Start broadcast
-                Debug.Print("Starting broadcaster");
+                Debug.Print("Starting network discovery sender");
                 _broadcastEndPoint = new IPEndPoint(IPAddress.Parse(GetBroadcastAddress(LocalIP, SubnetMask)), UDPPort);
 
                 _sendSocket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
@@ -79,53 +107,28 @@ namespace ECRU.netd
         {
 
             var ep = sender as IPEndPoint;
-            if (ep == null) return;
-            if (Equals(ep.Address, IPAddress.GetDefaultLocalAddress())) return;
+
 
             Debug.Print(data.ToHex() + " received from: " + ep.Address + " with length: " + length);
-
-            if (length != 44) return; // packet not correct size - discard it.
 
             try
             {
                 var mac = data.GetPart(0, 6);
                 var netstate = data.GetPart(6, 38);
 
-
-
                 //routing table update here!
                 NetworkTable.UpdateNetworkTableEntry(ep.Address, mac.ToHex(), netstate.GetString());
+
+                _listenerThreadsArrayList.Remove(Thread.CurrentThread);
             }
             catch (Exception exception)
             {
                 // packet not correct - discard it.
+                _listenerThreadsArrayList.Remove(Thread.CurrentThread);
+                Thread.CurrentThread.Abort();
                 Debug.Print("NetworkDiscovery packet incorrect: " + exception);
             }
 
-        }
-
-        private static void Listen()
-        {
-            EndPoint endpoint = new IPEndPoint(IPAddress.Any, UDPPort);
-            try
-            {
-                _receiveSocket.Bind(endpoint);
-
-                while (_receiveSocket.Poll(-1, SelectMode.SelectRead))
-                {
-
-                    var buffer = new byte[_receiveSocket.Available];
-
-                    var length = _receiveSocket.ReceiveFrom(buffer, ref endpoint);
-
-                    OnDataReceived(buffer, length, endpoint);
-                }
-            }
-            catch (Exception exception)
-            {
-                Debug.Print("Listen failed: "+ exception);
-                StartListenThread();
-            }
         }
 
         private static string GetBroadcastAddress(string ipAddress, string subnetMask)
@@ -158,13 +161,46 @@ namespace ECRU.netd
         private static void StartListenThread()
         {
             //Start listening for broadcast
-            Debug.Print("Starting listener");
+            Debug.Print("Starting network discovery receiver");
+            try
+            {
+                _receiveSocket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
+                _receiveSocket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.Broadcast, 5);
 
-            _receiveSocket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
-            _receiveSocket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.Broadcast, 5);
+                EndPoint endpoint = new IPEndPoint(IPAddress.Any, UDPPort);
 
-            _listenerThread = new Thread(Listen);
-            _listenerThread.Start();
+                _receiveSocket.Bind(endpoint);
+
+                while (true)
+                {
+                    var buffer = new byte[_receiveSocket.Available];
+
+                    var length = _receiveSocket.ReceiveFrom(buffer, ref endpoint);
+
+                    var endpoint1 = endpoint as IPEndPoint;
+
+                    if (endpoint1 == null || Equals(endpoint1.Address, IPAddress.GetDefaultLocalAddress()) || length != 44) continue; // packet not correct size - discard it.
+
+                    var t = new Thread(() => OnDataReceived(buffer, length, endpoint1));
+                    _listenerThreadsArrayList.Add(t);
+
+                    t.Start();
+                }
+
+            }
+            catch (Exception exception)
+            {
+                _receiveSocket.Close();
+                foreach (Thread t in _listenerThreadsArrayList)
+                {
+                    if (t.IsAlive)
+                    {
+                        t.Abort();
+                    }
+                }
+                Debug.Print("Start network discovery listener failed: " + exception.Message + " Stacktrace: " + exception.StackTrace);
+            }
+
         }
     }
 }
