@@ -6,6 +6,7 @@ using System.Net.Sockets;
 using System.Threading;
 using ECRU.netd.Messages;
 using ECRU.Utilities.HelpFunction;
+using ECRU.Utilities.Timers;
 using Microsoft.SPOT;
 using ECRU.Utilities.EventBus;
 using Microsoft.SPOT.Hardware;
@@ -18,9 +19,11 @@ namespace ECRU.netd
     {
 
         private static Socket _receiveSocket;
-        private static Thread _listenerThread;
         private static Hashtable _connectionRequests;
         private static object _lock = new object();
+
+        private static ArrayList _listenerThreadsArrayList = new ArrayList();
+        private static Thread _ecThread;
 
         public static int Port { get; set; }
 
@@ -34,25 +37,82 @@ namespace ECRU.netd
 
             EventBus.Subscribe(typeof(NewConnectionMessage), SendRequest);
 
-            //Start listening for EasyConnect
-            Debug.Print("Starting EasyConnect listener");
+            _ecThread = new Thread(Listen);
+            _ecThread.Start();
 
-            _receiveSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-            _receiveSocket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.AcceptConnection, true);
-
-            _listenerThread = new Thread(Listen);
-            _listenerThread.Start();
         }
 
         public static void Stop()
         {
-            if (_listenerThread.IsAlive)
+            if (_receiveSocket != null && _receiveSocket.Poll(-1, SelectMode.SelectRead))
             {
-                 _listenerThread.Abort();
+                _receiveSocket.Close();
+            }
+
+            foreach (Thread thread in _listenerThreadsArrayList)
+            {
+                if (thread.IsAlive)
+                {
+                    thread.Abort();
+                }
+            }
+
+            if (_ecThread != null && _ecThread.IsAlive)
+            {
+                _ecThread.Abort();
             }
 
             EventBus.Unsubscribe(typeof (NewConnectionMessage), SendRequest);
 
+        }
+
+        private static void Listen()
+        {
+            //Start listening for EasyConnect
+            Debug.Print("Starting EasyConnect listener");
+            try
+            {
+                _receiveSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+
+                EndPoint endpoint = new IPEndPoint(IPAddress.Any, Port);
+
+                _receiveSocket.Bind(endpoint);
+
+                _receiveSocket.Listen(1);
+
+                while (true)
+                {
+                    var connection = _receiveSocket.Accept();
+                    var buffer = new byte[_receiveSocket.Available];
+
+                    var length = _receiveSocket.ReceiveFrom(buffer, ref endpoint);
+
+                    var endpoint1 = endpoint as IPEndPoint;
+
+                    if (endpoint1 == null || Equals(endpoint1.Address, IPAddress.GetDefaultLocalAddress())) continue; // packet not correct size - discard it.
+
+                    var t = new Thread(() => OnDataReceived(buffer, length, endpoint1, connection));
+                    _listenerThreadsArrayList.Add(t);
+                    t.Start();
+                }
+
+            }
+            catch (Exception exception)
+            {
+                if (_receiveSocket != null && _receiveSocket.Poll(-1, SelectMode.SelectRead))
+                {
+                    _receiveSocket.Close();
+                }
+
+                foreach (Thread t in _listenerThreadsArrayList)
+                {
+                    if (t.IsAlive)
+                    {
+                        t.Abort();
+                    }
+                }
+                Debug.Print("Start network discovery listener failed: " + exception.Message + " Stacktrace: " + exception.StackTrace);
+            }
         }
 
         private static void SendRequest(object message)
@@ -66,37 +126,41 @@ namespace ECRU.netd
                 Debug.Print("Starting EasyConnect SendRequest");
 
                 var send = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-
-                var ip = NetworkTable.GetAddress(msg.Receiver.ToHex());
-
-                var destination = new IPEndPoint(ip, Port);
-
-                send.Connect(destination);
-
-                var length = msg.ConnectionType.StringToBytes().Length.ToBytes();
-
-                send.Send(length);
-
-                send.Send(msg.ConnectionType.StringToBytes());
-
-                var receivedLength = new byte[4];
-
-                send.Receive(receivedLength);
-
-                var buffer = new byte[receivedLength.ToInt()];
-
-                send.Receive(buffer);
-
-                switch (buffer.GetString())
+                
+                using (send)
                 {
-                    case "Accepted":
-                        new Thread(() => msg.ConnectionCallback.Invoke(send)).Start();
-                        break;
+                    var ip = NetworkTable.GetAddress(msg.Receiver.ToHex());
 
-                    default:
-                        new Thread(() => msg.ConnectionCallback.Invoke(null)).Start();
-                        break;
+                    var destination = new IPEndPoint(ip, Port);
+
+                    send.Connect(destination);
+
+                    var length = msg.ConnectionType.StringToBytes().Length.ToBytes();
+
+                    send.Send(length);
+
+                    send.Send(msg.ConnectionType.StringToBytes());
+
+                    var receivedLength = new byte[4];
+
+                    send.Receive(receivedLength);
+
+                    var buffer = new byte[receivedLength.ToInt()];
+
+                    send.Receive(buffer);
+
+                    switch (buffer.GetString())
+                    {
+                        case "Accepted":
+                            new Thread(() => msg.ConnectionCallback.Invoke(send)).Start();
+                            break;
+
+                        default:
+                            new Thread(() => msg.ConnectionCallback.Invoke(null)).Start();
+                            break;
+                    }
                 }
+                
             }
             catch (Exception exception)
             {
@@ -152,34 +216,6 @@ namespace ECRU.netd
             }
         }
 
-
-        private static void Listen()
-        {
-
-            EndPoint endpoint = new IPEndPoint(IPAddress.Any, Port);
-
-            try
-            {
-                _receiveSocket.Bind(endpoint);
-                _receiveSocket.Listen(1);
-
-                var connection = _receiveSocket.Accept();
-
-                var buffer = new byte[connection.Available];
-
-                var length = connection.ReceiveFrom(buffer, ref endpoint);
-
-                var ECthread = new Thread(() => OnDataReceived(buffer, length, endpoint, connection));
-                ECthread.Start();
-
-            }
-            catch (Exception exception)
-            {
-                Debug.Print("Listen failed: " + exception.Message + " Stacktrace: " + exception.StackTrace);
-                throw;
-            }
-        }
-
         
         public static Socket GetSocket(Socket connection)
         {
@@ -197,7 +233,6 @@ namespace ECRU.netd
             //Give socket
             return connection;
         }
-
 
     }
 
