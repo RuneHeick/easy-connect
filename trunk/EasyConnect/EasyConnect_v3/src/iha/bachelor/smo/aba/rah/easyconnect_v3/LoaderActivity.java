@@ -14,6 +14,10 @@ import android.view.Menu;
 public class LoaderActivity extends Activity {
 	private WifiManager wifiManager;
 	
+	public static final int CREATE_PROFILE = 10;
+	public static final int MODULE_LIST = 20;
+	public static final int PROFILE_LIST = 30;
+	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -43,11 +47,20 @@ public class LoaderActivity extends Activity {
 		
 		if (SeachProfilesForCurrentWifi(wifiInfo.getSSID())){
 			Intent NetworkNotAvailable = new Intent(this, MainActivity.class);
+			
+			Bundle extras = getIntent().getExtras();
+			if (extras == null) {
+				NetworkNotAvailable.putExtra("TargetFragment", MODULE_LIST);
+			}else {
+				NetworkNotAvailable.putExtra("TargetFragment", PROFILE_LIST);
+			}
+			
+			
 			startActivity(NetworkNotAvailable);
 		}
 		else {
-			//Intent NetworkAvailable = new Intent(this, CreateNewProfileActivity.class); //this line is the correct line
 			Intent NetworkAvailable = new Intent(this, MainActivity.class);
+			NetworkAvailable.putExtra("TargetFragment", CREATE_PROFILE);
 			startActivity(NetworkAvailable);
 		}
 		
@@ -56,7 +69,7 @@ public class LoaderActivity extends Activity {
 	public boolean SeachProfilesForCurrentWifi(CharSequence CurrentWifi){
 		//FIX ME - Insert code for searching the database
 		Log.i("InitCheckForProfile", "Starting function");
-		Log.i("InitCheckForProfile", "CurrentWifi" + CurrentWifi);
+		Log.i("InitCheckForProfile", "CurrentWifi: " + CurrentWifi);
 		String[] PROJECTION = { ProfilesTable.COLUMN_Id, 
 				ProfilesTable.COLUMN_ProfileName, 
 				ProfilesTable.COLUMN_ProfilePassword,
