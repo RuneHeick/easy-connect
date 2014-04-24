@@ -81,13 +81,13 @@ namespace ECRU.netd
         public void Start()
         {
             netd.BroadcastNetworkDiscovery.Start();
-            EventBus.Subscribe(typeof(BroadcastMessage), FileSync.Broadcast.Send);
+            EasyConnect.Start();
         }
 
         public void Stop()
         {
             netd.BroadcastNetworkDiscovery.Stop();
-            EventBus.Unsubscribe(typeof (BroadcastMessage), Broadcast.Send);
+            EasyConnect.Stop();
         }
 
         public void Reset()

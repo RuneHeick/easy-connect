@@ -12,7 +12,9 @@ namespace ECRU.netd
     public static class BroadcastNetworkDiscovery
     {
         private static ArrayList _listenerThreadsArrayList = new ArrayList();
+
         private static Thread _broadcastThread;
+        private static Thread _listenerThread;
 
         private static Socket _sendSocket;
         private static IPEndPoint _broadcastEndPoint;
@@ -38,11 +40,17 @@ namespace ECRU.netd
             {
                 _sendSocket.Close();
             }
+            
             if (_broadcastThread != null && _broadcastThread.IsAlive)
             {
                 _broadcastThread.Abort();
             }
-            
+
+            if (_listenerThread != null && _listenerThread.IsAlive)
+            {
+                _listenerThread.Abort();
+            }
+
             foreach (Thread thread in _listenerThreadsArrayList)
             {
                 if (thread.IsAlive)
@@ -78,7 +86,8 @@ namespace ECRU.netd
 
             if (EnableListener)
             {
-                StartListenThread();
+                _listenerThread = new Thread(StartListenThread);
+                _listenerThread.Start();
             }
             
         }
@@ -190,7 +199,11 @@ namespace ECRU.netd
             }
             catch (Exception exception)
             {
-                _receiveSocket.Close();
+                if(_receiveSocket != null && _receiveSocket.Poll(-1, SelectMode.SelectRead))
+                {
+                    _receiveSocket.Close();
+                }
+
                 foreach (Thread t in _listenerThreadsArrayList)
                 {
                     if (t.IsAlive)
