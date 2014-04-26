@@ -20,6 +20,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ECRU.Utilities", "ECRU.Util
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ECRU.BLEControler", "ECRU.BLEController\ECRU.BLEControler.csproj", "{6B29AE16-6946-4943-BA13-A1E57605A963}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ECRU.File", "ECRU.File\ECRU.File.csproj", "{21395F92-A680-483C-AC16-F2EF644FF640}"
+EndProject
 Global
 	GlobalSection(SubversionScc) = preSolution
 		Svn-Managed = True
@@ -56,6 +58,10 @@ Global
 		{6B29AE16-6946-4943-BA13-A1E57605A963}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6B29AE16-6946-4943-BA13-A1E57605A963}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6B29AE16-6946-4943-BA13-A1E57605A963}.Release|Any CPU.Build.0 = Release|Any CPU
+		{21395F92-A680-483C-AC16-F2EF644FF640}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{21395F92-A680-483C-AC16-F2EF644FF640}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{21395F92-A680-483C-AC16-F2EF644FF640}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{21395F92-A680-483C-AC16-F2EF644FF640}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

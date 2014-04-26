@@ -49,6 +49,21 @@ namespace ECRU.BLEController.Util
             }
             return false; 
         }
+
+        public bool IsEqual(DeviceInfo b)
+        {
+            if (Services.Length != b.Services.Length)
+                return false;
+
+            for (int i = 0; i < Services.Length; i++ )
+            {
+                if (Services[i].StartHandel != b.Services[i].StartHandel && Services[i].EndHandel != b.Services[i].EndHandel)
+                    return false; 
+            }
+
+            return true; 
+        }
+
     }
 
     public class Service
@@ -83,6 +98,10 @@ namespace ECRU.BLEController.Util
                         {
                             return false; 
                         }
+                        else if(!Characteristics[i].isCompleted())
+                        {
+                            return false; 
+                        }
                     }
                     return true;
                 }
@@ -111,6 +130,12 @@ namespace ECRU.BLEController.Util
             Range = new HandleValuePair();
             Subscription = new HandleValuePair(); 
         }
+
+        public bool isCompleted()
+        {
+            return Value.handle != 0 && Description.handle != 0 && Format.handle != 0 && GUIFormat.handle != 0; 
+        }
+
     }
 
     public class HandleValuePair : IHandleValue

@@ -6,6 +6,7 @@ using ECRU.Utilities.EventBus;
 using ECRU.BLEController.Packets;
 using System.Threading;
 using ECRU.BLEController.Util;
+using ECRU.Utilities.HelpFunction;
 
 namespace ECRU.BLEController
 {
@@ -14,9 +15,7 @@ namespace ECRU.BLEController
         SerialController serial = new SerialController();
         PacketManager packetmanager;
         DataManager data;
-        DeviceInfoFactory fac; 
-
-        string ConfigPath = "";
+        DeviceInfoFactory Infofactory; 
 
         bool IsInitMode { get; set; }
 
@@ -24,16 +23,27 @@ namespace ECRU.BLEController
         {
             packetmanager = new PacketManager(serial);
             data = new DataManager(packetmanager);
-            fac = new DeviceInfoFactory(packetmanager);
+            Infofactory = new DeviceInfoFactory(packetmanager);
         }
 
         public void LoadConfig(string configFilePath)
         {
-            ConfigPath = configFilePath;
+            if(SystemInfo.Name != "" && SystemInfo.Name != null
+                && SystemInfo.PassCode != "" && SystemInfo.PassCode != null)
+            {
+                IsInitMode = false; 
+            }
+            else
+            {
+                IsInitMode = true; 
+            }
         }
 
         public void Start()
         {
+            SystemInfo.PassCode = "Rune Heick";
+            SystemInfo.Name = "Test2";
+            LoadConfig(null);
             serial.Start();
 
             //Discover Devices 
@@ -47,9 +57,7 @@ namespace ECRU.BLEController
 
             //Data Update 
             packetmanager.Subscrib(CommandType.DataEvent, RecivedDataEvnet);
-            packetmanager.Subscrib(CommandType.ServiceEvent, RecivedServicDirEvnet);
 
-            IsInitMode = false; 
 
             SendReset();
 
@@ -69,13 +77,15 @@ namespace ECRU.BLEController
 
             //Data Update 
             packetmanager.Unsubscrib(CommandType.DataEvent, RecivedDataEvnet);
-            packetmanager.Unsubscrib(CommandType.ServiceEvent, RecivedServicDirEvnet);
-            data.Reset(); 
+
+            data.Reset();
+            SendReset();
         }
 
         public void Reset()
         {
             Stop();
+            LoadConfig("");
             Start();
         }
 
@@ -86,11 +96,16 @@ namespace ECRU.BLEController
         private void FoundDevices(IPacket pack)
         {
             DeviceEvent newDevice = pack as DeviceEvent;
+            Debug.Print("Found Device: " + newDevice.Address.ToHex());
+
             if(newDevice != null)
             {
                 if (data.IsSystemDevice(newDevice.Address))
                 {
-                    fac.GetDeviceInfo(newDevice.Address, DiscoverComplete);
+                    if (!data.hasInfoFile(newDevice.Address))
+                        Infofactory.GetDeviceInfo(newDevice.Address, DiscoverComplete);
+                    else
+                        Infofactory.GetDeviceInfo(newDevice.Address, DiscoverCompleteForCheck);
                 }
                 else
                 {
@@ -99,45 +114,64 @@ namespace ECRU.BLEController
             }
         }
 
+        private void DiscoverCompleteForCheck(DeviceInfoFactory.Status_t status, DeviceInfo item)
+        {
+            if (status == DeviceInfoFactory.Status_t.Done)
+            {
+                DeviceInfo info = data.GetDeviceInfo(item.Address);
+                if (info != null && item.IsEqual(info))
+                    AddDevice(info);
+                else
+                {
+                    Infofactory.DoFullRead(item, DoneRead);
+                }
+            }
+        }
+
+        private void AddDevice(DeviceInfo item)
+        {
+            data.addConnectedDevice(item.Address);
+            AddDeviceEvent add = new AddDeviceEvent();
+            add.Address = item.Address;
+            add.ConnectionTimeHandle = item.TimeHandel;
+            add.PassCodeHandle = item.PassCodeHandel;
+            packetmanager.Send(add);
+            Thread.Sleep(1000);
+        }
+
         private void DiscoverComplete(DeviceInfoFactory.Status_t status, DeviceInfo item)
         {
             Debug.Print("Done:");
             if (status == DeviceInfoFactory.Status_t.Done)
             {
                 Debug.Print("ok");
-                AddDeviceEvent add = new AddDeviceEvent();
-                add.Address = item.Address;
-                add.ConnectionTimeHandle = item.TimeHandel;
-                add.PassCodeHandle = item.PassCodeHandel;
-
-                packetmanager.Send(add);
-
-                fac.DoFullRead(item, Done);
+                AddDevice(item);
+                Infofactory.DoFullRead(item, DoneRead);
             }
-            else
-                Debug.Print("Fail");
         }
 
-        private void Done(DeviceInfoFactory.Status_t status, DeviceInfo item)
+        private void DoneRead(DeviceInfoFactory.Status_t status, DeviceInfo item)
         {
             Debug.Print("Read Done:");
             if (status == DeviceInfoFactory.Status_t.Done)
             {
-                Debug.Print("ok");
+                data.UpdateOrCreateInfoFile(item);
             }
             else
             {
-                Debug.Print("fail");
+                data.DeleteSystemInfo(item.Address);
+                data.DisconnectDevice(item.Address);
             }
         }
 
         // Called if the CC2540 reset. 
         public void BLEControllerReset(IPacket packet)
         {
+            Debug.Print("BLE RESET");
             data.Reset();
             SendSystemInfo();
-            fac.Dispose();
-            fac = new DeviceInfoFactory(packetmanager);
+            Infofactory.Dispose();
+            Infofactory = new DeviceInfoFactory(packetmanager);
         }
 
         public void RecivedDataEvnet(IPacket packet)
@@ -154,16 +188,8 @@ namespace ECRU.BLEController
             DisconnectEvent DisPacket = packet as DisconnectEvent;
             if(DisPacket != null)
             {
+                Debug.Print("Recived Dis :" + DisPacket.Address.ToHex());
                 data.DisconnectDevice(DisPacket.Address);
-            }
-        }
-
-        public void RecivedServicDirEvnet(IPacket packet)
-        {
-            ServiceEvent serviceDir = packet as ServiceEvent;
-            if (serviceDir != null)
-            {
-                data.RecivedServiceDir(serviceDir);
             }
         }
 

@@ -8,7 +8,7 @@ namespace ECRU.BLEController.Packets
     class SystemInfoEvent:IPacket
     {
 
-        private byte[] payload = new byte[21]; 
+        private byte[] payload = new byte[SystemInfo.SYSID_LENGTH+1]; 
 
         public byte[] SystemID
         {
@@ -25,11 +25,11 @@ namespace ECRU.BLEController.Packets
             {
                 if(value == true)
                 {
-                    payload[20] = 0x00;
+                    payload[SystemInfo.SYSID_LENGTH] = 0x00;
                 }
                 else
                 {
-                    payload[20] = 0x01;
+                    payload[SystemInfo.SYSID_LENGTH] = 0x01;
                 }
             }
         }
