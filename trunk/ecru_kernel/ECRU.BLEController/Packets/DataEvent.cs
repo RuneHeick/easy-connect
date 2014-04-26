@@ -30,7 +30,7 @@ namespace ECRU.BLEController.Packets
             get
             {
                 byte[] a = Payload.GetPart(6, 2);
-                return (UInt16)((a[0]) + (a[1] << 8));
+                return (UInt16)((a[0] << 8) + (a[1]));
             }
         }
 

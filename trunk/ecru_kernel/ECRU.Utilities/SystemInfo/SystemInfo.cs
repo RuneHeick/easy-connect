@@ -3,7 +3,7 @@ namespace ECRU.Utilities
 {
     public static class SystemInfo
     {
-        public const int SYSID_LENGTH = 20;
+        public const int SYSID_LENGTH = 8;
         private static string passCode = "";
         private static byte[] sysId = new byte[SYSID_LENGTH];
         private static byte[] sysMac;
@@ -59,8 +59,8 @@ namespace ECRU.Utilities
         private static byte[] doHash(string input)
         {
             UInt64 hashedValue = HelpFunction.Knuthhash.doHash(input);
-           
-            byte[] hash = new byte[20];
+
+            byte[] hash = new byte[SYSID_LENGTH];
             for (int i = 0; i < 64 / 8; i++)
             {
                 hash[i] = (byte)(hashedValue >> (8 * i));

@@ -109,6 +109,19 @@ namespace ECRU.Utilities
             }
         }
 
+        public string[] GetSortedMasters()
+        {
+            lock (Lock)
+            {
+                string[] units = new string[data.Count];
+                int index = 0; 
+                foreach(var k in data.Keys)
+                {
+                    units[index++] = (string)k; 
+                }
+                return units.Quicksort(0, units.Length - 1);
+            }
+        }
 
         public MacList GetDecices(byte[] Master)
         {

@@ -257,18 +257,18 @@ namespace ECRU.BLEController
 
         private void doSend()
         {
-            if (SendQueue.Count > 0 && status == ComState.Ready)
+            lock (SendQueue)
             {
-                lock (SendQueue)
+                if (SendQueue.Count > 0 && status == ComState.Ready)
                 {
                     byte[] data = (byte[])SendQueue[0];
                     SendQueue.RemoveAt(0);
                     status = ComState.Sending;
                     SendCommand = data;
                     if (RetransmitTimer != null)
-                        RetransmitTimer.Stop(); 
+                        RetransmitTimer.Stop();
                     RetransmitTimer = new ECTimer(ReTransmit, 0, Def.RETRANSMITTIME, Def.RETRANSMITTIME);
-                    RetransmitTimer.Start(); 
+                    RetransmitTimer.Start();
                     if (seriel.SendByte(data))
                     {
                         status = ComState.WaitingForReplay;

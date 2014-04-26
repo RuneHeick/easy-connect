@@ -43,12 +43,14 @@ namespace ECRU.BLEController
         public const UInt16 SUPSCRIPTIONOPTION_UUID = 0x2911;
 
         public const int SCAN_TIMEOUT = 15000;
+        public const int READPROP = 2;
 
 
         internal static bool IsHandleUUID(UInt16 UUID)
         {
             return UUID == ECSERVICE_UUID || UUID == ECCONNECT_UUID || UUID == DEVICEINFO_UUID || UUID == MAIN_SERVICE_UUID; 
         }
+
     }
 
     public enum CommandType
