@@ -23,6 +23,7 @@ static uint8 InfoProfile_ReadAttrCB( uint16 connHandle, gattAttribute_t *pAttr,
 
 uint8 SystemID[SYSIDSIZE];
 GenericValue DeviceName, Password; 
+
 static uint8 DecName[] = "Device Name";
 static uint8 GuiPrFor[2] = {0x00};
 static uint8 PrFor[7] = {0x00};
@@ -30,6 +31,7 @@ static uint8 PrFor[7] = {0x00};
 static uint8 DecPass[] = "Network Password";
 
 static uint8 Description[] = "Init Room Unit"; 
+static ChangeCallBack callback = NULL; 
 
 
 // Device Info Service Callbacks
@@ -201,6 +203,8 @@ static bStatus_t InfoProfile_WriteAttrCB( uint16 connHandle, gattAttribute_t *pA
             osal_memcpy(&value->pValue[offset],pValue,len);
             for(uint8 i = offset+len; i<value->size;i++)
               value->pValue[i] = 0; 
+            if(callback != NULL)
+              callback();
             break;
           }
           else
@@ -348,4 +352,9 @@ static uint8 InfoProfile_ReadAttrCB( uint16 connHandle, gattAttribute_t *pAttr,
   return ( status );
   
   
+}
+
+void SystemInfo_Change(ChangeCallBack call)
+{
+  callback = call; 
 }

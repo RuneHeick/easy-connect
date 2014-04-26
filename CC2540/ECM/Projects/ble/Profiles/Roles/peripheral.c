@@ -128,7 +128,7 @@ static uint8  gapRole_AdvertData[B_MAX_ADV_LEN] =
   0x02,   // length of this data
   GAP_ADTYPE_FLAGS,   // AD Type = Flags
   // Limited Discoverable & BR/EDR not supported
-  (GAP_ADTYPE_FLAGS_NON | GAP_ADTYPE_FLAGS_BREDR_NOT_SUPPORTED),
+  (GAP_ADTYPE_FLAGS_GENERAL | GAP_ADTYPE_FLAGS_BREDR_NOT_SUPPORTED),
   0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 };
 static uint8  gapRole_ScanRspDataLen = 0;
@@ -271,8 +271,10 @@ bStatus_t GAPRole_SetParameter( uint16 param, uint8 len, void *pValue )
         VOID osal_memset( gapRole_AdvertData, 0, B_MAX_ADV_LEN );
         VOID osal_memcpy( gapRole_AdvertData, pValue, len );
         gapRole_AdvertDataLen = len;
-        GAP_UpdateAdvertisingData( gapRole_TaskID,
-                              TRUE, gapRole_AdvertDataLen, gapRole_AdvertData );
+        
+        // Update the advertising data
+        GAP_UpdateAdvertisingData( gapRole_TaskID,TRUE, gapRole_AdvertDataLen, gapRole_AdvertData );
+        
       }
       else
       {
@@ -724,7 +726,8 @@ uint16 GAPRole_ProcessEvent( uint8 task_id, uint16 events )
       params.channelMap = gapRole_AdvChanMap;
       params.filterPolicy = gapRole_AdvFilterPolicy;
 
-      if ( GAP_MakeDiscoverable( gapRole_TaskID, &params ) != SUCCESS )
+      uint8 stat = GAP_MakeDiscoverable( gapRole_TaskID, &params );
+      if (stat  != SUCCESS && bleAlreadyInRequestedMode != stat )
       {
         gapRole_state = GAPROLE_ERROR;
         if ( pGapRoles_AppCGs && pGapRoles_AppCGs->pfnStateChange )
@@ -1024,6 +1027,7 @@ static void gapRole_ProcessGAPMsg( gapEventHdr_t *pMsg )
         notify = TRUE;
 
         VOID osal_set_event( gapRole_TaskID, START_ADVERTISING_EVT );
+        
 
         gapRole_ConnectionHandle = INVALID_CONNHANDLE;
       }

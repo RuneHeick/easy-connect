@@ -39,10 +39,12 @@ bool GenericValue_CreateContainer(GenericValue* item, uint8 len)
   
   item->pValue = osal_mem_alloc(len);
   if(item->pValue==NULL)
-  { 
+  {
     item->status=ERROR; 
     return false; 
   }
+  
+  osal_memset(item->pValue,0,len);
   
   item->size = len; 
   item->status=READY; 

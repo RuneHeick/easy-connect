@@ -29,7 +29,6 @@ typedef struct
   uint32 KeepAliveTimeLeft_ms; //time left til Keep Alive Service 
   uint16 KeppAliveHandel; 
   
-  uint16 UpdateHandel; // Handel to the Update function. Is Used to automatic get updates. 
   uint8 addr[B_ADDR_LEN];
 }AcceptedDeviceInfo;
 
@@ -58,10 +57,17 @@ typedef struct ValueHandelPair
   uint16 UUID; 
 }ValueHandelPair;
 
+typedef struct ValueHandelPropPair
+{
+  uint16 Handle;
+  uint16 UUID; 
+  uint8 Prop; 
+}ValueHandelPropPair;
+
 typedef union
 {
   primary_ServiceItem service;
-  ValueHandelPair characteristic;
+  ValueHandelPropPair characteristic;
   ValueHandelPair descriptors; 
 }DiscoveryItem;
 
@@ -168,7 +174,9 @@ uint16 ConnectionManger_ProcessEvent( uint8 task_id, uint16 events );
 
 void ConnectionManager_Start(bool Central);
 
+bool Queue_Contains(EventType_t action);
 void Queue_addWrite(uint8* write, uint8 len, uint8* addr, uint16 handel, Callback call, Callback ecall);
 void Queue_Scan(Callback call, Callback ecall);
 void Queue_addServiceDiscovery(uint8* addr, Callback call ,Callback ecall, DiscoveryRange range, uint16 startHandle, uint16 endHandle);
 void Queue_addRead(uint8* addr, uint16 handel, Callback call, Callback ecall);
+uint8 Queue_Count();

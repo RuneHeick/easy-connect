@@ -388,8 +388,7 @@ static void ReadFromUart(uint8 port)
       {
         bufferRX.status = Has_Packet; 
         osal_set_event(Uart_TaskID,UART_PACKET_EVENT);
-      }
-      
+      }  
     }
     else if(len>1)
     {

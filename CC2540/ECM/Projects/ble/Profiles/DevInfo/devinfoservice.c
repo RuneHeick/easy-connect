@@ -223,6 +223,14 @@ CONST gattServiceCBs_t devInfoCBs =
  */
 bStatus_t DevInfo_AddService()
 {
+  if(devInfoModelNumber.status != READY)
+    GenericValue_SetString(&devInfoModelNumber,"None");
+  
+  if(devInfoSerialNumber.status != READY)
+    GenericValue_SetString(&devInfoSerialNumber,"None");
+  
+  if(devInfoMfrName.status != READY)
+    GenericValue_SetString(&devInfoMfrName,"None");
   
   // Register GATT attribute list and CBs with GATT Server App
   uint8 val = GATTServApp_RegisterService( devInfoAttrTbl,

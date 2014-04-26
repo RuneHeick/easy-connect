@@ -25,8 +25,13 @@
 #define START_DEVICE_EVENT (1<<3)
 #define LINKTIMEOUT_EVENT (1<<4)
 #define RESTART_DEVICE_EVENT (1<<6)
+#define TERMINATEALL_EVENT (1<<7)
 
-#define LINKTIMEOUT_TIME 500
+#define QUEUEHALTERROR_EVENT (1<<8)
+
+#define LINKTIMEOUT_TIME 2000
+#define TERMINATEWAIT_TIME 2000
+#define QUEUEHALTERROR_TIME 30000
 
 // What is the advertising interval when device is discoverable (units of 625us, 160=100ms)
 #define DEFAULT_ADVERTISING_INTERVAL          200
@@ -56,7 +61,7 @@ static void discoveryComplete();
 static void discoveryCompleteError();
 static void RWComplete(Callback call);
 static void disposeScanList(List* item);
-static void TerminateALLLinks();
+static bool TerminateALLLinks();
 static void peripheralStateNotificationCB( gaprole_States_t newState );
 
 static uint8 NULLaddr[B_ADDR_LEN] = {0x00, 0x00, 0x00, 0x00, 0x00 , 0x00}; 
@@ -64,7 +69,7 @@ static uint8 ConnectionManger_tarskID;
 static ConnectedDevice_t connectedDevices[MAX_HW_SUPPORTED_DEVICES]; 
 
 bool IsCentral = false;
-
+static bool AllLinkTerminated = true;
 typedef enum
 {
   C_READY,
@@ -230,7 +235,8 @@ void ConnectionManger_Init( uint8 task_id)
   GAP_SetParamValue( TGAP_GEN_DISC_SCAN, DEFAULT_SCAN_DURATION );
   GAP_SetParamValue( TGAP_LIM_DISC_SCAN, DEFAULT_SCAN_DURATION );
   
-  GGS_SetParameter( GGS_DEVICE_NAME_ATT, 7, (uint8 *) "TEST RU" ); // make So generic name can be used 
+  uint8* NameStr = "Unknowen"; 
+  GGS_SetParameter( GGS_DEVICE_NAME_ATT, sizeof(NameStr), NameStr ); // make So generic name can be used 
   
   // Setup the GAP Bond Manager
   {
@@ -330,18 +336,28 @@ uint16 ConnectionManger_ProcessEvent( uint8 task_id, uint16 events )
   {
     if(status==C_READY)
     {
+     
+      
       if(EventQueue.count>0)
       {
-        Dequeue(&CurrentEvent);
-        if(CurrentEvent.base.action != None) 
+          //printf("H0");
+        if(TerminateALLLinks())
         {
-          status = C_BUSY; 
-          osal_set_event(ConnectionManger_tarskID,PROCESSQUEUEITEM_EVENT);
+          Dequeue(&CurrentEvent);
+          if(CurrentEvent.base.action != None) 
+          {
+            osal_start_timerEx(ConnectionManger_tarskID,QUEUEHALTERROR_EVENT,QUEUEHALTERROR_TIME);
+            status = C_BUSY; 
+            osal_set_event(ConnectionManger_tarskID,PROCESSQUEUEITEM_EVENT);
+          }
         }
       }
       else
       {
-        TerminateALLLinks(); 
+        //printf("Dc"); 
+        CurrentEvent.base.action = Disconnect;
+        if(TerminateALLLinks())
+          osal_stop_timerEx(ConnectionManger_tarskID,QUEUEHALTERROR_EVENT);
       }
     }
     
@@ -362,6 +378,10 @@ uint16 ConnectionManger_ProcessEvent( uint8 task_id, uint16 events )
           status = C_READY; 
           osal_set_event(ConnectionManger_tarskID,DEQUEUE_EVENT);
         }
+        else
+        {
+           osal_set_event(ConnectionManger_tarskID,PROCESSQUEUEITEM_EVENT);
+        }
       }
       else
       {
@@ -370,9 +390,11 @@ uint16 ConnectionManger_ProcessEvent( uint8 task_id, uint16 events )
     }
     return (events ^ PROCESSQUEUEITEM_EVENT);
   }
+  
   /*   Connection TimeOut   */
   if ( events & LINKTIMEOUT_EVENT )
   {
+    printf("To");
     cancelLinkEstablishment();
     if(CurrentEvent.base.action != None && status==C_BUSY && CurrentEvent.base.errorcall != NULL)
     {
@@ -383,6 +405,28 @@ uint16 ConnectionManger_ProcessEvent( uint8 task_id, uint16 events )
     return (events ^ LINKTIMEOUT_EVENT);
   }
   
+  if ( events & TERMINATEALL_EVENT )
+  {
+    osal_stop_timerEx(ConnectionManger_tarskID,QUEUEHALTERROR_EVENT);
+    osal_set_event(ConnectionManger_tarskID,DEQUEUE_EVENT);
+    status = C_READY;
+    
+    return (events ^ TERMINATEALL_EVENT);
+  }
+  
+  if ( events & QUEUEHALTERROR_EVENT )
+  {
+    if(status == C_BUSY)
+    {
+      if(CurrentEvent.base.errorcall)
+        CurrentEvent.base.errorcall(&CurrentEvent);
+     
+      status = C_READY;
+      
+    }
+    osal_set_event(ConnectionManger_tarskID,DEQUEUE_EVENT); 
+    return (events ^ QUEUEHALTERROR_EVENT);
+  }
   
   return 0; 
 }
@@ -391,24 +435,23 @@ uint16 ConnectionManger_ProcessEvent( uint8 task_id, uint16 events )
 
 static void ConnectionManger_handel(ConnectionEvents_t* item)
 {
+  bStatus_t stat = SUCCESS;
   switch(item->base.action)
   {
     case Read:
       {
-        GATT_ReadLongCharValue(getConnHandel(item), &item->read.item.read, ConnectionManger_tarskID );
+        stat = GATT_ReadLongCharValue(getConnHandel(item), &item->read.item.read, ConnectionManger_tarskID );
       }
       break; 
     case Write:
       {
-        GATT_WriteLongCharValue(getConnHandel(item), &item->write.item.write, ConnectionManger_tarskID );
+        stat = GATT_WriteLongCharValue(getConnHandel(item), &item->write.item.write, ConnectionManger_tarskID );
       }
       break;
-    case Connect:
-    case Disconnect: 
     case Scan:
       {
-        GAPCentralRole_CancelDiscovery();
-        GAPCentralRole_StartDiscovery( DEFAULT_DISCOVERY_MODE,
+        stat = GAPCentralRole_CancelDiscovery();
+        stat = GAPCentralRole_StartDiscovery( DEFAULT_DISCOVERY_MODE,
                                        DEFAULT_DISCOVERY_ACTIVE_SCAN,
                                        DEFAULT_DISCOVERY_WHITE_LIST );
       }
@@ -418,13 +461,13 @@ static void ConnectionManger_handel(ConnectionEvents_t* item)
         switch(item->serviceDir.type)
         {
           case Primary: 
-            GATT_DiscAllPrimaryServices(getConnHandel(item),ConnectionManger_tarskID); 
+            stat = GATT_DiscAllPrimaryServices(getConnHandel(item),ConnectionManger_tarskID); 
             break; 
           case Characteristic: 
-            GATT_DiscAllChars(getConnHandel(item),item->serviceDir.startHandle,item->serviceDir.endHandle,ConnectionManger_tarskID); 
+            stat = GATT_DiscAllChars(getConnHandel(item),item->serviceDir.startHandle,item->serviceDir.endHandle,ConnectionManger_tarskID); 
             break;
           case Descriptor: 
-            GATT_DiscAllCharDescs(getConnHandel(item),item->serviceDir.startHandle,item->serviceDir.endHandle,ConnectionManger_tarskID); 
+            stat = GATT_DiscAllCharDescs(getConnHandel(item),item->serviceDir.startHandle,item->serviceDir.endHandle,ConnectionManger_tarskID); 
             break;
         }
       }
@@ -432,6 +475,15 @@ static void ConnectionManger_handel(ConnectionEvents_t* item)
     // do some stuff with the item
 
   }
+  
+  if(stat != SUCCESS)
+  {
+    if(item->base.errorcall)
+     item->base.errorcall(item);
+    status = C_READY; 
+    osal_set_event(ConnectionManger_tarskID,DEQUEUE_EVENT);
+  }
+  
 }
 
 /*********************************************************************
@@ -463,13 +515,14 @@ static bool CreateConnection(uint8* addr)
 {
     uint8 i; 
     ConnectedDevice_t* containor = NULL; 
-    
     for(i = 0; i<MAX_HW_SUPPORTED_DEVICES; i++)
     {
       if(osal_memcmp(connectedDevices[i].addr,addr,B_ADDR_LEN))
       {
           if(connectedDevices[i].status == CONNECTING) //if a establish connection is in progress 
+          {
             return true; 
+          }
       }
       if(connectedDevices[i].status != INUSE)
       {
@@ -537,15 +590,28 @@ static void EstablishLink(ConnectedDevice_t* conContainor)
   osal_start_timerEx(ConnectionManger_tarskID ,LINKTIMEOUT_EVENT,LINKTIMEOUT_TIME);
 }
 
-static void TerminateALLLinks()
+static bool TerminateALLLinks()
 {
-  for(uint8 i = 0; i<MAX_HW_SUPPORTED_DEVICES; i++)
-  {
-      if(connectedDevices[i].status == CONNECTED)
+      bool stat = true; 
+      for(uint8 i = 0; i<MAX_HW_SUPPORTED_DEVICES; i++)
       {
-          GAPCentralRole_TerminateLink(connectedDevices[i].ConnHandel);
+        if(connectedDevices[i].status != NOTCONNECTED)
+        {
+            connectedDevices[i].status = NOTCONNECTED;
+            connectedDevices[i].ConnHandel = GAP_CONNHANDLE_INIT;
+
+            stat = false; 
+        }
       }
-  }
+      
+      if(stat == false)
+      {
+            GAPCentralRole_TerminateLink(0xFFFF);
+            status = C_BUSY;
+            osal_start_timerEx(ConnectionManger_tarskID ,TERMINATEALL_EVENT,TERMINATEWAIT_TIME);
+      }
+      
+      return stat; 
 }
 
 static void cancelLinkEstablishment()
@@ -558,7 +624,8 @@ static void cancelLinkEstablishment()
           connectedDevices[i].status = NOTCONNECTED;
       }
   }
-  GAPCentralRole_TerminateLink(GAP_CONNHANDLE_INIT); // terminate pending Connections. 
+  GAPCentralRole_TerminateLink(GAP_CONNHANDLE_INIT);
+  GAPCentralRole_TerminateLink(GAP_CONNHANDLE_ALL); // terminate pending Connections. 
 }
 
 //***********************************************************
@@ -569,7 +636,7 @@ static void Enqueue(ConnectionEvents_t* item)
 {
   if(IsCentral)
   {
-    if(EventQueue.count<10)
+    if(EventQueue.count<20)
     {
     
     
@@ -597,6 +664,24 @@ static void Dequeue(ConnectionEvents_t* item)
   {
     item->base.action = None; 
   }
+}
+
+static EventType_t searchAction; // for search in list
+bool searchForAction(ListItem* listitem)
+{
+  ConnectionEvents_t* item = (ConnectionEvents_t*)listitem->value;
+  return item->base.action == searchAction;
+}
+
+bool Queue_Contains(EventType_t action)
+{
+  searchAction = action;
+  GenericList_HasElement(&EventQueue, searchForAction);
+}
+
+uint8 Queue_Count()
+{
+  return EventQueue.count;
 }
 
 //***********************************************************
@@ -757,6 +842,8 @@ static void BLE_CentralEventCB( gapCentralRoleEvent_t *pEvent )
          
           /* if connection was not requested */
           GAPCentralRole_TerminateLink(pEvent->linkCmpl.connectionHandle);
+          osal_set_event(ConnectionManger_tarskID,PROCESSQUEUEITEM_EVENT);
+          osal_stop_timerEx(ConnectionManger_tarskID,LINKTIMEOUT_EVENT);
       }
       break;
 
@@ -772,6 +859,7 @@ static void BLE_CentralEventCB( gapCentralRoleEvent_t *pEvent )
             return; 
           }
         }
+        status = C_READY;
       }
       break;
       
@@ -907,23 +995,17 @@ static void simpleBLECentralProcessGATTMsg( gattMsgEvent_t *pMsg )
    */
   else if(CurrentEvent.base.action == Write)
   {
-    if ( (pMsg->method == ATT_PREPARE_WRITE_RSP) || (pMsg->method == ATT_EXECUTE_WRITE_RSP)||(pMsg->method == ATT_ERROR_RSP))
+    if ( (pMsg->method == ATT_PREPARE_WRITE_RSP) || (pMsg->method == ATT_EXECUTE_WRITE_RSP))
     {
-      if ( pMsg->method == ATT_ERROR_RSP)
-      {
-         RWComplete(CurrentEvent.base.errorcall);
-      }
-      else
-      {
         RWComplete(CurrentEvent.base.callback);
-      }
-  
     }
     else
     {
         RWComplete(CurrentEvent.base.errorcall);
     }
   }
+  
+  
   else if(CurrentEvent.base.action == ServiceDiscovery)
   {
     BLEGATTDiscoveryEvent( pMsg );
@@ -978,7 +1060,8 @@ static void BLEGATTDiscoveryEvent( gattMsgEvent_t *pMsg )
         for(i=0;i<pMsg->msg.readByGrpTypeRsp.numGrps;i++)
         {
             DiscoveryItem item;
-
+            
+            item.characteristic.Prop = (pMsg->msg.readByTypeRsp.dataList[2+(i*pMsg->msg.readByTypeRsp.len)]);
             item.characteristic.Handle = (pMsg->msg.readByTypeRsp.dataList[3+(i*pMsg->msg.readByTypeRsp.len)]<<8)+pMsg->msg.readByTypeRsp.dataList[4+(i*pMsg->msg.readByTypeRsp.len)];
             item.characteristic.UUID = (pMsg->msg.readByTypeRsp.dataList[5+(i*pMsg->msg.readByTypeRsp.len)]<<8)+pMsg->msg.readByTypeRsp.dataList[6+(i*pMsg->msg.readByTypeRsp.len)];
             GenericList_add(&extitem->result,&item,sizeof(DiscoveryItem));

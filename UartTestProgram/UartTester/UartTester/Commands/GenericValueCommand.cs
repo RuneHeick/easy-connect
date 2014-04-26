@@ -156,11 +156,12 @@ namespace UartTester.Commands
                     List<byte> packet = new List<byte>();
                     packet.Add(reWrSub);
                     packet.Add(Format.Value);
-                    packet.Add(MaxSize);
+                    
                     packet.Add((byte)GUI);
                     packet.Add((byte)GUIcolor);
                     packet.Add(GPIO);
                     packet.AddRange(descript);
+                    packet.Add(MaxSize);
 
                     return packet.ToArray();
                 }
@@ -180,10 +181,11 @@ namespace UartTester.Commands
                     Format.Value = value[1];
 
                     GUI = (GUIFormat) value[2];
-                    MaxSize = value[3];
-                    GUIcolor= (GuiColor) value[4];
-                    GPIO = value[5];
-                    
+        
+                    GUIcolor= (GuiColor) value[3];
+                    GPIO = value[4];
+
+                    MaxSize = value[5];
                     byte[] descrip = new byte[value.Length - 6];
                     Array.Copy(value, 6, descrip, 0, value.Length - 6);
                     Description = Encoding.UTF8.GetString(descrip);

@@ -92,3 +92,5 @@ void SmartCommandsManger_AddHandleToUpdate(uint16 handel);
 GenericValue* GetCharacteristic(uint8 service,uint8 characteristic);
 
 uint16 GetCharacteristicHandel(uint8 service,uint8 characteristic);
+
+uint16 SmartCommandsManger_GetUpdateHandle(uint8 ServiceIndex);

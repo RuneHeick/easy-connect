@@ -12,4 +12,4 @@ extern void InitState_Exit();
 //GAP_ADTYPE_FLAGS_NON                    
 //GAP_ADTYPE_FLAGS_LIMITED
 //GAP_ADTYPE_FLAGS_GENERAL
-extern void Setup_discoverableMode(uint8 mode, bool hasData);
+extern void Setup_discoverableMode(uint8 mode, bool hasData,uint16 handel);

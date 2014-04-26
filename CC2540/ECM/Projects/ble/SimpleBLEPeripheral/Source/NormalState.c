@@ -36,10 +36,12 @@
 //variabels 
 static uint8 TarskID;
 static bool requestRead = false; 
+static uint16 NewUpdateHandle = 0; 
 //prototypes
 static void ECConnectionChanged(ECC_Status_t newState);
-static void hasApplicationUnreadData(bool hasUnreadData);
+static void hasApplicationUnreadData(bool hasUnreadData, uint16 handle);
 
+static ECC_Status_t currentState = DISCONNECTED;
 
 //functions
 uint16 NormalState_ProcessEvent( uint8 task_id, uint16 events )
@@ -89,41 +91,48 @@ void NormalState_Exit()
 
 static void ECConnectionChanged(ECC_Status_t newState)
 {
+  currentState = newState;
+  
   switch(newState)
   {
     case CONNECTED_ACCEPTED:
       {
-        Setup_discoverableMode(GAP_ADTYPE_FLAGS_NON,requestRead);
+        printf("CA");
         SimpleProfile_SetItemLocked(false); //making profiles RW'abel 
       }
       break; 
     case CONNECTED_NOTACCEPTED:
       {
+        printf("CN");
         SimpleProfile_SetItemLocked(true); //making profiles non RW'abel 
       }
       break; 
     case DISCONNECTED:
       {
-        Setup_discoverableMode(GAP_ADTYPE_FLAGS_GENERAL,requestRead);
+        printf("Dd");
+        Setup_discoverableMode(GAP_ADTYPE_FLAGS_GENERAL,requestRead,NewUpdateHandle);
         SimpleProfile_SetItemLocked(true); //making profiles non RW'abel 
       }
       break;
     case CONNECTED_SLEEPING:
       {
+        printf("Ss");
         if(requestRead)
-          Setup_discoverableMode(GAP_ADTYPE_FLAGS_GENERAL,requestRead);
+          Setup_discoverableMode(GAP_ADTYPE_FLAGS_GENERAL,requestRead,NewUpdateHandle);
         else
-          Setup_discoverableMode(GAP_ADTYPE_FLAGS_NON,requestRead);
+          Setup_discoverableMode(GAP_ADTYPE_FLAGS_NON,requestRead,NewUpdateHandle);
         SimpleProfile_SetItemLocked(true); //making profiles non RW'abel 
       }
       break;
   }
-  
+
 }
 
-static void hasApplicationUnreadData(bool hasUnreadData)
+static void hasApplicationUnreadData(bool hasUnreadData, uint16 handle)
 {
-  requestRead = hasUnreadData; 
-  if(hasUnreadData == true)
-    Setup_discoverableMode(GAP_ADTYPE_FLAGS_GENERAL,requestRead);
+  requestRead = hasUnreadData;
+  NewUpdateHandle = handle;
+  
+  if(hasUnreadData == true && currentState == CONNECTED_SLEEPING)
+    Setup_discoverableMode(GAP_ADTYPE_FLAGS_GENERAL,requestRead,handle);
 }

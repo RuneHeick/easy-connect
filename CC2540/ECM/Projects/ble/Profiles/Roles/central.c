@@ -124,14 +124,19 @@ static uint8  gapCentralRoleMaxScanRes = 0;
 
 
 
-static uint8  gapRole_AdvertDataLen = 3;
+static uint8  gapRole_AdvertDataLen = 7;
 static uint8  gapRole_AdvertData[B_MAX_ADV_LEN] =
 {
   0x02,             // length of this data
   GAP_ADTYPE_FLAGS, // AD Type = Flags
   // BR/EDR not supported
   GAP_ADTYPE_FLAGS_BREDR_NOT_SUPPORTED,
-  0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+  
+  0x03,
+  GAP_ADTYPE_MANUFACTURER_SPECIFIC,
+  0xEC,
+  0xF1,
+  0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 };
 
 static uint8  gapRole_ScanRspDataLen = 5;
@@ -151,6 +156,9 @@ static void gapCentralRole_timerCB( uint8 *pData );
 /*********************************************************************
  * PUBLIC FUNCTIONS
  */
+
+
+
 
 /**
  * @brief   Start the device in Central role.  This function is typically
@@ -279,7 +287,9 @@ bStatus_t GAPCentralRole_GetParameter( uint16 param, void *pValue )
  */
 bStatus_t GAPCentralRole_TerminateLink( uint16 connHandle )
 {
- return GAP_TerminateLinkReq( gapCentralRoleTaskId, connHandle ) ;
+  bStatus_t stat = GAP_TerminateLinkReq( gapCentralRoleTaskId, connHandle ) ;
+  
+  return stat;
 }
 
 /**

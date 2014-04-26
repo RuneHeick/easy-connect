@@ -79,6 +79,7 @@
 #include "InitState.h"
 #include "NormalState.h"
 #include "State.h"
+#include "ResetManager.h"
 
 /*********************************************************************
  * MACROS
@@ -353,7 +354,7 @@ static void peripheralStateNotificationCB( gaprole_States_t newState )
 
     case GAPROLE_ERROR:
       {
-        
+        ResetManager_Reset(false); 
       }
       break;
 

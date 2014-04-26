@@ -163,15 +163,9 @@ bStatus_t SimpleProfile_AddService( uint32 services )
   
   SmartCommandsManger_CompileServices();
   
-  do
-  {
   status = GATTServApp_RegisterService( Testservice->llReg, 
                                           SmartCommandsManger_ElementsInService(Testservice),
                                           &simpleProfileCBs );
-  
-  
-  }while(status != SUCCESS); 
-  
   
   return ( status );
 }
@@ -218,7 +212,7 @@ bStatus_t SimpleProfile_SetParameter( uint16 address, uint8 len, void *value )
     SmartCommandsManger_AddHandleToUpdate(handel);
     simpleProfile_CCCUpdate(SmartCommandServices[service-1]);
     if(unreadValueChange != NULL)
-      unreadValueChange(true);  
+      unreadValueChange(true,SmartCommandsManger_GetUpdateHandle(service-1));  
   }
   else
   {
@@ -377,7 +371,7 @@ static uint8 simpleProfile_ReadAttrCB( uint16 connHandle, gattAttribute_t *pAttr
       case UPDATE_CHARACTERISTICS_UUID:
         *pLen = SmartCommandsManger_GetUpdate(pValue, maxLen);
         if(unreadValueChange != NULL)
-          unreadValueChange(false); 
+          unreadValueChange(false,0); 
         break;
         
       default:
