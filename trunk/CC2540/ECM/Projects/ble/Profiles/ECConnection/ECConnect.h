@@ -1,7 +1,7 @@
 #pragma once 
 
 
-#define SYSID_SIZE 20
+#define SYSID_SIZE 8
 #define ECCONNECT_STARTTIME 60000 // in ms
 #define TIMER_PERIODE 1000 // in ms
 

@@ -91,7 +91,7 @@ static bool IsInit = false;
 static uint8 ScanLen = 0; 
 
 void InitState_HandelUartPacket(osal_event_hdr_t * msg);
-bool addChar(uint8* buffer, uint8 count);
+uint16 addChar(uint8* buffer, uint8 count);
 
 uint8 GAPManget_SetupName(char* DeviceName, uint8 nameSize)
 {
@@ -130,7 +130,7 @@ uint8 GAPManget_SetupName(char* DeviceName, uint8 nameSize)
     return size; 
 }
 
-void Setup_discoverableMode(uint8 mode, bool hasData)
+void Setup_discoverableMode(uint8 mode, bool hasData,uint16 handel)
 {
   if(mode == GAP_ADTYPE_FLAGS_NON || mode == GAP_ADTYPE_FLAGS_LIMITED || 
      mode == GAP_ADTYPE_FLAGS_GENERAL)
@@ -156,31 +156,26 @@ void Setup_discoverableMode(uint8 mode, bool hasData)
     0,
     0,
     0,
+    0,
+    0,
     };
-    advertlen = sizeof(advertData)-4; 
+    advertlen = sizeof(advertData)-6; 
     
     if(hasData)
     {
       // three-byte broadcast of the data "1 2 3"
-      advertData[7] = 0x03;   // length of this data including the data type byte
+      advertData[7] = 0x05;   // length of this data including the data type byte
       advertData[8] = GAP_ADTYPE_MANUFACTURER_SPECIFIC;      // manufacturer specific advertisement data type
       advertData[9] = 0xEC;
       advertData[10] = 0xDA; // EC application has DAta 
+      advertData[11] = (uint8)handel;
+      advertData[12] = (uint8)(handel>>8);
       
-      advertlen += 4;
+      advertlen += 6;
     }
-    
-    uint8 initial_advertising_enable = TRUE;
-  
-    // By setting this to zero, the device will go into the waiting state after
-    // being discoverable for 30.72 second, and will not being advertising again
-    // until the enabler is set back to TRUE
-    uint16 gapRole_AdvertOffTime = 0;
     
     // Set the GAP Role Parameters
     GAPRole_SetParameter( GAPROLE_ADVERT_DATA, advertlen , advertData );
-    GAPRole_SetParameter( GAPROLE_ADVERT_ENABLED, sizeof( uint8 ), &initial_advertising_enable );
-    GAPRole_SetParameter( GAPROLE_ADVERT_OFF_TIME, sizeof( uint16 ), &gapRole_AdvertOffTime );
   }
 }
 
@@ -281,6 +276,9 @@ void InitState_HandelUartPacket(osal_event_hdr_t * msg)
       }
        break;
     }
+    
+    // ***** add smartcommand ***** // 
+    
     case COMMAND_SMARTFUNCTION:
     {
       if(NULL != SmartCommandsManger_CreateService(RX.bufferPtr,RX.count))
@@ -289,41 +287,62 @@ void InitState_HandelUartPacket(osal_event_hdr_t * msg)
       }
        break;
     }
+    
     case COMMAND_GENRICVALUE:
     {
-      addChar(RX.bufferPtr,RX.count); 
-      
-       break;
+      uint16 itemhandle = addChar(RX.bufferPtr,RX.count);
+      if(itemhandle != 0)
+      {
+        ack[1] = (uint8)(itemhandle>>8);
+        ack[2] = (uint8)(itemhandle);
+        Uart_Send_Response(ack,3);
+      }
+      break;
     }
+    
     case COMMAND_REANGES:
     {
-      
-     
+       if(SmartCommandsManger_addRange(RX.bufferPtr,RX.count))
+       {
+         Uart_Send_Response(ack,1);
+       }
        break;
     }
   }
   
 }
 
-bool addChar(uint8* buffer, uint8 count)
+uint16 addChar(uint8* buffer, uint8 count)
 {
   
   if(count>6)
   {
     bool subscription = (buffer[0]>>2)&0x01; 
+    Subscription sub = NONE;
+    if(subscription)
+      sub = YES;
+    
     bool read = (buffer[0]>>1)&0x01; 
-    bool write = (buffer[0]>>1)&0x01;
+    bool write = (buffer[0])&0x01;
+    
+    uint8 rdwr = 0; 
+    if(read)
+      rdwr = rdwr| GATT_PERMIT_READ;
+    if(write) 
+      rdwr = rdwr|GATT_PERMIT_WRITE;
+    
     PresentationFormat Format;
     Format.Format = buffer[1];
     GUIPresentationFormat FormatByteSize = (GUIPresentationFormat){buffer[2],buffer[3]};
     uint8 GPIO = buffer[4];
+    uint8 size = buffer[5];
     
-    return false;//uint16 SmartCommandsManger_addCharacteristic(uint8 initialValueSize,uint8* description, uint8 descriptioncount, GUIPresentationFormat guiPresentationFormat, PresentationFormat typeFormat, Subscription subscription, uint8 premission);
     
+    
+    return SmartCommandsManger_addCharacteristic(size,&buffer[6],count-6, FormatByteSize, Format,sub , rdwr); 
   }
   
-  
-    return false; 
+  return false; 
 }
 
 void InitState_Enter(uint8 tarskID)
@@ -368,7 +387,7 @@ void InitState_Exit()
     
     ScanLen = GAPManget_SetupName("TEST",4);
     GAPRole_SetParameter( GAPROLE_SCAN_RSP_DATA, ScanLen*sizeof( uint8 ) , scanRspData.pValue );
-    Setup_discoverableMode(DEFAULT_DISCOVERABLE_MODE,false);
+    Setup_discoverableMode(DEFAULT_DISCOVERABLE_MODE,false,0);
     
     
     

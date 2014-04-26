@@ -228,6 +228,19 @@ bool SmartCommandsManger_RemoveCharacteristic(SmartService* service,GenericChara
   return false; 
 }
 
+uint16 SmartCommandsManger_GetUpdateHandle(uint8 ServiceIndex)
+{
+  if(SmartCommandServices_Count>0)
+  {
+    SmartService* ser = SmartCommandServices[ServiceIndex];
+    if(ser->llReg != NULL)
+    {
+      return ser->llReg[4].handle; 
+    }
+  }
+  return 0; 
+}
+
 bool SmartCommandsManger_CompileServices()
 {
   uint8 index = 0; 

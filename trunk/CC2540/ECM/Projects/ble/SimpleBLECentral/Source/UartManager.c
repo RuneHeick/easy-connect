@@ -9,22 +9,33 @@
 #define MAXPACKETSIZE 100
 
 static List uartQueue; 
+__xdata __no_init uint8 PrimaryMac[6] @ 0x780E;  //flash of the Mac 
 
+static uint8 TaskId = 0; 
+static uint16 UartServiceEvent = 0; 
 
-void UartManager_Init(uint8 TarskId)
+void UartManager_Init(uint8 tarskId, uint16 eventhandle)
 {
   uartQueue = GenericList_create();
-  Uart_Subscribe(TarskId,SystemInfo);
-  Uart_Subscribe(TarskId,Reset);
+  TaskId = tarskId;
+  UartServiceEvent = eventhandle;
+  
+  Uart_Subscribe(TaskId,SystemInfo);
+  Uart_Subscribe(TaskId,Reset);
 
-  Uart_Subscribe(TarskId,ReadEvent);
-  Uart_Subscribe(TarskId,WriteEvent);
-  Uart_Subscribe(TarskId,DiscoverEvent);
-  Uart_Subscribe(TarskId,AddDeviceEvent);
+  Uart_Subscribe(TaskId,ReadEvent);
+  Uart_Subscribe(TaskId,WriteEvent);
+  Uart_Subscribe(TaskId,DiscoverEvent);
+  Uart_Subscribe(TaskId,AddDeviceEvent);
 }
 
 
 static void Send(TXStatus status)
+{
+  osal_set_event(TaskId,UartServiceEvent); // to Allow response to return 
+}
+
+void UartManager_DequeueEvent()
 {
   if(uartQueue.count>0 )
   {
@@ -36,7 +47,6 @@ static void Send(TXStatus status)
     }
   }
 }
-
 
 
 //*****************************************************************************
@@ -59,6 +69,58 @@ void SendDeviceInfo(ScanResponse_t* item)
   }
 }
 
+void SendName()
+{
+  if(DeviceName.status == READY)
+  {
+    uint8 len = osal_strlen(DeviceName.pValue);
+    uint8* data = osal_mem_alloc(len+COMMANDLENGTH);
+    if(data)
+    {
+      data[0] = NameEvent;
+      osal_memcpy(&data[COMMANDLENGTH],DeviceName.pValue,len);
+      GenericList_add(&uartQueue,data,len+COMMANDLENGTH);  
+      osal_mem_free(data);
+      Send(SUCSSES);
+    }
+  }
+  
+}
+
+
+void SendMac()
+{
+    uint8 len = B_ADDR_LEN+COMMANDLENGTH;
+    uint8* data = osal_mem_alloc(len);
+    
+    if(data)
+    {
+      data[0] = AddrRqEvent;
+      osal_memcpy(&data[COMMANDLENGTH],PrimaryMac,B_ADDR_LEN);
+      GenericList_add(&uartQueue,data,len);  
+      osal_mem_free(data);
+      Send(SUCSSES);
+    }
+  
+}
+
+void SendPassCode()
+{
+  if(Password.status == READY)
+  {
+    uint8 len = osal_strlen(Password.pValue);
+    uint8* data = osal_mem_alloc(len+COMMANDLENGTH);
+    if(data)
+    {
+      data[0] = PassCodeEvent;
+      osal_memcpy(&data[COMMANDLENGTH],Password.pValue,len);
+      GenericList_add(&uartQueue,data,len+COMMANDLENGTH);  
+      osal_mem_free(data);
+      Send(SUCSSES);
+    }
+  }
+}
+
 void SendDataCommand(EventQueueRWItem_t* item)
 {
   uint16 len = GenericList_TotalSize(&item->response);
@@ -70,7 +132,8 @@ void SendDataCommand(EventQueueRWItem_t* item)
     {
       data[0] = DataEvent;
       osal_memcpy(&data[COMMANDLENGTH],item->base.addr,B_ADDR_LEN);
-      osal_memcpy(&data[COMMANDLENGTH+B_ADDR_LEN],&item->item.read.handle,HANDELLENGTH);
+      uint8 handle[] = {(uint8)(item->item.read.handle>>8), (uint8)item->item.read.handle};
+      osal_memcpy(&data[COMMANDLENGTH+B_ADDR_LEN],handle,HANDELLENGTH);
       
       for(uint8 i = 0; i<item->response.count; i++)
       {
@@ -139,12 +202,21 @@ void SendServicesCommand(EventQueueServiceDirItem_t* item)
         data[packetCount++] = (uint8)(val->service.ServiceUUID);
                  
       }
+      else if(item->type == Descriptor)
+      {
+        data[packetCount++] = (uint8)(val->descriptors.Handle >> 8);
+        data[packetCount++] = (uint8)(val->descriptors.Handle);
+        data[packetCount++] = (uint8)(val->descriptors.UUID >> 8);
+        data[packetCount++] = (uint8)(val->descriptors.UUID);
+      }
       else
       {
+        data[packetCount++] = (uint8)(val->characteristic.Prop);
         data[packetCount++] = (uint8)(val->characteristic.Handle >> 8);
         data[packetCount++] = (uint8)(val->characteristic.Handle);
         data[packetCount++] = (uint8)(val->characteristic.UUID >> 8);
         data[packetCount++] = (uint8)(val->characteristic.UUID);
+        
       }
       
       

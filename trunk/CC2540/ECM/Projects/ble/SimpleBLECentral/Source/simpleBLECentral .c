@@ -25,15 +25,19 @@
 #include "ResetManager.h"
 #include "SystemInfo.h"
 
-#define PERIODIC_SCAN_PERIOD 10000 // in ms. Minimum = 30 sec 
+#define PERIODIC_SCAN_PERIOD 10000 // in ms. Minimum = 5 sec 
 
 #define PERIODIC_SCAN_START   (1<<5)
 #define SERVICE_DEVICE (1<<7)
+#define RESET_DEVICE (1<<8)
+#define SEND_SYSTEMINFO (1<<9)
+#define SEND_UART_DEQUEUEEVENT (1<<10)
 
 #define MAX_CONNECTED_DEVICES 10
+#define CHANGEWAITTIME 1000
 
 // time before an connection update; 
-#define START_UPDATETIME 10000
+#define START_UPDATETIME 20000
 
 /*********************************************************************
  * TYPEDEFS
@@ -62,7 +66,7 @@ static uint8 simpleBLETaskId;
 static List DevicesToService; 
 
 static uint32 SystemClockLastUpdate; 
-
+static bool isScanning = false; 
 
 /*********************************************************************
  * LOCAL FUNCTIONS
@@ -70,10 +74,10 @@ static uint32 SystemClockLastUpdate;
 static void simpleBLECentral_ProcessOSALMsg( osal_event_hdr_t *pMsg );
 static void scanComplete(void* event);
 static void ReadUpdateHandelsComplete(void* event);
-
+static void ScanCompleteFail(void* event);
 static void scheduleUpdate();
-static void service_addKnownDevice(uint8* addr, uint16 UpdateTimeHandel, uint16 UpdateHandel);
-static void service_addUnknownDevice(uint8* addr, uint16 UpdateTimeHandel,uint16 SysIdHandel , uint16 UpdateHandel);
+static void service_addKnownDevice(uint8* addr, uint16 UpdateTimeHandel);
+static void service_addUnknownDevice(uint8* addr, uint16 UpdateTimeHandel,uint16 SysIdHandel);
 void service_doService(AcceptedDeviceInfo* device);
 static void ReadValueCompleteFail(void* event);
 static void ReadValueComplete(void* event);
@@ -98,13 +102,13 @@ static void scheduleUpdate()
 }
 
 // **** ADD DEVICE TO EC CONNECTION UPDATE SERVICE ****// 
-static void service_addUnknownDevice(uint8* addr, uint16 UpdateTimeHandel,uint16 SysIdHandel, uint16 UpdateHandel )
+static void service_addUnknownDevice(uint8* addr, uint16 UpdateTimeHandel,uint16 SysIdHandel)
 {
   Queue_addWrite(SystemID,SYSIDSIZE,addr,SysIdHandel, NULL, ReadValueCompleteFail);
-  service_addKnownDevice(addr,UpdateTimeHandel, UpdateHandel);
+  service_addKnownDevice(addr,UpdateTimeHandel);
 }
 
-static void service_addKnownDevice(uint8* addr, uint16 UpdateTimeHandel, uint16 UpdateHandel)
+static void service_addKnownDevice(uint8* addr, uint16 UpdateTimeHandel)
 {
   uint8 i; 
   AcceptedDeviceInfo itemToAdd; 
@@ -125,7 +129,6 @@ static void service_addKnownDevice(uint8* addr, uint16 UpdateTimeHandel, uint16 
     itemToAdd.KeepAliveTime_ms = START_UPDATETIME; 
     itemToAdd.KeepAliveTimeLeft_ms = START_UPDATETIME;
     itemToAdd.KeppAliveHandel = UpdateTimeHandel; // to the ECConnect time char
-    itemToAdd.UpdateHandel = UpdateHandel; // to the update char
     GenericList_add(&DevicesToService,(uint8*)&itemToAdd,sizeof(AcceptedDeviceInfo));
     service_doService(&itemToAdd); 
     
@@ -140,7 +143,7 @@ void service_doService(AcceptedDeviceInfo* device)
   uint32 writevalue = device->KeepAliveTimeLeft_ms*2+100; 
   uint8 write[4] = {(uint8)writevalue,(uint8)(writevalue>>8),(uint8)(writevalue>>16),(uint8)(writevalue>>24)};
   Queue_addWrite(write,sizeof(write),device->addr,device->KeppAliveHandel, NULL, ReadValueCompleteFail);
-  
+  printf("Up"); 
   scheduleUpdate();
 }
 
@@ -175,6 +178,7 @@ void DecrimentUpdateWait(uint32 Ticks)
 
 static void system_Startup(ResetType_t startupCode)
 { 
+  SendMac();
   SendResetCommand();
 }
 
@@ -200,7 +204,7 @@ void SimpleBLECentral_Init( uint8 task_id )
   osal_set_event( simpleBLETaskId, START_DEVICE_EVT );
   ResetManager_RegistreResetCallBack(system_Startup); 
   osal_start_reload_timer( simpleBLETaskId, PERIODIC_SCAN_START, PERIODIC_SCAN_PERIOD );
-  UartManager_Init(task_id);
+  UartManager_Init(task_id,SEND_UART_DEQUEUEEVENT);
   
 }
 
@@ -257,7 +261,11 @@ uint16 SimpleBLECentral_ProcessEvent( uint8 task_id, uint16 events )
   
   if ( events & PERIODIC_SCAN_START )
   {
-    Queue_Scan(scanComplete,NULL); 
+    if(Queue_Count() == 0)
+    {
+      isScanning = true; 
+      Queue_Scan(scanComplete,ScanCompleteFail); 
+    }
     return ( events ^ PERIODIC_SCAN_START );
   }
   
@@ -275,6 +283,27 @@ uint16 SimpleBLECentral_ProcessEvent( uint8 task_id, uint16 events )
     scheduleUpdate();
     return ( events ^ SERVICE_DEVICE );
   }
+  
+  
+  if ( events & RESET_DEVICE )
+  {
+    ResetManager_Reset(false);
+    return ( events ^ RESET_DEVICE );
+  }
+  
+  if ( events & SEND_SYSTEMINFO )
+  {
+    SendName(); 
+    SendPassCode(); 
+    return ( events ^ SEND_SYSTEMINFO );
+  }
+  
+  if ( events & SEND_UART_DEQUEUEEVENT )
+  {
+    UartManager_DequeueEvent();
+    return ( events ^ SEND_UART_DEQUEUEEVENT );
+  }
+  
   // Discard unknown events
   return 0;
 }
@@ -327,11 +356,13 @@ static void RecivedAdvertisment(ScanResponse_t* item)
     {
       uint8 len = item->pEvtData[i];
       uint8 command = item->pEvtData[i+1];
-      if(command==GAP_ADTYPE_MANUFACTURER_SPECIFIC && len == 3)
+      if(command==GAP_ADTYPE_MANUFACTURER_SPECIFIC && len == 5)
       {
-        if(item->pEvtData[i+2]==0xEC && item->pEvtData[i+3]==0xDA && dev->UpdateHandel != 0)
+        if(item->pEvtData[i+2]==0xEC && item->pEvtData[i+3]==0xDA)
         {
-          Queue_addRead(dev->addr,dev->UpdateHandel,ReadUpdateHandelsComplete,ReadValueCompleteFail);
+          uint16 updatehandel = item->pEvtData[i+4] + (item->pEvtData[i+5]<<8);
+          if(updatehandel != 0)
+            Queue_addRead(dev->addr,updatehandel,ReadUpdateHandelsComplete,ReadValueCompleteFail);
           break; 
         }
       }
@@ -351,8 +382,9 @@ static void DeviceFound(ScanResponse_t* item)
 
 static void scanComplete(void* event)
 {
+  isScanning = false; 
   ConnectionEvents_t* scan_event = (ConnectionEvents_t*)event;
-   List* foundDevices = &scan_event->scan.response;
+  List* foundDevices = &scan_event->scan.response;
   ScanResponse_t* resp;
   
   for(uint8 i = 0; i<foundDevices->count;i++)
@@ -364,6 +396,11 @@ static void scanComplete(void* event)
      if(resp->eventType == GAP_ADTYPE_SCAN_RSP_IND)
        DeviceFound(resp); 
   }
+}
+
+static void ScanCompleteFail(void* event)
+{
+  isScanning = false; 
 }
 
 //****************************************************************************
@@ -438,15 +475,24 @@ static void ServiceDirComplete(void* event)
 //     Received command 
 //*****************************************************************************
 
+void SystemInfoValueChange()
+{
+  osal_start_timerEx(simpleBLETaskId,SEND_SYSTEMINFO,CHANGEWAITTIME);
+}
+
+//*****************************************************************************
+//     Received command 
+//*****************************************************************************
+
 static void handle_sysInfo(PayloadBuffer* rx)
 {
-  if(rx->count>SYSIDSIZE+2)
+  if(rx->count>SYSIDSIZE)
   {
    osal_memcpy(SystemID,rx->bufferPtr,SYSIDSIZE);
    uint8 status = rx->bufferPtr[SYSIDSIZE];
-   GenericValue_SetValue(&DeviceName,&rx->bufferPtr[SYSIDSIZE+1],rx->count-SYSIDSIZE-1);
    if(status == 0)
    {
+    SystemInfo_Change(SystemInfoValueChange);
     ConnectionManager_Start(false);
    }
    else
@@ -454,20 +500,14 @@ static void handle_sysInfo(PayloadBuffer* rx)
   }
 }
 
-static void handle_Reset(PayloadBuffer* rx)
-{
-  ResetManager_Reset(false);
-}
-
 static void handle_AddDevice(PayloadBuffer* rx)
 {
   if(rx->count >= B_ADDR_LEN+3*ATT_BT_UUID_SIZE)
   {
-    uint16 UpdateHandle = (rx->bufferPtr[B_ADDR_LEN]<<8)+ rx->bufferPtr[B_ADDR_LEN+1];
+    uint16 PassCodeHandle = (rx->bufferPtr[B_ADDR_LEN]<<8)+ rx->bufferPtr[B_ADDR_LEN+1];
     uint16 TimeHandle = (rx->bufferPtr[B_ADDR_LEN+2]<<8)+ rx->bufferPtr[B_ADDR_LEN+3];
-    uint16 PassCodeHandle = (rx->bufferPtr[B_ADDR_LEN+4]<<8)+ rx->bufferPtr[B_ADDR_LEN+5];
     
-    service_addUnknownDevice(rx->bufferPtr,TimeHandle,PassCodeHandle,UpdateHandle);
+    service_addUnknownDevice(rx->bufferPtr,TimeHandle,PassCodeHandle);
   }
 }
 
@@ -518,7 +558,7 @@ void UartManager_HandelUartPacket(osal_event_hdr_t * msg)
       handle_sysInfo(&RX);
       break;
     case Reset:
-      handle_Reset(&RX);
+      osal_set_event(simpleBLETaskId,RESET_DEVICE); // to Allow response to return 
       break;
     case AddDeviceEvent:
       handle_AddDevice(&RX);

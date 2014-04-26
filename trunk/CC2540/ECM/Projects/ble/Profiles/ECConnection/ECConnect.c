@@ -190,6 +190,7 @@ bStatus_t ECConnect_AddService()
   ECConnect_Reset();
   KnownAddresList = GenericList_create();
   LastSysClock = osal_GetSystemClock();
+  osal_memset(SysID,0,SYSID_SIZE);
   
   VOID linkDB_Register( ECConnect_HandleConnStatusCB );  
   // Register GATT attribute list and CBs with GATT Server App
@@ -343,7 +344,10 @@ static uint8 ECConnect_WriteAttrCB( uint16 connHandle, gattAttribute_t *pAttr,
               return ATT_ERR_INVALID_OFFSET;
      
             if(len == 4)
+            {
               osal_memcpy(&UpdateTime,pValue,len);
+              printf("Up");  
+            }
             else
               status = ATT_ERR_INVALID_VALUE_SIZE;
         }
@@ -416,6 +420,11 @@ static void ECConnect_HandleConnStatusCB( uint16 connHandle, uint8 changeType )
         osal_set_event(EcConnect_TaskID,TERMINATELINK_EVENT);
       }
       break;
+  default:
+    {
+      volatile int a = 5;  
+    }
+    break; 
   }
   
 }

@@ -265,11 +265,10 @@
         </option>
         <option>
           <name>CCDefines</name>
-          <state>INT_HEAP_LEN=2500</state>
+          <state>INT_HEAP_LEN=2000</state>
           <state>HALNODEBUG</state>
           <state>OSAL_CBTIMER_NUM_TASKS=1</state>
           <state>HAL_AES_DMA=TRUE</state>
-          <state>POWER_SAVING</state>
           <state>HAL_DMA=TRUE</state>
           <state>HAL_LCD=FALSE</state>
           <state>HAL_LED=FALSE</state>
@@ -464,6 +463,7 @@
           <state>$PROJ_DIR$\..\..\common\npi\npi_np</state>
           <state>$PROJ_DIR$\..\..\Include</state>
           <state>$PROJ_DIR$\..\..\Profiles\Roles</state>
+          <state>$PROJ_DIR$\..\..\Profiles\EasyConnectService</state>
           <state>$PROJ_DIR$\..\..\Profiles\SimpleProfile</state>
           <state>$PROJ_DIR$\..\..\SimpleBLEPeripheral\Source</state>
           <state>$PROJ_DIR$\..\Source</state>
@@ -1306,10 +1306,10 @@
   <group>
     <name>PROFILES</name>
     <file>
-      <name>$PROJ_DIR$\..\..\Profiles\Roles\centralBroadcasterProfile.c</name>
+      <name>$PROJ_DIR$\..\..\Profiles\Roles\central.c</name>
     </file>
     <file>
-      <name>$PROJ_DIR$\..\..\Profiles\Roles\centralBroadcasterProfile.h</name>
+      <name>$PROJ_DIR$\..\..\Profiles\Roles\central.h</name>
     </file>
     <file>
       <name>$PROJ_DIR$\..\..\Profiles\Roles\gap.c</name>
@@ -1328,6 +1328,18 @@
     </file>
     <file>
       <name>$PROJ_DIR$\..\..\Include\gattservapp.h</name>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\Profiles\Roles\peripheral.c</name>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\Profiles\Roles\peripheral.h</name>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\Profiles\EasyConnectService\SmartCommandsProperties.c</name>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\Profiles\EasyConnectService\SmartCommandsProperties.h</name>
     </file>
   </group>
   <group>
