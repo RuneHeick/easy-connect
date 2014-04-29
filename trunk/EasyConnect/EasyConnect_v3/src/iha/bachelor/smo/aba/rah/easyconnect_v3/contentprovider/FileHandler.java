@@ -1,9 +1,13 @@
 package iha.bachelor.smo.aba.rah.easyconnect_v3.contentprovider;
 
+import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
+import java.io.IOException;
 import java.io.PrintWriter;
 
 import android.content.Context;
@@ -14,6 +18,7 @@ public class FileHandler {
 	private final static String LOG_TAG = "FileHandler";
 	public final static String MODULE_DIR = "modules";
 	public final static String FUNCTIONS_LIST_DIR = "functionsList";
+	public final static String NET_DIR = "net";
 	
 	public FileHandler(){
 		
@@ -54,7 +59,7 @@ public class FileHandler {
 	    }
 	}
 	
-	public String ReadFromFile(Context context,String CurrentProfile, String DirType, String FileName){
+	public String ReadStringFromFile(Context context,String CurrentProfile, String DirType, String FileName){
 		File StorageDir = getStorageDir(context, CurrentProfile, DirType);
 		File myFile = new File(StorageDir, FileName);
 		
@@ -72,10 +77,32 @@ public class FileHandler {
 		    Log.i(LOG_TAG, "Read Completed!");
 		}
 		catch (Exception e) {
-		    //You'll need to add proper error handling here
 			Log.e(LOG_TAG, "Read FAILED!!!");
+			return null;
 		}
 		return text.toString();
+	}
+	
+	public byte[] ReadBytesFromFile(Context context,String CurrentProfile, String DirType, String FileName){
+		File StorageDir = getStorageDir(context, CurrentProfile, DirType);
+		File file = new File(StorageDir, FileName);
+	    int size = (int) file.length();
+	    Log.i(LOG_TAG,"Size of file: " + size);
+	    
+	    byte[] bytes = new byte[size];
+	    try {
+	        BufferedInputStream buf = new BufferedInputStream(new FileInputStream(file));
+	        buf.read(bytes, 0, bytes.length);
+	        buf.close();
+	    } catch (FileNotFoundException e) {
+	        e.printStackTrace();
+	    } catch (IOException e) {
+	        e.printStackTrace();
+	    }
+	    Log.i(LOG_TAG,"Size of bytes: " + bytes.length);
+	    
+	    
+		return bytes;
 	}
 	
 	public File getStorageDir(Context context,String CurrentProfile, String dir) {
