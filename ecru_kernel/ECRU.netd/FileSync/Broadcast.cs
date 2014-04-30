@@ -1,4 +1,5 @@
 ﻿using System;
+using ECRU.Utilities.HelpFunction;
 using Microsoft.SPOT;
 using System.Net;
 using System.Net.Sockets;

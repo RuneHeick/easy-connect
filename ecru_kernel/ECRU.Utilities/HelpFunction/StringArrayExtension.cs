@@ -95,5 +95,20 @@ namespace ECRU.Utilities.HelpFunction
 
         }
 
+        //Has element
+        public static bool HasElement(this string[] elements, string element)
+        {
+            var result = false;
+            foreach (var s in elements)
+            {
+                if (s == element)
+                {
+                    result = true;
+                }
+            }
+
+            return result;
+        }
+
     }
 }

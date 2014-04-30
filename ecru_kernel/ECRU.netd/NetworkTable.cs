@@ -61,14 +61,30 @@ namespace ECRU.netd
 
         private static void Add(Neighbour neighbour)
         {
-            //Add unit
-            Neighbours[neighbour.Mac] = neighbour;
+            if (!Neighbours.Contains(neighbour.Mac))
+            {
+                //Add unit
+                Neighbours[neighbour.Mac] = neighbour;
 
-            //Update netstate ip list
-            netstateIPList = netstateIPList.Add(neighbour.IP.ToString());
+                //Update netstate ip list
+                netstateIPList = netstateIPList.Add(neighbour.IP.ToString());
 
-            //Call event
-            UpdatedUnit(neighbour);
+                //Call event
+                UpdatedUnit(neighbour);
+            }
+            else
+            {
+                var neb = Neighbours[neighbour.Mac] as Neighbour;
+
+                //if ip not identical - device has received new IP
+                if (neb == null || neb.IP.ToString() == neighbour.IP.ToString()) return;
+                
+                //overwrite unit
+                Neighbours[neighbour.Mac] = neighbour;
+
+                //Call event
+                UpdatedUnit(neighbour);
+            }
         }
 
         private static void Remove(Neighbour neighbour)
@@ -154,9 +170,9 @@ namespace ECRU.netd
 
             md5State.HashCore(buffer, 0, buffer.Length);
 
-            var hashresult = md5State.HexStr();
+            _netstate = md5State.HexStr();
 
-            Debug.Print("Netstate: " + hashresult);
+            Debug.Print("Netstate: " + _netstate);
 
             _isInSync = true;
 
@@ -166,7 +182,7 @@ namespace ECRU.netd
                 _isInSync = false;
             }
 
-            NetstateChanged(hashresult);
+            NetstateChanged(_netstate);
         }
 
     }

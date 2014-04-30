@@ -70,12 +70,10 @@ namespace ECRU
                 Debug.Print("Network error: " + exception.Message + " stacktrace: " + exception.StackTrace);
             }
 
-            EventBus.Subscribe(typeof(ConnectionRequestMessage), test2);
-
             while (true)
             {
-                Thread.Sleep(60000);
-                EventBus.Publish(new NewConnectionMessage { ConnectionCallback = test, ConnectionType = "hello", Receiver = "B3E795DE1C11".FromHex(), Sender = "B3E795DE1C11".FromHex() });
+                EventBus.Publish(new NewConnectionMessage { ConnectionCallback = test, ConnectionType = "RequestDevices", Receiver = "B3E795DE1C11".FromHex(), Sender = "B3E795DE1C11".FromHex() });
+                Thread.Sleep(10000);
             }
             
             Thread.Sleep(Timeout.Infinite);
@@ -83,24 +81,48 @@ namespace ECRU
 
         public static void test(Socket s)
         {
-            if (s != null)
+            using (s)
             {
-                var connectioninfo = s.RemoteEndPoint as IPEndPoint;
-                Debug.Print("Connected to: " + connectioninfo.Address + ":" + connectioninfo.Port);
+                try
+                {
+                    var connectioninfo = s.RemoteEndPoint as IPEndPoint;
+                    if (connectioninfo != null)
+                        Debug.Print("Connected to: " + connectioninfo.Address + ":" + connectioninfo.Port);
+
+                    var waitingForData = true;
+
+                    while (waitingForData)
+                    {
+                        waitingForData = !s.Poll(10, SelectMode.SelectRead) && !s.Poll(10, SelectMode.SelectError);
+
+                        if (s.Available > 0)
+                        {
+                            var availableBytes = s.Available;
+
+                            var buffer = new byte[availableBytes];
+
+                            var bytesReceived = s.Receive(buffer);
+
+                            if (bytesReceived == availableBytes)
+                            {
+                                Debug.Print("Got devices" + buffer.GetString());
+                            }
+                        }
+                    }
+                }
+                catch (Exception exception)
+                {
+                    Debug.Print("Network error: " + exception.Message + " stacktrace: " + exception.StackTrace);
+                }
+                finally
+                {
+                    if (s != null)
+                    {
+                        s.Close();
+                    }
+                }
             }
         }
 
-        public static void test2(object message)
-        {
-            if (message != null)
-            {
-                var msg = message as ConnectionRequestMessage;
-                Debug.Print("connection request type: " + msg.connectionType);
-
-                var socket = msg.GetSocket();
-
-                Debug.Print("connection accepted: " + socket.RemoteEndPoint);
-            }
-        }
     }
 }

@@ -115,5 +115,16 @@ namespace ECRU.Utilities.HelpFunction
             }
             return arr1;
         }
+
+
+        public static byte[] Add(this byte[] elements, byte[] bytes)
+        {
+            var result = new byte[elements.Length + bytes.Length];
+
+            Array.Copy(elements, 0, result, 0, elements.Length);
+            Array.Copy(bytes, 0, result, elements.Length, bytes.Length);
+
+            return result;
+        }
     }
 }

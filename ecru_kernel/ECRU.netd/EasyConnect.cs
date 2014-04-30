@@ -170,9 +170,9 @@ namespace ECRU.netd
                 if (msg == null) return;
                 var send = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
 
-                var ip = NetworkTable.GetAddress(msg.Receiver.ToHex());
+                //var ip = NetworkTable.GetAddress(msg.Receiver.ToHex());
 
-                //var ip = IPAddress.GetDefaultLocalAddress();
+                var ip = IPAddress.GetDefaultLocalAddress();
 
                 var destination = new IPEndPoint(ip, Port);
 
@@ -248,8 +248,8 @@ namespace ECRU.netd
             //end timer
             lock (_lock)
             {
-                var timer = _connectionRequests[connection] as Timer;
-                if (timer != null) timer.Dispose();
+                var timer = _connectionRequests[connection] as ECTimer;
+                if (timer != null) timer.Stop();
             }
 
             //send message that socket is accepted
