@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Net;
 using System.Text;
 
@@ -34,6 +35,12 @@ namespace ECRU.netd
                 broadcastAddress[i] = (byte)(ipAdressBytes[i] | (subnetMaskBytes[i] ^ 255));
             }
             return new IPAddress(broadcastAddress).ToString();
+        }
+
+        public class DeviceMacList
+        {
+            public string mac { get; set; }
+            public ArrayList Devices { get; set; }
         }
     }
 }

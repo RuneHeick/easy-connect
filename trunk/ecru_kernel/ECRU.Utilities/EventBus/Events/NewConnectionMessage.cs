@@ -2,7 +2,7 @@ using System.Net.Sockets;
 
 namespace ECRU.Utilities.EventBus.Events
 {
-    public delegate void NewNetworkConnectionCallback(Socket s);
+    public delegate void NewNetworkConnectionCallback(Socket s, byte[] Receiver);
 
     public class NewConnectionMessage
     {

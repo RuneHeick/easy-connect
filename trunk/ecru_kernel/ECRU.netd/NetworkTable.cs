@@ -1,8 +1,11 @@
 using System;
 using System.Collections;
 using System.Net;
+using System.Net.Sockets;
 using ECRU.Utilities;
+using ECRU.Utilities.EventBus.Events;
 using ECRU.Utilities.HelpFunction;
+using Json.NETMF;
 using Microsoft.SPOT;
 using ECRU.Utilities.EventBus;
 
@@ -40,8 +43,8 @@ namespace ECRU.netd
         {
             UpdateNetstate();
 
-            // update MacHierachy / MacList
-            SystemInfo.ConnectionOverview.Add(neighbour.Mac.FromHex());
+            // update request devices from roomunit
+            EventBus.Publish(new NewConnectionMessage { ConnectionCallback = RequestedDevices, ConnectionType = "RequestDevices", Receiver = neighbour.Mac.FromHex(), Sender = SystemInfo.SystemMAC });
 
             // network status -> eventbus
             EventBus.Publish(new NetworkStatusMessage{isinsync = _isInSync, NetState = _netstate});
@@ -185,7 +188,83 @@ namespace ECRU.netd
             NetstateChanged(_netstate);
         }
 
+
+        private static void RequestedDevices(Socket s, byte[] receiver)
+        {
+            if (s == null)
+            {
+                var n = new Neighbour(receiver.ToHex());
+                n.IP = GetAddress(receiver.ToHex());
+                Remove(n);
+            }
+            else
+            {
+                using (s)
+                {
+                    try
+                    {
+                        var connectioninfo = s.RemoteEndPoint as IPEndPoint;
+                        if (connectioninfo != null)
+                            Debug.Print("Connected to: " + connectioninfo.Address + ":" + connectioninfo.Port);
+
+                        var waitingForData = true;
+
+                        while (waitingForData)
+                        {
+                            waitingForData = !s.Poll(10, SelectMode.SelectRead) && !s.Poll(10, SelectMode.SelectError);
+
+                            if (s.Available > 0)
+                            {
+                                var availableBytes = s.Available;
+
+                                var buffer = new byte[availableBytes];
+
+                                var bytesReceived = s.Receive(buffer);
+
+                                if (bytesReceived == availableBytes)
+                                {
+                                    var result = JsonSerializer.DeserializeString(buffer.GetString()) as Hashtable;
+
+                                    if (result != null)
+                                    {
+                                        var nMac = result["mac"] as string;
+                                        
+                                        if (nMac != null)
+                                        {
+                                            SystemInfo.ConnectionOverview.Add(nMac.FromHex());
+
+                                            var nDevices = result["Devices"] as ArrayList;
+
+                                            if (nDevices != null)
+                                                foreach (string nDevice in nDevices)
+                                                {
+                                                    SystemInfo.ConnectionOverview.Add(nMac.FromHex(), nDevice.FromHex());
+                                                }
+                                        }
+                                        
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    catch (Exception exception)
+                    {
+                        Debug.Print("Network error: " + exception.Message + " stacktrace: " + exception.StackTrace);
+                    }
+                    finally
+                    {
+                        if (s != null)
+                        {
+                            s.Close();
+                        }
+                    }
+                }
+            }
+        }
     }
+
+
+
 
     public class IPAddressNotValidException : Exception
     {

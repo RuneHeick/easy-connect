@@ -100,6 +100,8 @@ namespace ECRU.netd
             {
                 Thread.Sleep(BroadcastIntrevalSeconds*1000);
 
+                NetworkTable.CheckTable();
+
                 try
                 {
                     var result = _sendSocket.SendTo(_broadcastMessage, _broadcastEndPoint);
