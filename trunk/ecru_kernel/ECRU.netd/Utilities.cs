@@ -6,15 +6,15 @@ namespace ECRU.netd
 {
     public static class Utilities
     {
-        public static byte[] StringToBytes(this string input)
-        {
-            return Encoding.UTF8.GetBytes(input);
-        }
+        //public static byte[] StringToBytes(this string input)
+        //{
+        //    return Encoding.UTF8.GetBytes(input);
+        //}
 
-        public static string GetString(this byte[] bytes)
-        {
-            return new string(Encoding.UTF8.GetChars(bytes));
-        }
+        //public static string GetString(this byte[] bytes)
+        //{
+        //    return new string(Encoding.UTF8.GetChars(bytes));
+        //}
 
         public static string GetBroadcastAddress(string ipAddress, string subnetMask)
         {

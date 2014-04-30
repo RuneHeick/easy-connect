@@ -3,6 +3,7 @@ using System.Net;
 using System.Threading;
 using ECRU.netd.Configuration;
 using ECRU.netd.FileSync;
+using ECRU.Utilities.EventBus.Events;
 using ECRU.Utilities.Factories.ModuleFactory;
 using Microsoft.SPOT;
 using Microsoft.SPOT.Net.NetworkInformation;
@@ -89,12 +90,14 @@ namespace ECRU.netd
         {
             netd.BroadcastNetworkDiscovery.Start();
             EasyConnect.Start();
+            EventBus.Subscribe(typeof (ConnectionRequestMessage), MacSync.MacSync.RequestDevices);
         }
 
         public void Stop()
         {
             netd.BroadcastNetworkDiscovery.Stop();
             EasyConnect.Stop();
+            EventBus.Unsubscribe(typeof (ConnectionRequestMessage), MacSync.MacSync.RequestDevices);
         }
 
         public void Reset()
