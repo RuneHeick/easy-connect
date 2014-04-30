@@ -30,6 +30,15 @@ namespace ECRU.Utilities
             }
         }
 
+        public Array GetElements()
+        {
+            var list = new Array[mackList.Count];
+
+            mackList.CopyTo(list);
+
+            return list;
+        }
+
         public void Remove(byte[] mac)
         {
             try
