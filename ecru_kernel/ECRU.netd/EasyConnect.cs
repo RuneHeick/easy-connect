@@ -201,12 +201,12 @@ namespace ECRU.netd
                             switch (buffer.GetString())
                             {
                                 case "Accepted":
-                                    new Thread(() => msg.ConnectionCallback.Invoke(send)).Start();
+                                    new Thread(() => msg.ConnectionCallback.Invoke(send, msg.Receiver)).Start();
                                     waitingForData = false;
                                     break;
 
                                 default:
-                                    new Thread(() => msg.ConnectionCallback.Invoke(null)).Start();
+                                    new Thread(() => msg.ConnectionCallback.Invoke(null, msg.Receiver)).Start();
                                     waitingForData = false;
                                     break;
                             }
@@ -218,7 +218,7 @@ namespace ECRU.netd
             catch (Exception exception)
             {
                 Debug.Print("SendRequest failed: " + exception.Message + " Stacktrace: " + exception.StackTrace);
-                new Thread(() => { if (msg != null) msg.ConnectionCallback.Invoke(null); }).Start();
+                new Thread(() => { if (msg != null) msg.ConnectionCallback.Invoke(null, msg.Receiver); }).Start();
             }
             
         }

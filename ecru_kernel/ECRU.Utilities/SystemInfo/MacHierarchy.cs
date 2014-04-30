@@ -101,6 +101,15 @@ namespace ECRU.Utilities
                     for (int i = 0; i < data.Count; i++)
                     {
                         MacList maclist = (MacList)data[keys[i]];
+
+                        string k = keys[i];
+                        if (k.FromHex().ByteArrayCompare(unit))
+                        {
+                            maclist.Clear();
+                            data.Remove(k);
+                            break;
+                        }
+
                         if (maclist.Contains(unit))
                         {
                             maclist.Remove(unit); // Event Will triger remove event. 

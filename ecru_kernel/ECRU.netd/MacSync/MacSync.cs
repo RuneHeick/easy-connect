@@ -1,7 +1,9 @@
 using System;
+using System.Net.Sockets;
 using ECRU.Utilities;
 using ECRU.Utilities.EventBus.Events;
 using ECRU.Utilities.HelpFunction;
+using Json.NETMF;
 using Microsoft.SPOT;
 
 namespace ECRU.netd.MacSync
@@ -24,21 +26,32 @@ namespace ECRU.netd.MacSync
                         var sysMac = SystemInfo.SystemMAC;
                         var connectedDevices = SystemInfo.ConnectedDevices.GetElements();
 
-                        var result = "{mac: \"" + sysMac.ToHex() + "\", devices: [";
+                        var obj = new Utilities.DeviceMacList();
 
-                        if (connectedDevices.Length > 1)
+                        obj.mac = SystemInfo.SystemMAC.ToHex();
+
+                        foreach (byte[] device in connectedDevices)
                         {
-                            foreach (byte[] device in connectedDevices)
-                            {
-                                result += "\"" + device.ToHex() + "\", ";
-                            }
-                        }
-                        else if (connectedDevices.Length == 1)
-                        {
-                            result += "\"" + ((byte[])connectedDevices.GetValue(0)).ToHex() + "\"";
+                            obj.Devices.Add(device.ToHex());
                         }
 
-                        result += "] }";
+                        //var result = "{mac: \"" + sysMac.ToHex() + "\", devices: [";
+
+                        //if (connectedDevices.Length > 1)
+                        //{
+                        //    foreach (byte[] device in connectedDevices)
+                        //    {
+                        //        result += "\"" + device.ToHex() + "\", ";
+                        //    }
+                        //}
+                        //else if (connectedDevices.Length == 1)
+                        //{
+                        //    result += "\"" + ((byte[])connectedDevices.GetValue(0)).ToHex() + "\"";
+                        //}
+
+                        //result += "] }";
+
+                        var result = JsonSerializer.SerializeObject(obj);
 
                         try
                         {
@@ -68,34 +81,37 @@ namespace ECRU.netd.MacSync
 
             if (msg != null)
             {
-                if (msg.connectionType == "WhoHasDevice")
+                if (msg.connectionType == "HasDevice")
                 {
                     using (var socket = msg.GetSocket())
                     {
                         //We receive a connection where a roomunit wants to tell us that it has the device we asked about
 
-                        var sysMac = SystemInfo.SystemMAC;
-                        var connectedDevices = SystemInfo.ConnectedDevices.GetElements();
-
-                        var result = "{mac: \"" + sysMac.ToHex() + "\", devices: [";
-
-                        if (connectedDevices.Length > 1)
-                        {
-                            foreach (byte[] device in connectedDevices)
-                            {
-                                result += "\"" + device.ToHex() + "\", ";
-                            }
-                        }
-                        else if (connectedDevices.Length == 1)
-                        {
-                            result += "\"" + ((byte[])connectedDevices.GetValue(0)).ToHex() + "\"";
-                        }
-
-                        result += "] }";
-
                         try
                         {
-                            socket.Send(result.StringToBytes());
+                            var waitingForData = true;
+
+                            while (waitingForData)
+                            {
+                                waitingForData = !socket.Poll(10, SelectMode.SelectRead) && !socket.Poll(10, SelectMode.SelectError);
+
+                                if (socket.Available > 0)
+                                {
+                                    var availableBytes = socket.Available;
+
+                                    var buffer = new byte[availableBytes];
+
+                                    var bytesReceived = socket.Receive(buffer);
+
+                                    if (bytesReceived == availableBytes)
+                                    {
+                                        Debug.Print("Got device: " + buffer.ToHex());
+                                    }
+
+                                    SystemInfo.ConnectionOverview.Add(buffer.GetPart(0,6), buffer.GetPart(6,6));
+                                }
+                            }
+
                         }
                         catch (Exception exception)
                         {
@@ -108,6 +124,8 @@ namespace ECRU.netd.MacSync
                                 socket.Close();
                             }
                         }
+
+
                     }
 
                 }
@@ -116,3 +134,5 @@ namespace ECRU.netd.MacSync
 
     }
 }
+
+

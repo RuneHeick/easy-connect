@@ -70,11 +70,11 @@ namespace ECRU
                 Debug.Print("Network error: " + exception.Message + " stacktrace: " + exception.StackTrace);
             }
 
-            while (true)
-            {
-                EventBus.Publish(new NewConnectionMessage { ConnectionCallback = test, ConnectionType = "RequestDevices", Receiver = "B3E795DE1C11".FromHex(), Sender = "B3E795DE1C11".FromHex() });
-                Thread.Sleep(10000);
-            }
+            //while (true)
+            //{
+            //    EventBus.Publish(new NewConnectionMessage { ConnectionCallback = test, ConnectionType = "RequestDevices", Receiver = "B3E795DE1C11".FromHex(), Sender = "B3E795DE1C11".FromHex() });
+            //    Thread.Sleep(10000);
+            //}
             
             Thread.Sleep(Timeout.Infinite);
         }
