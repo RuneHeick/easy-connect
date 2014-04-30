@@ -244,19 +244,28 @@ namespace ECRU.netd
         
         public static Socket GetSocket(Socket connection)
         {
-
+            Socket con = null;
             //end timer
             lock (_lock)
             {
                 var timer = _connectionRequests[connection] as ECTimer;
                 if (timer != null) timer.Stop();
+
+                if (_connectionRequests.Contains(connection))
+                {
+                    //send message that socket is accepted
+                    connection.Send("Accepted".StringToBytes());
+
+                    //remove socket and timer from connection queue
+                    _connectionRequests.Remove(connection);
+
+                    //handover reference to requester
+                    con = connection;
+                }
             }
 
-            //send message that socket is accepted
-            connection.Send("Accepted".StringToBytes());
-
             //Give socket
-            return connection;
+            return con;
         }
 
     }
