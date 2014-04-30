@@ -10,10 +10,6 @@ public class ECRU {
 	public String _ECRUName;
 	public List<String> _moduleNameList = new ArrayList<String>();
 	
-	public ECRU(){
-		Log.i(LOG_TAG, "BaseConstructerCalled");
-	};
-	
 	public ECRU(String name){
 		_ECRUName = name;
 		Log.i(LOG_TAG,"ConstructerCalled");

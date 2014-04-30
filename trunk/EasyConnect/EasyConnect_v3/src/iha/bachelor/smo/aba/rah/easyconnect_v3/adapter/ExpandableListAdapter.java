@@ -23,8 +23,7 @@ public class ExpandableListAdapter extends BaseExpandableListAdapter {
     private Map<String, List<String>> laptopCollections;
     private List<String> laptops;
  
-    public ExpandableListAdapter(Activity context, List<String> laptops,
-            Map<String, List<String>> laptopCollections) {
+    public ExpandableListAdapter(Activity context, List<String> laptops, Map<String, List<String>> laptopCollections) {
         this.context = context;
         this.laptopCollections = laptopCollections;
         this.laptops = laptops;
