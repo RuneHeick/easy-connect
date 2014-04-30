@@ -70,15 +70,37 @@ namespace ECRU
                 Debug.Print("Network error: " + exception.Message + " stacktrace: " + exception.StackTrace);
             }
 
-            EventBus.Publish(new NewConnectionMessage { ConnectionCallback = test, ConnectionType = "hello", Receiver = "B3E795DE1C11".FromHex(), Sender = "B3E795DE1C11".FromHex()});
+            EventBus.Subscribe(typeof(ConnectionRequestMessage), test2);
 
+            while (true)
+            {
+                Thread.Sleep(60000);
+                EventBus.Publish(new NewConnectionMessage { ConnectionCallback = test, ConnectionType = "hello", Receiver = "B3E795DE1C11".FromHex(), Sender = "B3E795DE1C11".FromHex() });
+            }
+            
             Thread.Sleep(Timeout.Infinite);
         }
 
         public static void test(Socket s)
         {
-            var connectioninfo = s.RemoteEndPoint as IPEndPoint;
-            Debug.Print("Connected to: " + connectioninfo.Address + ":" + connectioninfo.Port);
+            if (s != null)
+            {
+                var connectioninfo = s.RemoteEndPoint as IPEndPoint;
+                Debug.Print("Connected to: " + connectioninfo.Address + ":" + connectioninfo.Port);
+            }
+        }
+
+        public static void test2(object message)
+        {
+            if (message != null)
+            {
+                var msg = message as ConnectionRequestMessage;
+                Debug.Print("connection request type: " + msg.connectionType);
+
+                var socket = msg.GetSocket();
+
+                Debug.Print("connection accepted: " + socket.RemoteEndPoint);
+            }
         }
     }
 }
