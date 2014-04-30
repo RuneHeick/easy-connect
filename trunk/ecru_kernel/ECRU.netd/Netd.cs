@@ -13,6 +13,10 @@ namespace ECRU.netd
 {
     public class Netd : IModule
     {
+
+        private IPAddress _ip;
+        private int _port;
+
         //setup subscriptions
         //setup ethernet after config
         //Network Discovery
@@ -23,16 +27,19 @@ namespace ECRU.netd
 
         public void LoadConfig(string configFilePath)
         {
-
-
+            Debug.Print("Loading NetDaemon Configuration from " + configFilePath);
             
+            _ip = IPAddress.GetDefaultLocalAddress();
+
+            _port = 4543;
+
             //wait for interfaces (Magic number dont change)
             //Thread.Sleep(3000);
 
             //var config = SD.ReadConfugurationFromFile(configFilePath);
-            //Debug.Print("Loading NetDaemon Configuration from " + configFilePath);
+            //
 
-            //Debug.Print("NetDaemon Configured");
+            //
             //throw new NotImplementedException();
 
             //Network interface configuration
@@ -59,8 +66,8 @@ namespace ECRU.netd
             }
 
             //Network Discovery Configuration
-            netd.BroadcastNetworkDiscovery.UDPPort = 4543;
-            netd.BroadcastNetworkDiscovery.LocalIP = networkConfig.EthernetInterface.IPAddress;
+            netd.BroadcastNetworkDiscovery.UDPPort = _port;
+            netd.BroadcastNetworkDiscovery.LocalIP = _ip.ToString();
             netd.BroadcastNetworkDiscovery.SubnetMask = networkAdapter.SubnetMask;
             netd.BroadcastNetworkDiscovery.BroadcastIntrevalSeconds = 30;
             netd.BroadcastNetworkDiscovery.EnableBroadcast = true;
@@ -72,10 +79,10 @@ namespace ECRU.netd
             //Network Communication Configuration
 
             //Filesync sentbroadcast config
-            Broadcast.LocalIP = networkConfig.EthernetInterface.IPAddress;
-            Broadcast.SubnetMask = networkConfig.EthernetInterface.SubnetMask;
+            //Broadcast.LocalIP = networkConfig.EthernetInterface.IPAddress;
+            //Broadcast.SubnetMask = networkConfig.EthernetInterface.SubnetMask;
 
-
+            Debug.Print("Network config done. IP: "+ _ip);
         }
 
         public void Start()

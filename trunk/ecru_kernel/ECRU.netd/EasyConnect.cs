@@ -19,7 +19,7 @@ namespace ECRU.netd
     {
 
         private static Socket _receiveSocket;
-        private static Hashtable _connectionRequests;
+        private static Hashtable _connectionRequests = new Hashtable();
         private static object _lock = new object();
 
         private static ArrayList _listenerThreadsArrayList = new ArrayList();
@@ -79,11 +79,8 @@ namespace ECRU.netd
                 while (true)
                 {
                     var connection = _receiveSocket.Accept();
-                    var buffer = new byte[4];
 
-                    var length = _receiveSocket.Receive(buffer);
-
-                    var t = new Thread(() => OnDataReceived(buffer, length, connection));
+                    var t = new Thread(() => OnDataReceived(connection));
                     _listenerThreadsArrayList.Add(t);
                     t.Start();
                 }
@@ -91,9 +88,19 @@ namespace ECRU.netd
             }
             catch (Exception exception)
             {
-                if (_receiveSocket != null && _receiveSocket.Poll(-1, SelectMode.SelectRead))
+                Debug.Print("Start network discovery listener failed: " + exception.Message + " Stacktrace: " + exception.StackTrace);
+                if (_receiveSocket != null)
                 {
-                    _receiveSocket.Close();
+                    try
+                    {
+                        _receiveSocket.Poll(-1, SelectMode.SelectRead);
+                        _receiveSocket.Close();
+                    }
+                    catch (Exception)
+                    {
+                        
+                    }
+                    
                 }
 
                 foreach (Thread t in _listenerThreadsArrayList)
@@ -103,98 +110,120 @@ namespace ECRU.netd
                         t.Abort();
                     }
                 }
-                Debug.Print("Start network discovery listener failed: " + exception.Message + " Stacktrace: " + exception.StackTrace);
             }
+        }
+
+        private static void OnDataReceived(Socket connection)
+        {
+
+            var waitingForData = true;
+
+            while (waitingForData)
+            {
+                waitingForData = !connection.Poll(10, SelectMode.SelectRead) && !connection.Poll(10, SelectMode.SelectError);
+
+                if (connection.Available > 0)
+                {
+                    var availableBytes = connection.Available;
+
+                    var buffer = new byte[availableBytes];
+
+                    var bytesReceived = connection.Receive(buffer);
+
+                    if (bytesReceived == availableBytes)
+                    {
+                        waitingForData = false;
+                        var timer = new ECTimer(ConnectionTimeout, connection, 5000, Timeout.Infinite);
+                        timer.Start();
+
+                        var msg = new ConnectionRequestMessage() { connectionType = buffer.GetString(), GetSocket = () => GetSocket(connection) };
+
+                        lock (_lock)
+                        {
+                            _connectionRequests[connection] = timer;
+                        }
+
+                        //new eventbus event with
+                        EventBus.Publish(msg);
+                    }
+                }
+            }
+
         }
 
         private static void SendRequest(object message)
         {
+            NewConnectionMessage msg = null;
             try
             {
-                var msg = message as NewConnectionMessage;
-                if (msg == null) return;
-
-                //Start Sender for EasyConnect
-                Debug.Print("Starting EasyConnect SendRequest");
-
-                var send = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-                
-                using (send)
-                {
-                    //var ip = NetworkTable.GetAddress(msg.Receiver.ToHex());
-
-                    var ip = IPAddress.GetDefaultLocalAddress();
-
-                    var destination = new IPEndPoint(ip, Port);
-
-                    send.Connect(destination);
-
-                    var length = msg.ConnectionType.StringToBytes().Length.ToBytes();
-
-                    send.Send(length);
-
-                    send.Send(msg.ConnectionType.StringToBytes());
-
-                    var receivedLength = new byte[4];
-
-                    send.Receive(receivedLength);
-
-                    var buffer = new byte[receivedLength.ToInt()];
-
-                    send.Receive(buffer);
-
-                    Debug.Print("SendRequest buffer: " + buffer.GetString());
-
-                    switch (buffer.GetString())
-                    {
-                        case "Accepted":
-                            new Thread(() => msg.ConnectionCallback.Invoke(send)).Start();
-                            break;
-
-                        default:
-                            new Thread(() => msg.ConnectionCallback.Invoke(null)).Start();
-                            break;
-                    }
-                }
-                
+                msg = message as NewConnectionMessage;
             }
             catch (Exception exception)
             {
                 Debug.Print("SendRequest failed: " + exception.Message + " Stacktrace: " + exception.StackTrace);
             }
+
+            //Start Sender for EasyConnect
+            Debug.Print("Starting EasyConnect SendRequest");
+            try
+            {
+                if (msg == null) return;
+                var send = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+
+                var ip = NetworkTable.GetAddress(msg.Receiver.ToHex());
+
+                //var ip = IPAddress.GetDefaultLocalAddress();
+
+                var destination = new IPEndPoint(ip, Port);
+
+                send.Connect(destination);
+
+                Debug.Print("Socket information: remote-" + send.RemoteEndPoint + " local-" + send.LocalEndPoint + " timeout-" + send.ReceiveTimeout);
+
+                var length = msg.ConnectionType.StringToBytes().Length;
+
+                var bytesSent = send.Send(msg.ConnectionType.StringToBytes());
+
+                if (bytesSent == length)
+                {
+                    var waitingForData = true;
+
+                    while (waitingForData)
+                    {
+                        waitingForData = !send.Poll(10, SelectMode.SelectRead) && !send.Poll(10, SelectMode.SelectError);
+
+                        if (send.Available > 0)
+                        {
+                            var buffer = new byte[send.Available];
+
+                            send.Receive(buffer);
+                            Debug.Print("Data from sendRequest: " + buffer.GetString());
+                            switch (buffer.GetString())
+                            {
+                                case "Accepted":
+                                    new Thread(() => msg.ConnectionCallback.Invoke(send)).Start();
+                                    waitingForData = false;
+                                    break;
+
+                                default:
+                                    new Thread(() => msg.ConnectionCallback.Invoke(null)).Start();
+                                    waitingForData = false;
+                                    break;
+                            }
+                        }
+                    }
+
+                }
+            }
+            catch (Exception exception)
+            {
+                Debug.Print("SendRequest failed: " + exception.Message + " Stacktrace: " + exception.StackTrace);
+                new Thread(() => { if (msg != null) msg.ConnectionCallback.Invoke(null); }).Start();
+            }
             
         }
 
-        private static void OnDataReceived(byte[] data, int length, Socket connection)
-        {
-            var ep = connection.RemoteEndPoint as IPEndPoint;
-
-            Debug.Print(data.ToHex() + " received from: " + ep.Address + " with length: " + length);
-
-            var transmissionLength = data.ToInt();
-
-            var connectionTypeBuffer = new Byte[transmissionLength];
-
-            var compare = connection.Receive(connectionTypeBuffer);
-
-            if (compare == transmissionLength)
-            {
-                var connectionType = data.GetString();
-
-                var timer = new Timer(ConnectionTimeout, connection, 0, 5000);
-
-                var msg = new ConnectionRequestMessage() { connectionType = connectionType, GetSocket = () => GetSocket(connection) };
-
-                lock (_lock)
-                {
-                    _connectionRequests[connection] = timer;
-                }
-
-                //new eventbus event with
-                EventBus.Publish(msg);
-            }
-
-        }
+        
 
         private static void ConnectionTimeout(object connection)
         {
@@ -205,7 +234,9 @@ namespace ECRU.netd
                 con.Send("Not Accepted".StringToBytes());
                 lock (_lock)
                 {
+                    var timer = _connectionRequests[con] as ECTimer;
                     _connectionRequests.Remove(con);
+                    timer.Stop();
                 }
             }
         }
