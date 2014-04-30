@@ -1,6 +1,6 @@
 package iha.bachelor.smo.aba.rah.easyconnect_v3;
 
-import iha.bachelor.smo.aba.rah.easyconnect_v3.adapter.ExpandableListAdapter;
+import iha.bachelor.smo.aba.rah.easyconnect_v3.adapter.ExpandableListModuleAdapter;
 import iha.bachelor.smo.aba.rah.easyconnect_v3.adapter.ModuleInfoParser;
 import iha.bachelor.smo.aba.rah.easyconnect_v3.contentprovider.FileHandler;
 import iha.bachelor.smo.aba.rah.easyconnect_v3.model.ModuleInfo;
@@ -42,30 +42,23 @@ public class ModuleFragment extends Fragment {
 		/**************************/
 		
 		expListView = (ExpandableListView) rootView.findViewById(R.id.service_list);
-		final ExpandableListAdapter expListAdapter = new ExpandableListAdapter(getActivity(), ServiceNameList, CharacteristicsCollection);
+		final ExpandableListModuleAdapter expListAdapter = new ExpandableListModuleAdapter(getActivity(), ServiceNameList, CharacteristicsCollection);
 		expListView.setAdapter(expListAdapter);
-		
-		
-		expListView.setOnChildClickListener(new OnChildClickListener() {
-			public boolean onChildClick(ExpandableListView parent, View v, int groupPosition, int childPosition, long id) {
-				final String selected = (String) expListAdapter.getChild(groupPosition, childPosition);
-				Toast.makeText(getActivity().getBaseContext(), selected, Toast.LENGTH_LONG).show();
-
-				return true;
-			}
-		});
-		
+				
 		return rootView;
 	}
 	
 	private void createREALCollection(String fileName){
-        ModuleInfo testMI = ModuleInfoParser.ByteToInfo(ReadFileFromSDCard("EC_CONNECT",FileHandler.NET_DIR, fileName+".BLE"));
-        ServiceNameList = new ArrayList<String>();
-        CharacteristicsCollection = new LinkedHashMap<String, List<String>>();
-
-        for (String s : testMI.getServiceNames()){
-        	ServiceNameList.add(s);
-        	CharacteristicsCollection.put(s, testMI.getCharacteristicNames(s));
+		ModuleInfo testMI = ModuleInfoParser.ByteToInfo(ReadFileFromSDCard("EC_CONNECT",FileHandler.NET_DIR, fileName+".BLE"));
+		Log.i(LOG_TAG, testMI.toString());
+		ServiceNameList = new ArrayList<String>();
+		CharacteristicsCollection = new LinkedHashMap<String, List<String>>();
+		
+		for (String s : testMI.getServiceNames()){
+			ServiceNameList.add(s);
+			CharacteristicsCollection.put(s, testMI.getCharacteristicNames(s));
+		
+			
         }
 	}
 	

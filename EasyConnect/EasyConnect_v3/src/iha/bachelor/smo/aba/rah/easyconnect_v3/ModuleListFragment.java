@@ -65,7 +65,7 @@ public class ModuleListFragment extends Fragment{
     }
 
 	public FunctionList createTestFunctionList(){
-		FunctionList fl = new FunctionList("FunctionList", 1);
+		FunctionList fl = new FunctionList("FunctionList");
 		ECRU ru = new ECRU("A4B627FE2F7A");
 		ru.InsertModuleName("E68170E5C578");
 		ru.InsertModuleName("F83A228CBA1C");

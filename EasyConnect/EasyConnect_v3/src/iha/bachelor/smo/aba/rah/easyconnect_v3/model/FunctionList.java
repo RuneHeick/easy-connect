@@ -7,23 +7,17 @@ import android.util.Log;
 
 public class FunctionList {
 	private static final String LOG_TAG = "FunctionList class";
-	private String _hashValue;
-	private int _version;
+	private String roomUnitMacAddress;
 	private List<ECRU> ECRUList = new ArrayList<ECRU>();
 	
 	public FunctionList(){}
 	
-	public FunctionList(String hash, int version){
-		_hashValue = hash;
-		_version = version;
+	public FunctionList(String eCRUmacAdress){
+		roomUnitMacAddress = eCRUmacAdress;
 	}
 	
 	public String getHashValue(){
-		return _hashValue;
-	}
-	
-	public int getVersion(){
-		return _version;
+		return roomUnitMacAddress;
 	}
 	
 	public ArrayList<String> getECRUNames(){
@@ -54,7 +48,7 @@ public class FunctionList {
 	
 	@Override
 	public String toString(){
-		String temp = "FunctionList version: " + _version + "\n";
+		String temp = "FunctionList: " + roomUnitMacAddress + "\n";
 		for (ECRU e : ECRUList){
 			temp += e.toString();
 		}

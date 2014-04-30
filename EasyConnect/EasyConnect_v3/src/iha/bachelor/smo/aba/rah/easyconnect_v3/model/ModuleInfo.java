@@ -16,9 +16,15 @@ public class ModuleInfo {
 	public IHandleValue.HandleValuePair Model;
 	public IHandleValue.HandleValuePair Serial;
 	public IHandleValue.HandleValuePair Manufacturer;
-	
-	
 	public List<Service> ServiceList = new ArrayList<Service>();
+	
+	public ModuleInfo(){
+		Address = new byte[6];
+		Name = new IHandleValue.HandleValuePair();
+		Model = new IHandleValue.HandleValuePair();
+		Serial = new IHandleValue.HandleValuePair();
+		Manufacturer = new IHandleValue.HandleValuePair();
+	};
 	
 	public ArrayList<String> getServiceNames(){
 		ArrayList<String> temp = new ArrayList<String>();
@@ -42,6 +48,7 @@ public class ModuleInfo {
 					for (Characteristic c : e._characteristicList){
 						temp.add(new String(c._description.getValue(),"UTF-8"));
 					}
+					return temp;
 				}
 			} catch (UnsupportedEncodingException e1) {
 				// TODO Auto-generated catch block
@@ -50,19 +57,27 @@ public class ModuleInfo {
 		}
 		return temp;
 	}
-	
-	
-	public ModuleInfo(){
-		Address = new byte[6];
-		Name = new IHandleValue.HandleValuePair();
-		Model = new IHandleValue.HandleValuePair();
-		Serial = new IHandleValue.HandleValuePair();
-		Manufacturer = new IHandleValue.HandleValuePair();
-	};
-	
+
 	public void addService(Service s){
 		ServiceList.add(s);
 //		Log.i(LOG_TAG, "number of elements in ServiceList: "+ ServiceList.size());
+	}
+	
+	public Characteristic getCharacteristic(String serviceName, String moduleName){
+		Characteristic temp = new Characteristic();
+		for (Service s : ServiceList){
+			try {
+				if (serviceName.equals(new String(s._description.getValue(),"UTF-8"))){
+					for (Characteristic c : s._characteristicList){
+						temp = c;
+					}
+				}
+			} catch (UnsupportedEncodingException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+		}
+		return temp;
 	}
 	
 	@Override
