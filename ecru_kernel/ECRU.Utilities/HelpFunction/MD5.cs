@@ -146,6 +146,20 @@ namespace ECRU.Utilities.HelpFunction
             }
         }
 
+
+        public long HashAsLong
+        {
+            get
+            {
+                long l = 0; 
+                for(int i = 0; i<Hash.Length; i++)
+                {
+                    l += Hash[i] << (8 * i); 
+                }
+                return l; 
+            }
+        }
+
         // Return size of hash in bits.
         public int HashSize
         {

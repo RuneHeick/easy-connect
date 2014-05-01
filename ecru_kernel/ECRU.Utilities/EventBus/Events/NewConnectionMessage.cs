@@ -8,7 +8,6 @@ namespace ECRU.Utilities.EventBus.Events
     {
         public NewNetworkConnectionCallback ConnectionCallback { get; set; }
         public string ConnectionType { get; set; }
-        public byte[] Sender { get; set; }
         public byte[] Receiver { get; set; }
     }
 }
