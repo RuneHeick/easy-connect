@@ -127,20 +127,21 @@ namespace ECRU.netd
             {
                 var _messageType = data.GetPart(0, 1);
                 var _message = data.GetPart(1, length-1);
-                var _sender = NetworkTable.GetMac(ep.Address);
 
                 _listenerThreadsArrayList.Remove(Thread.CurrentThread);
-                if (_sender != new byte[6])
+                if (_message.Length > 0)
                 {
-                    EventBus.Publish(new RecivedBroadcastMessage { Message = _message, MessageType = _messageType, Sender = _sender });
+                    EventBus.Publish(new RecivedBroadcastMessage { Message = _message, MessageType = _messageType, SenderIPAddress = ep.Address});
                 }
             }
             catch (Exception exception)
             {
+                Debug.Print("EasyConnect packet incorrect: " + exception.Message + " Stacktrace: " + exception.StackTrace);
                 // packet not correct - discard it.
-                _listenerThreadsArrayList.Remove(Thread.CurrentThread);
-                Thread.CurrentThread.Abort();
-                Debug.Print("EasyConnect packet incorrect: " + exception);
+                if (_listenerThreadsArrayList.Contains(Thread.CurrentThread))
+                {
+                    _listenerThreadsArrayList.Remove(Thread.CurrentThread);
+                }
             }
 
         }
@@ -157,26 +158,32 @@ namespace ECRU.netd
                 Debug.Print("Broadcast failed: " + exception.Message + " Stacktrace: " + exception.StackTrace);
             }
 
-            //Start Sender for EasyConnectTCP
+            //Start Sender for EasyConnectUDP
             Debug.Print("Starting EasyConnectUDP Broadcast");
+            var _broadcastEndPoint = new IPEndPoint(IPAddress.Parse(_broadcastAdd), Port);
+
+            var _sendSocket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
+            _sendSocket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.Broadcast, 5);
+
             try
             {
                 if (msg == null) return;
 
                 var _broadcastMessage = msg.BroadcastType;
-                _broadcastMessage = _broadcastMessage.Add(msg.Message.StringToBytes());
+                _broadcastMessage = _broadcastMessage.Add(msg.Message);
 
-                var _broadcastEndPoint = new IPEndPoint(IPAddress.Parse(_broadcastAdd), Port);
-
-                var _sendSocket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
-                _sendSocket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.Broadcast, 5);
+                
 
                 var result = _sendSocket.SendTo(_broadcastMessage, _broadcastEndPoint);
-
-                Debug.Print("Broadcasting: " + _broadcastMessage.GetString() + " length: " + result);
+                _sendSocket.Close();
+                Debug.Print("Broadcasting length: " + result);
             }
             catch (Exception exception)
             {
+                if (_sendSocket != null && _sendSocket.Poll(-1, SelectMode.SelectRead))
+                {
+                    _sendSocket.Close();
+                }
                 Debug.Print("Broadcast failed: " + exception.Message + " Stacktrace: " + exception.StackTrace);
             }
             
