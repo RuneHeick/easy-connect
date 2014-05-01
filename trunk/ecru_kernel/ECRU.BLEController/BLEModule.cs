@@ -22,7 +22,6 @@ namespace ECRU.BLEController
         public BLEModule()
         {
             packetmanager = new PacketManager(serial);
-            data = new DataManager(packetmanager);
             Infofactory = new DeviceInfoFactory(packetmanager);
         }
 
@@ -41,6 +40,10 @@ namespace ECRU.BLEController
 
         public void Start()
         {
+            //Datamanager
+            data = new DataManager(packetmanager);
+
+            //rest
             SystemInfo.PassCode = "Rune Heick";
             SystemInfo.Name = "Test2";
             LoadConfig(null);
@@ -57,7 +60,6 @@ namespace ECRU.BLEController
 
             //Data Update 
             packetmanager.Subscrib(CommandType.DataEvent, RecivedDataEvnet);
-
 
             SendReset();
 
@@ -77,8 +79,8 @@ namespace ECRU.BLEController
 
             //Data Update 
             packetmanager.Unsubscrib(CommandType.DataEvent, RecivedDataEvnet);
-
-            data.Reset();
+            
+            data.Dispose();
             SendReset();
         }
 
