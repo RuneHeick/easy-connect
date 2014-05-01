@@ -56,14 +56,29 @@ namespace ECRU
             // write your code here
             Thread.Sleep(5000);
 
-            SystemInfo.SystemMAC = "B3E795DE1C11".FromHex();
-            SystemInfo.ConnectedDevices.Add("B3E795111C11".FromHex());
-            SystemInfo.ConnectedDevices.Add("B3E795EE1C11".FromHex());
+            
             NetworkChange.NetworkAvailabilityChanged += NetworkAvailabilityChangedHandler;
             
             try
             {
                 _netDaemon.LoadConfig("");
+
+                var tmp = IPAddress.GetDefaultLocalAddress().ToString().Split('.');
+                string n = "EC";
+                foreach (string s in tmp)
+                {
+                    n += s;
+                }
+
+                SystemInfo.SystemMAC = n.FromHex();
+
+                //SystemInfo.SystemMAC = "B3E795111C11".FromHex();
+
+                //SystemInfo.ConnectedDevices.Add();
+                //SystemInfo.ConnectedDevices.Add("B3E795EE1C11".FromHex());
+
+                Debug.Print(SystemInfo.SystemMAC.ToHex());
+
                 _netDaemon.Start();
             }
             catch (Exception exception)
@@ -71,6 +86,8 @@ namespace ECRU
                 _netDaemon.Stop();
                 Debug.Print("Network error: " + exception.Message + " stacktrace: " + exception.StackTrace);
             }
+
+            
 
             //while (true)
             //{
@@ -125,6 +142,8 @@ namespace ECRU
                 }
             }
         }
+
+
 
     }
 }
