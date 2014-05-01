@@ -15,7 +15,7 @@ namespace ECRU.netd
     public class Netd : IModule
     {
 
-        private IPAddress _ip;
+        private string _ip;
         private int _port;
 
         //setup subscriptions
@@ -62,9 +62,9 @@ namespace ECRU.netd
                 throw;
             }
 
-            _ip = IPAddress.GetDefaultLocalAddress();
+            _ip = networkConfig.EthernetInterface.IPAddress;
 
-            if (_ip.Equals(IPAddress.Parse("0.0.0.0")))
+            if (_ip.Equals("0.0.0.0"))
             {
                 throw new Exception();
             }
@@ -88,7 +88,7 @@ namespace ECRU.netd
             //Broadcast.LocalIP = networkConfig.EthernetInterface.IPAddress;
             //Broadcast.SubnetMask = networkConfig.EthernetInterface.SubnetMask;
 
-            Debug.Print("Network config done. IP: "+ _ip);
+            Debug.Print("Network config done. IP: " + _ip);
         }
 
         public void Start()

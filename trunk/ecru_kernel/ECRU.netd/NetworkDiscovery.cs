@@ -34,7 +34,7 @@ namespace ECRU.netd
 
         public static void Stop()
         {
-            if (_broadcastThread.IsAlive)
+            if (_broadcastThread != null && _broadcastThread.IsAlive)
             {
                 _broadcastThread.Abort();
             }
