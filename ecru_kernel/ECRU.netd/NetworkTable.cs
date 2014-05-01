@@ -44,7 +44,7 @@ namespace ECRU.netd
             UpdateNetstate();
 
             // update request devices from roomunit
-            EventBus.Publish(new NewConnectionMessage { ConnectionCallback = RequestedDevices, ConnectionType = "RequestDevices", Receiver = neighbour.Mac.FromHex(), Sender = SystemInfo.SystemMAC });
+            EventBus.Publish(new NewConnectionMessage { ConnectionCallback = RequestedDevices, ConnectionType = "RequestDevices", Receiver = neighbour.Mac.FromHex() });
 
             // network status -> eventbus
             EventBus.Publish(new NetworkStatusMessage{isinsync = _isInSync, NetState = _netstate});
