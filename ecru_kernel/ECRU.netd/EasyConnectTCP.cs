@@ -15,7 +15,7 @@ namespace ECRU.netd
 {
     
 
-    static class EasyConnect
+    static class EasyConnectTCP
     {
 
         private static Socket _receiveSocket;
@@ -27,7 +27,7 @@ namespace ECRU.netd
 
         public static int Port { get; set; }
 
-        static EasyConnect()
+        static EasyConnectTCP()
         {
             Port = 4543;
         }
@@ -68,8 +68,8 @@ namespace ECRU.netd
 
         private static void Listen()
         {
-            //Start listening for EasyConnect
-            Debug.Print("Starting EasyConnect listener");
+            //Start listening for EasyConnectTCP
+            Debug.Print("Starting EasyConnectTCP listener");
             try
             {
                 _receiveSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
@@ -163,16 +163,16 @@ namespace ECRU.netd
                 Debug.Print("SendRequest failed: " + exception.Message + " Stacktrace: " + exception.StackTrace);
             }
 
-            //Start Sender for EasyConnect
-            Debug.Print("Starting EasyConnect SendRequest");
+            //Start Sender for EasyConnectTCP
+            Debug.Print("Starting EasyConnectTCP SendRequest");
             try
             {
                 if (msg == null) return;
                 var send = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
 
-                //var ip = NetworkTable.GetAddress(msg.Receiver.ToHex());
+                var ip = NetworkTable.GetAddress(msg.Receiver.ToHex());
 
-                var ip = IPAddress.GetDefaultLocalAddress();
+                //var ip = IPAddress.GetDefaultLocalAddress();
 
                 var destination = new IPEndPoint(ip, Port);
 
