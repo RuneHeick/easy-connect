@@ -231,37 +231,32 @@ namespace ECRU.netd
                         {
                             waitingForData = !s.Poll(10, SelectMode.SelectRead) && !s.Poll(10, SelectMode.SelectError);
 
-                            if (s.Available > 0)
+                            if (s.Available <= 0) continue;
+
+                            var availableBytes = s.Available;
+
+                            var buffer = new byte[availableBytes];
+
+                            var bytesReceived = s.Receive(buffer);
+
+                            if (bytesReceived != availableBytes) continue;
+
+                            var result = JsonSerializer.DeserializeString(buffer.GetString()) as Hashtable;
+
+                            if (result == null) continue;
+
+                            var nMac = result["mac"] as string;
+
+                            if (nMac == null) continue;
+
+                            SystemInfo.ConnectionOverview.Add(nMac.FromHex());
+
+                            var nDevices = result["Devices"] as ArrayList;
+
+                            if (nDevices == null) continue;
+                            foreach (string nDevice in nDevices)
                             {
-                                var availableBytes = s.Available;
-
-                                var buffer = new byte[availableBytes];
-
-                                var bytesReceived = s.Receive(buffer);
-
-                                if (bytesReceived == availableBytes)
-                                {
-                                    var result = JsonSerializer.DeserializeString(buffer.GetString()) as Hashtable;
-
-                                    if (result != null)
-                                    {
-                                        var nMac = result["mac"] as string;
-                                        
-                                        if (nMac != null)
-                                        {
-                                            SystemInfo.ConnectionOverview.Add(nMac.FromHex());
-
-                                            var nDevices = result["Devices"] as ArrayList;
-
-                                            if (nDevices != null)
-                                                foreach (string nDevice in nDevices)
-                                                {
-                                                    SystemInfo.ConnectionOverview.Add(nMac.FromHex(), nDevice.FromHex());
-                                                }
-                                        }
-                                        
-                                    }
-                                }
+                                SystemInfo.ConnectionOverview.Add(nMac.FromHex(), nDevice.FromHex());
                             }
                         }
                     }

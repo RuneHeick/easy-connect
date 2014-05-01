@@ -9,6 +9,7 @@ using Microsoft.SPOT;
 using Microsoft.SPOT.Net.NetworkInformation;
 using ECRU.Utilities;
 using ECRU.Utilities.EventBus;
+using ECRU.netd.MacSync;
 
 namespace ECRU.netd
 {
@@ -84,6 +85,7 @@ namespace ECRU.netd
 
             //Network Communication Configuration
 
+
             //Filesync sentbroadcast config
             //Broadcast.LocalIP = networkConfig.EthernetInterface.IPAddress;
             //Broadcast.SubnetMask = networkConfig.EthernetInterface.SubnetMask;
@@ -98,7 +100,11 @@ namespace ECRU.netd
             EasyConnectUDP.Start();
             NetworkDiscovery.Start();
             EventBus.Subscribe(typeof (ConnectionRequestMessage), MacSync.MacSync.RequestDevices);
+            EventBus.Subscribe(typeof (RecivedBroadcastMessage), MacSync.MacSync.GotDeviceNetworkEvent);
+            EventBus.Subscribe(typeof (RecivedBroadcastMessage), MacSync.MacSync.LostDeviceNetworkEvent);
 
+            SystemInfo.ConnectedDevices.MacAdded += MacSync.MacSync.GotDevice;
+            SystemInfo.ConnectedDevices.MacRemoved += MacSync.MacSync.LostDevice;
         }
 
         public void Stop()
@@ -108,6 +114,11 @@ namespace ECRU.netd
             EasyConnectUDP.Stop();
             NetworkDiscovery.Stop();
             EventBus.Unsubscribe(typeof (ConnectionRequestMessage), MacSync.MacSync.RequestDevices);
+            EventBus.Unsubscribe(typeof(RecivedBroadcastMessage), MacSync.MacSync.GotDeviceNetworkEvent);
+            EventBus.Unsubscribe(typeof(RecivedBroadcastMessage), MacSync.MacSync.LostDeviceNetworkEvent);
+
+            SystemInfo.ConnectedDevices.MacAdded -= MacSync.MacSync.GotDevice;
+            SystemInfo.ConnectedDevices.MacRemoved -= MacSync.MacSync.LostDevice;
         }
 
         public void Reset()

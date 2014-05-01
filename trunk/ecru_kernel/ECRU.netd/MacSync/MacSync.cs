@@ -1,6 +1,7 @@
 using System;
 using System.Net.Sockets;
 using ECRU.Utilities;
+using ECRU.Utilities.EventBus;
 using ECRU.Utilities.EventBus.Events;
 using ECRU.Utilities.HelpFunction;
 using Json.NETMF;
@@ -11,66 +12,97 @@ namespace ECRU.netd.MacSync
     public static class MacSync
     {
 
+        public static void GotDevice(byte[] unit)
+        {
+            var msg = SystemInfo.SystemMAC;
+            msg = msg.Add(unit);
+            EventBus.Publish(new SendBroadcastMessage{BroadcastType = new byte[] { 3 }, Message = msg});
+        }
+
+        public static void GotDeviceNetworkEvent(object message)
+        {
+            var msg = message as RecivedBroadcastMessage;
+
+            if (msg == null) return;
+
+            if (!msg.MessageType.ByteArrayCompare(new byte[] { 3 })) return;
+
+            var roomunit = msg.Message.GetPart(0, 6);
+            var ecm = msg.Message.GetPart(6, 6);
+            
+            if (roomunit != null && ecm != null)
+            {
+                SystemInfo.ConnectionOverview.Add(roomunit, ecm);
+            }
+        }
+
+        public static void LostDevice(byte[] unit)
+        {
+            var msg = SystemInfo.SystemMAC;
+            msg = msg.Add(unit);
+            EventBus.Publish(new SendBroadcastMessage { BroadcastType = new byte[] { 4 }, Message = msg });
+        }
+
+        public static void LostDeviceNetworkEvent(object message)
+        {
+            var msg = message as RecivedBroadcastMessage;
+
+            if (msg == null) return;
+
+            if (!msg.MessageType.ByteArrayCompare(new byte[] { 4 })) return;
+
+            var roomunit = msg.Message.GetPart(0, 6);
+            var ecm = msg.Message.GetPart(6, 6);
+
+            if (roomunit != null && ecm != null)
+            {
+                SystemInfo.ConnectionOverview.Remove(roomunit, ecm);
+            }
+        }
+
+
+
         public static void RequestDevices(object message)
         {
             var msg = message as ConnectionRequestMessage;
 
-            if (msg != null)
+            if (msg == null) return;
+
+            if (msg.connectionType != "RequestDevices") return;
+
+            using (var socket = msg.GetSocket())
             {
-                if (msg.connectionType == "RequestDevices")
+                //fetch mac hirachy and transform to json
+
+                var sysMac = SystemInfo.SystemMAC;
+                var connectedDevices = SystemInfo.ConnectedDevices.GetElements();
+
+                var obj = new Utilities.DeviceMacList();
+
+                obj.mac = SystemInfo.SystemMAC.ToHex();
+
+                foreach (byte[] device in connectedDevices)
                 {
-                    using (var socket = msg.GetSocket())
+                    obj.Devices.Add(device.ToHex());
+                }
+
+                var result = JsonSerializer.SerializeObject(obj);
+                Debug.Print(result);
+
+                try
+                {
+                    socket.Send(result.StringToBytes());
+                }
+                catch (Exception exception)
+                {
+                    Debug.Print("Network error: " + exception.Message + " stacktrace: " + exception.StackTrace);
+                }
+                finally
+                {
+                    if (socket != null)
                     {
-                        //fetch mac hirachy and transform to json
-
-                        var sysMac = SystemInfo.SystemMAC;
-                        var connectedDevices = SystemInfo.ConnectedDevices.GetElements();
-
-                        var obj = new Utilities.DeviceMacList();
-
-                        obj.mac = SystemInfo.SystemMAC.ToHex();
-
-                        foreach (byte[] device in connectedDevices)
-                        {
-                            obj.Devices.Add(device.ToHex());
-                        }
-
-                        //var result = "{mac: \"" + sysMac.ToHex() + "\", devices: [";
-
-                        //if (connectedDevices.Length > 1)
-                        //{
-                        //    foreach (byte[] device in connectedDevices)
-                        //    {
-                        //        result += "\"" + device.ToHex() + "\", ";
-                        //    }
-                        //}
-                        //else if (connectedDevices.Length == 1)
-                        //{
-                        //    result += "\"" + ((byte[])connectedDevices.GetValue(0)).ToHex() + "\"";
-                        //}
-
-                        //result += "] }";
-
-                        var result = JsonSerializer.SerializeObject(obj);
-                        Debug.Print(result);
-
-                        try
-                        {
-                            socket.Send(result.StringToBytes());
-                        }
-                        catch (Exception exception)
-                        {
-                            Debug.Print("Network error: " + exception.Message + " stacktrace: " + exception.StackTrace);
-                        }
-                        finally
-                        {
-                            if (socket != null)
-                            {
-                                socket.Close();
-                            }
-                        }
+                        socket.Close();
                     }
-
                 }
             }
         }
