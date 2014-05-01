@@ -133,6 +133,20 @@ namespace ECRU.netd
             }
         }
 
+        public static byte[] GetMac(IPAddress ip)
+        {
+            var returnval = new byte[6]; 
+            foreach (Neighbour neighbour in Neighbours)
+            {
+                if (neighbour.IP.Equals(ip))
+                {
+                    returnval = neighbour.Mac.FromHex();
+                }
+            }
+
+            return returnval;
+        }
+
         public static void CheckTable()
         {
             if (Neighbours.Count < 1) return;

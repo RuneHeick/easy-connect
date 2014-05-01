@@ -39,8 +39,9 @@ namespace ECRU.netd
 
         public class DeviceMacList
         {
+            private ArrayList _devices = new ArrayList();
             public string mac { get; set; }
-            public ArrayList Devices { get; set; }
+            public ArrayList Devices { get { return _devices; } set { _devices = value; } }
         }
     }
 }

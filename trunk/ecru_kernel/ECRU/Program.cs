@@ -57,6 +57,8 @@ namespace ECRU
             Thread.Sleep(5000);
 
             SystemInfo.SystemMAC = "B3E795DE1C11".FromHex();
+            SystemInfo.ConnectedDevices.Add("B3E795111C11".FromHex());
+            SystemInfo.ConnectedDevices.Add("B3E795EE1C11".FromHex());
             NetworkChange.NetworkAvailabilityChanged += NetworkAvailabilityChangedHandler;
             
             try

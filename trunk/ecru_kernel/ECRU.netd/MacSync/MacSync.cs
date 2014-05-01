@@ -52,6 +52,7 @@ namespace ECRU.netd.MacSync
                         //result += "] }";
 
                         var result = JsonSerializer.SerializeObject(obj);
+                        Debug.Print(result);
 
                         try
                         {

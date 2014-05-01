@@ -32,7 +32,9 @@
   <ItemGroup>
     <Compile Include="EventBus\EventBus.cs" />
     <Compile Include="EventBus\Events\ConnectionRequestMessage.cs" />
+    <Compile Include="EventBus\Events\SendBroadcastMessage.cs" />
     <Compile Include="EventBus\Events\NewConnectionMessage.cs" />
+    <Compile Include="EventBus\Events\RecivedBroadcastMessage.cs" />
     <Compile Include="EventBus\Events\ResetEvent.cs" />
     <Compile Include="Factories\ModuleFactory\IModule.cs" />
     <Compile Include="Factories\ModuleFactory\ModuleFactory.cs" />
