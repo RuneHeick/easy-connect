@@ -29,10 +29,6 @@ namespace ECRU.netd
         public void LoadConfig(string configFilePath)
         {
             Debug.Print("Loading NetDaemon Configuration from " + configFilePath);
-            
-            _ip = IPAddress.GetDefaultLocalAddress();
-
-            _port = 4543;
 
             //wait for interfaces (Magic number dont change)
             //Thread.Sleep(3000);
@@ -66,13 +62,22 @@ namespace ECRU.netd
                 throw;
             }
 
+            _ip = IPAddress.GetDefaultLocalAddress();
+
+            if (_ip.Equals(IPAddress.Parse("0.0.0.0")))
+            {
+                throw new Exception();
+            }
+
+            _port = 4543;
+
             //Network Discovery Configuration
-            netd.BroadcastNetworkDiscovery.UDPPort = _port;
-            netd.BroadcastNetworkDiscovery.LocalIP = _ip.ToString();
-            netd.BroadcastNetworkDiscovery.SubnetMask = networkAdapter.SubnetMask;
-            netd.BroadcastNetworkDiscovery.BroadcastIntrevalSeconds = 30;
-            netd.BroadcastNetworkDiscovery.EnableBroadcast = true;
-            netd.BroadcastNetworkDiscovery.EnableListener = true;
+            //netd.BroadcastNetworkDiscovery.UDPPort = _port;
+            //netd.BroadcastNetworkDiscovery.LocalIP = _ip.ToString();
+            //netd.BroadcastNetworkDiscovery.SubnetMask = networkAdapter.SubnetMask;
+            //netd.BroadcastNetworkDiscovery.BroadcastIntrevalSeconds = 30;
+            //netd.BroadcastNetworkDiscovery.EnableBroadcast = true;
+            //netd.BroadcastNetworkDiscovery.EnableListener = true;
 
             //Network Table Configuration
             NetworkTable.SetLocalIP = networkConfig.EthernetInterface.IPAddress;
