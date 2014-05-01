@@ -88,17 +88,20 @@ namespace ECRU.netd
 
         public void Start()
         {
-            netd.BroadcastNetworkDiscovery.Start();
+            //netd.BroadcastNetworkDiscovery.Start();
             EasyConnectTCP.Start();
             EasyConnectUDP.Start();
+            NetworkDiscovery.Start();
             EventBus.Subscribe(typeof (ConnectionRequestMessage), MacSync.MacSync.RequestDevices);
+
         }
 
         public void Stop()
         {
-            netd.BroadcastNetworkDiscovery.Stop();
+            //netd.BroadcastNetworkDiscovery.Stop();
             EasyConnectTCP.Stop();
-            EasyConnectUDP.Start();
+            EasyConnectUDP.Stop();
+            NetworkDiscovery.Stop();
             EventBus.Unsubscribe(typeof (ConnectionRequestMessage), MacSync.MacSync.RequestDevices);
         }
 
