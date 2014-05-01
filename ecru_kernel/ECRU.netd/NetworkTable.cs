@@ -120,6 +120,10 @@ namespace ECRU.netd
 
         public static IPAddress GetAddress(string mac)
         {
+            if (mac == SystemInfo.SystemMAC.ToHex())
+            {
+                return IPAddress.GetDefaultLocalAddress();
+            }
             var neighbourIP = ((Neighbour) Neighbours[mac]).IP;
 
             //check if address is valid

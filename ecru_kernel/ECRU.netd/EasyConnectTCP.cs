@@ -115,7 +115,7 @@ namespace ECRU.netd
 
         private static void OnDataReceived(Socket connection)
         {
-
+            Debug.Print("Connection from: " + connection.RemoteEndPoint);
             var waitingForData = true;
 
             while (waitingForData)
@@ -148,7 +148,10 @@ namespace ECRU.netd
                     }
                 }
             }
-
+            if (!_connectionRequests.Contains(connection))
+            {
+                connection.Close();
+            }
         }
 
         private static void SendRequest(object message)
