@@ -64,7 +64,7 @@ namespace ECRU
                 _netDaemon.LoadConfig("");
 
                 var tmp = IPAddress.GetDefaultLocalAddress().ToString().Split('.');
-                string n = "EC";
+                string n = "ECEC";
                 foreach (string s in tmp)
                 {
                     n += s;
@@ -75,7 +75,7 @@ namespace ECRU
                 //SystemInfo.SystemMAC = "B3E795111C11".FromHex();
 
                 //SystemInfo.ConnectedDevices.Add();
-                //SystemInfo.ConnectedDevices.Add("B3E795EE1C11".FromHex());
+                //
 
                 Debug.Print(SystemInfo.SystemMAC.ToHex());
 
@@ -87,12 +87,14 @@ namespace ECRU
                 Debug.Print("Network error: " + exception.Message + " stacktrace: " + exception.StackTrace);
             }
 
-            
 
             //while (true)
             //{
-            //    EventBus.Publish(new NewConnectionMessage { ConnectionCallback = test, ConnectionType = "RequestDevices", Receiver = "B3E795DE1C11".FromHex(), Sender = "B3E795DE1C11".FromHex() });
             //    Thread.Sleep(10000);
+            //    SystemInfo.ConnectedDevices.Add("B3E795EE1C11".FromHex());
+
+            //    Thread.Sleep(10000);
+            //    SystemInfo.ConnectedDevices.Remove("B3E795EE1C11".FromHex());
             //}
             
             Thread.Sleep(Timeout.Infinite);
