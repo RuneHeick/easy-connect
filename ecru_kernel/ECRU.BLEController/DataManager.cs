@@ -1,4 +1,8 @@
 using System;
+using System.Net.Sockets;
+using ECRU.Utilities.EventBus;
+using ECRU.Utilities.EventBus.Events;
+using ECRU.Utilities.Timers;
 using Microsoft.SPOT;
 using ECRU.BLEController.Packets;
 using ECRU.Utilities;
@@ -10,7 +14,7 @@ using ECRU.File.Files;
 
 namespace ECRU.BLEController
 {
-    class DataManager
+    class DataManager : IDisposable
     {
         MacList ConnectedDevices;
         const string FileFolder = "BLE Devices";
@@ -26,6 +30,7 @@ namespace ECRU.BLEController
             this.packetmanager = packetmanager;
             ConnectedDevices = SystemInfo.ConnectedDevices;
             LastUpdated = DateTime.Now;
+            EventBus.Subscribe(typeof (ConnectionRequestMessage), RequestDeviceInformation);
 
         }
 
@@ -140,6 +145,79 @@ namespace ECRU.BLEController
             DeviceInfoValueFile valfile = new DeviceInfoValueFile(file);
             valfile.Create(item);
             valfile.Close(); 
+        }
+
+        //****************************************************
+
+        public static void RequestDeviceInformation(object message)
+        {
+            var msg = message as ConnectionRequestMessage;
+
+            if (msg == null) return;
+
+            if (msg.connectionType != "RequestDeviceInformation") return;
+
+            FileBase file = null;
+
+            using (var socket = msg.GetSocket())
+            {
+                try
+                {
+                    var waitingForData = true;
+
+                    while (waitingForData)
+                    {
+                        waitingForData = !socket.Poll(10, SelectMode.SelectRead) &&
+                                         !socket.Poll(10, SelectMode.SelectError);
+
+                        if (socket.Available <= 0) continue;
+
+                        var availableBytes = socket.Available;
+
+                        var buffer = new byte[availableBytes];
+
+                        var bytesReceived = socket.Receive(buffer);
+
+                        if (bytesReceived == availableBytes)
+                        {
+                            waitingForData = false;
+
+                            
+                            if (FileSystem.Exists(buffer.ToHex() + ".BLE", FileType.Local))
+                            {
+                                file = FileSystem.GetFile(buffer.ToHex() + ".BLE", FileAccess.Read, FileType.Local);
+                            }
+
+                            if (file != null)
+                            {
+                                socket.Send(file.Data);
+                                file.Close();
+                            }
+                        }
+                    }
+                }
+                catch (Exception exception)
+                {
+                    Debug.Print("Network error: " + exception.Message + " stacktrace: " + exception.StackTrace);
+                }
+                finally
+                {
+                    if (socket != null && socket.Poll(-1, SelectMode.SelectRead))
+                    {
+                        socket.Close();
+                    }
+                    if (file != null)
+                    {
+                        file.Close();
+                    }
+                }
+            }
+        }
+
+        public void Dispose()
+        {
+            EventBus.Unsubscribe(typeof (ConnectionRequestMessage), RequestDeviceInformation);
+            Reset();
         }
     }
 }
