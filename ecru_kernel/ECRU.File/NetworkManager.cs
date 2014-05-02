@@ -55,6 +55,7 @@ namespace ECRU.File
                     isOnline = true;
                 }
             }
+            isOnline = true; 
         }
 
         private void StopNetShare()
