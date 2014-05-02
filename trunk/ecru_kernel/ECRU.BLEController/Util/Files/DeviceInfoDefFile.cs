@@ -8,27 +8,34 @@ namespace ECRU.BLEController.Util
 {
     class DeviceInfoDefFile: FileBase
     {
+
+        private FileBase _fileBase;
+        private CloseFunction _closeFunction;
+
+
         public DeviceInfoDefFile(FileBase file)
         {
-            base.Closefunc = file.Closefunc;
-            Data = file.Data;
-            base.Path = file.Path; 
+
+            _fileBase = file;
+            _closeFunction = file.Closefunc;
+            file.Closefunc = (f) => Close();
+            Init();
         }
 
         public DeviceInfo Object { get; set; }
 
-        public override byte[] Data
+        private void Init()
         {
-            get
-            {   
-                if(Object==null) return null; 
-                return InfoToByte(Object);
-            }
-            set
-            {
-                if (value == null) return;
-                Object = ByteToInfo(value);
-            }
+            if (_fileBase.Data == null) return;
+            Object = ByteToInfo(_fileBase.Data);
+        }
+
+        public new void Close()
+        {
+            if (Closefunc == null || Object == null) return;
+            _fileBase.Data = InfoToByte(Object);
+            _closeFunction(_fileBase);
+            _closeFunction = null;
         }
 
         private static byte[] InfoToByte(DeviceInfo deviceInfo)

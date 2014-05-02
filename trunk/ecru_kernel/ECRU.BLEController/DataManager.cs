@@ -32,6 +32,7 @@ namespace ECRU.BLEController
             LastUpdated = DateTime.Now;
             EventBus.Subscribe(typeof (ConnectionRequestMessage), RequestDeviceInformation);
             EventBus.Subscribe(typeof (ConnectionRequestMessage), RequestECMData);
+            EventBus.Subscribe(typeof(ConnectionRequestMessage), SetECMData);
 
         }
 
@@ -150,7 +151,7 @@ namespace ECRU.BLEController
 
         //****************************************************
 
-        public static void RequestDeviceInformation(object message)
+        public void RequestDeviceInformation(object message)
         {
             var msg = message as ConnectionRequestMessage;
 
@@ -200,7 +201,7 @@ namespace ECRU.BLEController
                 }
                 finally
                 {
-                    if (socket != null && socket.Poll(-1, SelectMode.SelectRead))
+                    if (socket != null)
                     {
                         socket.Close();
                     }
@@ -213,7 +214,7 @@ namespace ECRU.BLEController
         }
 
         //*********************************************************
-        public static void RequestECMData(object message)
+        public void RequestECMData(object message)
         {
             var msg = message as ConnectionRequestMessage;
 
@@ -273,7 +274,91 @@ namespace ECRU.BLEController
                 }
                 finally
                 {
-                    if (socket != null && socket.Poll(-1, SelectMode.SelectRead))
+                    if (socket != null)
+                    {
+                        socket.Close();
+                    }
+                    if (file != null)
+                    {
+                        file.Close();
+                    }
+                }
+            }
+        }
+
+
+        //*********************************************************
+        public void SetECMData(object message)
+        {
+            var msg = message as ConnectionRequestMessage;
+
+            if (msg == null) return;
+
+            if (msg.connectionType != "SetECMData") return;
+
+            FileBase file = null;
+
+            using (var socket = msg.GetSocket())
+            {
+                try
+                {
+                    var waitingForData = true;
+
+                    while (waitingForData)
+                    {
+                        waitingForData = !socket.Poll(10, SelectMode.SelectRead) &&
+                                         !socket.Poll(10, SelectMode.SelectError);
+
+                        if (socket.Available <= 0) continue;
+
+                        var availableBytes = socket.Available;
+
+                        var buffer = new byte[availableBytes];
+
+                        var bytesReceived = socket.Receive(buffer);
+
+                        if (bytesReceived != availableBytes) continue;
+
+                        waitingForData = false;
+
+                        var mac = buffer.GetPart(0, 6);
+                        var handle = buffer.GetPart(6, 2);
+                        var data = buffer.GetPart(8, availableBytes - 8);
+
+
+                        if (!FileSystem.Exists(mac.ToHex() + ".val", FileType.Local)) continue;
+
+                        var newHandle = (ushort)((handle[0] << 8) + handle[1]);
+
+                        file = FileSystem.GetFile(mac.ToHex() + ".val", FileAccess.ReadWrite, FileType.Local);
+
+                        var valfile = new DeviceInfoValueFile(file);
+
+
+                        
+                        //write data to val file
+                        valfile.Update(newHandle, data);
+
+                        //send data event
+                        var packet = new Packets.WriteEvent();
+
+                        packet.Address = mac;
+                        packet.Handle = newHandle;
+                        packet.Value = data;
+
+                        packetmanager.Send(packet);
+                    }
+
+                        
+                    
+                }
+                catch (Exception exception)
+                {
+                    Debug.Print("Network error: " + exception.Message + " stacktrace: " + exception.StackTrace);
+                }
+                finally
+                {
+                    if (socket != null)
                     {
                         socket.Close();
                     }
@@ -289,6 +374,7 @@ namespace ECRU.BLEController
         {
             EventBus.Unsubscribe(typeof (ConnectionRequestMessage), RequestDeviceInformation);
             EventBus.Unsubscribe(typeof(ConnectionRequestMessage), RequestECMData);
+            EventBus.Unsubscribe(typeof(ConnectionRequestMessage), SetECMData);
             Reset();
         }
     }

@@ -5,7 +5,7 @@ using ECRU.Utilities.HelpFunction;
 
 namespace ECRU.BLEController.Util
 {
-    class DeviceInfoValueFile: ConfigFile
+    public class DeviceInfoValueFile: ConfigFile
     {
         public DeviceInfoValueFile(FileBase file):
             base(file)

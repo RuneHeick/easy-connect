@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Threading;
+using ECRU.Utilities.HelpFunction;
 using Microsoft.SPOT;
 using System.Collections;
 using System.IO;
@@ -10,6 +12,7 @@ namespace ECRU.File
     {
         ArrayList Mutexs = new ArrayList();
         string MasterPath; 
+        readonly  object SDLOCK = new object();
 
         public LocalManager(string path)
         {
@@ -56,8 +59,7 @@ namespace ECRU.File
         {
             try
             {
-                lock (path)
-                {
+                
                     if (!IsOpen(path))
                     {
                         FileInfo file = new FileInfo(MasterPath + @"\" + path);
@@ -65,21 +67,39 @@ namespace ECRU.File
                         {
                             lock (Mutexs)
                                 Mutexs.Add(path);
-                            using (FileStream r = new FileStream(file.FullName, FileMode.Open))
+                            lock (SDLOCK)
                             {
-                                byte[] data = new byte[r.Length];
-                                r.Read(data, 0, data.Length);
-                                r.Close();
-                                FileBase localfile = new FileBase();
-                                localfile.Data = data;
-                                localfile.Closefunc = CloseFile;
-                                localfile.Path = path;
-                                return localfile;
+                                using (FileStream r = new FileStream(file.FullName, FileMode.Open))
+                                {
+                                    FileBase localfile = new FileBase();
+
+                                    try
+                                    {
+                                        byte[] data = new byte[r.Length];
+                                        r.Read(data, 0, data.Length);
+                                        localfile.Data = data;
+                                        localfile.Closefunc = CloseFile;
+                                        localfile.Path = path;
+                                    }
+                                    catch
+                                    {
+                                        return null;
+                                    }
+                                    finally
+                                    {
+                                        r.Close();
+                                        r.Dispose();
+                                    }
+
+
+                                    return localfile;
+
+                                }
                             }
                         }
                     }
                     return null;
-                }
+                
             }
             catch
             {
@@ -92,7 +112,7 @@ namespace ECRU.File
         {
             try
             {
-                lock (path)
+                lock (SDLOCK)
                 {
                     FileInfo file = new FileInfo(MasterPath + @"\" + path);
                     if (file.Exists)
@@ -127,9 +147,13 @@ namespace ECRU.File
         {
             if(!IsOpen(path))
             {
-                FileInfo file = new FileInfo(MasterPath + @"\" + path);
-                if (file.Exists)
-                    file.Delete();
+                lock (SDLOCK)
+                {
+                    FileInfo file = new FileInfo(MasterPath + @"\" + path);
+                    if (file.Exists)
+                        file.Delete();
+                }
+                Thread.Sleep(1000);
                 return true; 
             }
             return false; 
@@ -139,24 +163,48 @@ namespace ECRU.File
         {
             lock (Mutexs)
             {
-                Mutexs.Remove(localfile.Path);
-                if (localfile.Data == null)
+                if (IsOpen(localfile.Path))
                 {
-                    DeleteFile(localfile.Path);
-                    return; 
-                }
-                else
-                {
-                    using (FileStream file = new FileStream(MasterPath + @"\" + localfile.Path, FileMode.Create))
+                    Mutexs.Remove(localfile.Path);
+
+                    if (localfile.Data != null)
                     {
-                        try
+                        lock (SDLOCK)
                         {
-                            file.Write(localfile.Data, 0, localfile.Data.Length);
+                            using (
+                                var fs = new FileStream(MasterPath + @"\" + localfile.Path, FileMode.Create,
+                                    System.IO.FileAccess.ReadWrite, FileShare.None))
+                            {
+
+                                try
+                                {
+                                    fs.Write(localfile.Data, 0, localfile.Data.Length);
+                                    fs.Flush();
+                                }
+                                catch (Exception exception)
+                                {
+                                    Debug.Print("something error: " + exception.Message + " stacktrace: " +
+                                                exception.StackTrace);
+                                }
+                                finally
+                                {
+                                    fs.Close();
+                                    fs.Dispose();
+                                }
+                            }
                         }
-                        finally
-                        {
-                            file.Close();
-                        }
+                        //using (FileStream file = new FileStream(MasterPath + @"\" + localfile.Path, FileMode.Create, System.IO.FileAccess.Write))
+                        //{
+                        //    try
+                        //    {
+                        //        file.Write(localfile.Data, 0, localfile.Data.Length);
+                        //        file.Flush();
+                        //    }
+                        //    finally
+                        //    {
+                        //        file.Close();
+                        //    }
+                        //}
                     }
                 }
             }
