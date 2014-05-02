@@ -482,6 +482,12 @@ namespace ECRU.File
 
         private void GetFileStates()
         {
+            if(Users.Length==1)
+            {
+                StartCordinator();
+                return; 
+            }
+
             ArrayList PacketSendTo = new ArrayList();
             Hashtable FileState = new Hashtable();
 
@@ -573,30 +579,34 @@ namespace ECRU.File
 
         private static void AddINTable(string Path, Hashtable FileState, long version, byte[] resiver, CordinatorRole item)
         {
-            if (FileState.Contains(Path))
+            if (item.Disposed == false)
             {
-                Hashtable file = FileState[Path] as Hashtable;
-                if (file.Contains(resiver.ToHex()))
+                if (FileState.Contains(Path))
                 {
-                    file[resiver.ToHex()] = version;
+                    Hashtable file = FileState[Path] as Hashtable;
+                    if (file.Contains(resiver.ToHex()))
+                    {
+                        file[resiver.ToHex()] = version;
+                    }
+                    else
+                    {
+                        file.Add(resiver.ToHex(), version);
+                    }
+
                 }
                 else
                 {
-                    file.Add(resiver.ToHex(), version);
+                    Hashtable table = new Hashtable();
+                    table.Add(resiver.ToHex(), version);
+
+                    foreach (string user in item.Users)
+                    {
+                        if (!table.Contains(user))
+                            table.Add(user, 0);
+                    }
+
+                    FileState.Add(Path, table);
                 }
-
-            }
-            else
-            {
-                Hashtable table = new Hashtable();
-                table.Add(resiver.ToHex(), version);
-
-                foreach (string user in item.Users)
-                {
-                    table.Add(user, 0);
-                }
-
-                FileState.Add(Path, table);
             }
         }
 
