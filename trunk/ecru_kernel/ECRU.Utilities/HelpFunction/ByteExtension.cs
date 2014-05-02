@@ -126,5 +126,33 @@ namespace ECRU.Utilities.HelpFunction
 
             return result;
         }
+
+        public static long ToLong(this byte[] item, int index)
+        {
+            if(item.Length-index < 8) throw new IndexOutOfRangeException(); 
+
+            long data = 0; 
+            for(int i = 0; i<8; i++)
+            {
+                data += item[i] << (8*7 - (i * 8)); 
+            }
+
+            return data; 
+        }
+
+
+        public static byte[] ToByte(this long item)
+        {
+            byte[] data =  new byte[8]; 
+
+            for (int i = 0; i < 8; i++)
+            {
+                data[i] = (byte)(item >> (8 * 7 - (i * 8)));
+            }
+
+            return data;
+        }
+
+
     }
 }

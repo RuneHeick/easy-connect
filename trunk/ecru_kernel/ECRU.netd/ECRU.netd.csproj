@@ -38,7 +38,6 @@
     <Compile Include="FileSync\Broadcast.cs" />
     <Compile Include="MacSync\MacSync.cs" />
     <Compile Include="NetworkDiscovery.cs" />
-    <Compile Include="NetworkStatusMessage.cs" />
     <Compile Include="NetworkTable.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Netd.cs" />

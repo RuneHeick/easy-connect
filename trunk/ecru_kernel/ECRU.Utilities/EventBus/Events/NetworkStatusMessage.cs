@@ -1,9 +1,9 @@
 ﻿using System;
 using Microsoft.SPOT;
 
-namespace ECRU.netd
+namespace ECRU.Utilities.EventBus.Events
 {
-    class NetworkStatusMessage
+    public class NetworkStatusMessage
     {
         public string NetState { get; set; }
         public bool isinsync { get; set; }

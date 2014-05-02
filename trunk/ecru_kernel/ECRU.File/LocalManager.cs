@@ -16,6 +16,11 @@ namespace ECRU.File
 
         public LocalManager(string path)
         {
+            DirectoryInfo files = new DirectoryInfo(path);
+            if (!files.Exists)
+            {
+                files.Create();
+            }
             MasterPath = path; 
         }
 
@@ -96,6 +101,10 @@ namespace ECRU.File
 
                                 }
                             }
+                        }
+                        else
+                        {
+                            return CreateFile(path);
                         }
                     }
                     return null;
@@ -223,6 +232,13 @@ namespace ECRU.File
                 return false;
             }
         }
+
+        public FileInfo[] GetFiles()
+        {
+            DirectoryInfo files = new DirectoryInfo(MasterPath);
+            return files.GetFiles();
+        }
+
 
     }
 }
