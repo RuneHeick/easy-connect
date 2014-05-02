@@ -24,16 +24,18 @@ namespace ECRU.netd
         private static String _netstate;
         private static bool _isInSync;
 
-        static readonly object Lock = new object(); 
+        private static object Lock = new object();
+        private static object _lockNetstate = new object();
 
-        private static event NetworkTableChange UpdatedUnit;
+        private static event NetworkTableChange AddUnit;
         private static event NetworkTableChange RemovedUnit;
         private delegate void NetworkTableChange(Neighbour neighbour);
 
         
         static NetworkTable()
         {
-            UpdatedUnit += (NeighbourAdded);
+            _isInSync = true;
+            AddUnit += (NeighbourAdded);
             RemovedUnit += (NeighbourRemoved);
         }
 
@@ -45,10 +47,6 @@ namespace ECRU.netd
 
             // update request devices from roomunit
             EventBus.Publish(new NewConnectionMessage { ConnectionCallback = RequestedDevices, ConnectionType = "RequestDevices", Receiver = neighbour.Mac.FromHex() });
-
-            // network status -> eventbus
-            EventBus.Publish(new NetworkStatusMessage{isinsync = _isInSync, NetState = _netstate});
-
         }
 
         private static void NeighbourRemoved(Neighbour neighbour)
@@ -59,7 +57,7 @@ namespace ECRU.netd
             SystemInfo.ConnectionOverview.Remove(neighbour.Mac.FromHex());
 
             // network status -> eventbus
-            EventBus.Publish(new NetworkStatusMessage{isinsync = _isInSync, NetState = _netstate});
+            networkStatus();
         }
 
         private static void Add(Neighbour neighbour)
@@ -73,20 +71,51 @@ namespace ECRU.netd
                 netstateIPList = netstateIPList.Add(neighbour.IP.ToString());
 
                 //Call event
-                UpdatedUnit(neighbour);
+                AddUnit(neighbour);
             }
             else
             {
                 var neb = Neighbours[neighbour.Mac] as Neighbour;
 
-                //if ip not identical - device has received new IP
-                if (neb == null || neb.IP.ToString() == neighbour.IP.ToString()) return;
+                if (neb == null) return;
                 
                 //overwrite unit
+                Neighbours.Remove(neb.Mac);
                 Neighbours[neighbour.Mac] = neighbour;
 
-                //Call event
-                UpdatedUnit(neighbour);
+                if (!Equals(neb.IP, neighbour.IP))
+                {
+                    //if ip not identical - device ip has to be added to the table
+                    netstateIPList = netstateIPList.Remove(neb.IP.ToString());
+                    netstateIPList = netstateIPList.Add(neighbour.IP.ToString());
+
+                    //Update netstate to reflect changes
+                    UpdateNetstate();
+                    networkStatus();
+                }
+                else if (neb.Netstate != neighbour.Netstate)
+                {
+                    networkStatus();
+                }
+                
+            }
+        }
+
+        private static void networkStatus()
+        {
+            lock (Lock)
+            {
+                var tmpNetworkStatus = _isInSync;
+
+                foreach (Neighbour neighbour in Neighbours.Values)
+                {
+                    if (neighbour.Netstate == _netstate) continue;
+                    _isInSync = false;
+                }
+                if (tmpNetworkStatus != _isInSync)
+                {
+                    EventBus.Publish(new NetworkStatusMessage { isinsync = _isInSync, NetState = _netstate });
+                }
             }
         }
 
@@ -176,32 +205,26 @@ namespace ECRU.netd
 
         private static void UpdateNetstate()
         {
-            string data = null;
-
-            netstateIPList = netstateIPList.Quicksort(0, (netstateIPList.Length - 1) );
-
-            foreach (var s in netstateIPList)
+            lock (_lockNetstate)
             {
-                data += s;
+                string data = null;
+                netstateIPList = netstateIPList.Quicksort(0, (netstateIPList.Length - 1));
+
+                foreach (var s in netstateIPList)
+                {
+                    data += s;
+                }
+
+                var buffer = data.StringToBytes();
+
+                var md5State = new MD5();
+
+                md5State.HashCore(buffer, 0, buffer.Length);
+
+                _netstate = md5State.HexStr();
             }
-            
-            var buffer = data.StringToBytes();
-
-            var md5State = new MD5();
-
-            md5State.HashCore(buffer, 0, buffer.Length);
-
-            _netstate = md5State.HexStr();
 
             Debug.Print("Netstate: " + _netstate);
-
-            _isInSync = true;
-
-            foreach (Neighbour neighbour in Neighbours.Values)
-            {
-                if (neighbour.Netstate == _netstate) continue;
-                _isInSync = false;
-            }
 
             NetstateChanged(_netstate);
         }
@@ -258,6 +281,9 @@ namespace ECRU.netd
                             {
                                 SystemInfo.ConnectionOverview.Add(nMac.FromHex(), nDevice.FromHex());
                             }
+
+                            // network status -> eventbus
+                            networkStatus();
                         }
                     }
                     catch (Exception exception)

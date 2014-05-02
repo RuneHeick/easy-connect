@@ -82,13 +82,6 @@ namespace ECRU
                 //
 
                 Debug.Print(SystemInfo.SystemMAC.ToHex());
-
-
-
-
-
-
-
                 _netDaemon.Start();
             }
             catch (Exception exception)
@@ -99,6 +92,9 @@ namespace ECRU
 
             (new BLEModule()).Start();
 
+            SystemInfo.ConnectedDevices.Add("E68170E5C578".FromHex());
+
+            SystemInfo.ConnectedDevices.Add("F83A228CBA1C".FromHex());
 
             //(new Thread(() =>
             //{
@@ -111,18 +107,18 @@ namespace ECRU
 
             //Thread.Sleep(15000);
 
-            EventBus.Publish(new NewConnectionMessage { ConnectionCallback = test3, ConnectionType = "SetECMData", Receiver = SystemInfo.SystemMAC });
+            //EventBus.Publish(new NewConnectionMessage { ConnectionCallback = test3, ConnectionType = "SetECMData", Receiver = SystemInfo.SystemMAC });
 
-            Thread.Sleep(15000);
-            EventBus.Publish(new NewConnectionMessage { ConnectionCallback = test2, ConnectionType = "RequestECMData", Receiver = SystemInfo.SystemMAC });
+            //Thread.Sleep(15000);
+            //EventBus.Publish(new NewConnectionMessage { ConnectionCallback = test2, ConnectionType = "RequestECMData", Receiver = SystemInfo.SystemMAC });
 
             //while (true)
             //{
             //    Thread.Sleep(10000);
-            //    SystemInfo.ConnectedDevices.Add("B3E795EE1C11".FromHex());
+            //    SystemInfo.ConnectedDevices.Add("E68170E5C578".FromHex());
 
             //    Thread.Sleep(10000);
-            //    SystemInfo.ConnectedDevices.Remove("B3E795EE1C11".FromHex());
+            //    SystemInfo.ConnectedDevices.add("F83A228CBA1C".FromHex());
             //}
             
             Thread.Sleep(Timeout.Infinite);

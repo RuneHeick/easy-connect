@@ -117,6 +117,7 @@ namespace ECRU.netd
             EventBus.Unsubscribe(typeof(RecivedBroadcastMessage), MacSync.MacSync.GotDeviceNetworkEvent);
             EventBus.Unsubscribe(typeof(RecivedBroadcastMessage), MacSync.MacSync.LostDeviceNetworkEvent);
 
+            if (SystemInfo.ConnectedDevices == null) return;
             SystemInfo.ConnectedDevices.MacAdded -= MacSync.MacSync.GotDevice;
             SystemInfo.ConnectedDevices.MacRemoved -= MacSync.MacSync.LostDevice;
         }
