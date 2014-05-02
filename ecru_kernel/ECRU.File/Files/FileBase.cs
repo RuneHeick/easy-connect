@@ -15,6 +15,7 @@ namespace ECRU.File.Files
         {
             if (Closefunc != null)
                 Closefunc(this);
+            Closefunc = null; 
         }
     }
 
