@@ -485,6 +485,22 @@ namespace ECRU.File
             ArrayList PacketSendTo = new ArrayList();
             Hashtable FileState = new Hashtable();
 
+            FileInfo[] files = NetFileManager.GetFiles();
+
+            foreach (FileInfo f in files)
+            {
+                string infoname = Path.GetFileNameWithoutExtension(f.Name) + ".info";
+                string filename = f.Name;
+
+                FileBase b = InfoManager.GetReadOnlyFile(infoname);
+                if (b != null)
+                {
+                    InfoFile infof = new InfoFile(b);
+
+                    AddINTable(filename, FileState, infof.Version, Utilities.SystemInfo.SystemMAC, this);
+                }
+            }
+            
 
             foreach (string RU in Users)
             {
@@ -527,31 +543,7 @@ namespace ECRU.File
                             
                             lock(FileState)
                             {
-                                if(FileState.Contains(Path))
-                                {
-                                    Hashtable file = FileState[Path] as Hashtable;
-                                    if (file.Contains(resiver.ToHex()))
-                                    {
-                                        file[resiver.ToHex()] = version; 
-                                    }
-                                    else
-                                    {
-                                        file.Add(resiver.ToHex(), version); 
-                                    }
-                                    
-                                }
-                                else
-                                {
-                                    Hashtable table = new Hashtable();
-                                    table.Add(resiver.ToHex(),version);
-
-                                    foreach (string user in item.Users)
-                                    {
-                                        table.Add(user,0);
-                                    }
-
-                                    FileState.Add(Path, table);
-                                }
+                                AddINTable(Path, FileState, version,resiver, item);
                             }
 
                         }
@@ -577,6 +569,35 @@ namespace ECRU.File
 
             }
 
+        }
+
+        private static void AddINTable(string Path, Hashtable FileState, long version, byte[] resiver, CordinatorRole item)
+        {
+            if (FileState.Contains(Path))
+            {
+                Hashtable file = FileState[Path] as Hashtable;
+                if (file.Contains(resiver.ToHex()))
+                {
+                    file[resiver.ToHex()] = version;
+                }
+                else
+                {
+                    file.Add(resiver.ToHex(), version);
+                }
+
+            }
+            else
+            {
+                Hashtable table = new Hashtable();
+                table.Add(resiver.ToHex(), version);
+
+                foreach (string user in item.Users)
+                {
+                    table.Add(user, 0);
+                }
+
+                FileState.Add(Path, table);
+            }
         }
 
         private void GetNewestFiles(Hashtable FileState)
