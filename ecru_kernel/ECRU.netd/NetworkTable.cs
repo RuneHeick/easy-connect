@@ -34,7 +34,7 @@ namespace ECRU.netd
         
         static NetworkTable()
         {
-            _isInSync = true;
+            _isInSync = false;
             AddUnit += (NeighbourAdded);
             RemovedUnit += (NeighbourRemoved);
         }
@@ -107,6 +107,7 @@ namespace ECRU.netd
             {
                 var tmpNetworkStatus = _isInSync;
 
+                _isInSync = true;
                 foreach (Neighbour neighbour in Neighbours.Values)
                 {
                     if (neighbour.Netstate == _netstate) continue;
@@ -273,6 +274,8 @@ namespace ECRU.netd
                             if (nMac == null) continue;
 
                             SystemInfo.ConnectionOverview.Add(nMac.FromHex());
+                            // network status -> eventbus
+                            networkStatus();
 
                             var nDevices = result["Devices"] as ArrayList;
 
@@ -282,8 +285,6 @@ namespace ECRU.netd
                                 SystemInfo.ConnectionOverview.Add(nMac.FromHex(), nDevice.FromHex());
                             }
 
-                            // network status -> eventbus
-                            networkStatus();
                         }
                     }
                     catch (Exception exception)

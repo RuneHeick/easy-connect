@@ -92,9 +92,9 @@ namespace ECRU
 
             (new BLEModule()).Start();
 
-            SystemInfo.ConnectedDevices.Add("E68170E5C578".FromHex());
+            //SystemInfo.ConnectedDevices.Add("E68170E5C578".FromHex());
 
-            SystemInfo.ConnectedDevices.Add("F83A228CBA1C".FromHex());
+            //SystemInfo.ConnectedDevices.Add("F83A228CBA1C".FromHex());
 
             //(new Thread(() =>
             //{
