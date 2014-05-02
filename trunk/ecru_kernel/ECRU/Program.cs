@@ -22,34 +22,9 @@ namespace ECRU
     {
 
         private static Netd _netDaemon = new Netd();
-
-        private static void NetworkAvailabilityChangedHandler(object sender, NetworkAvailabilityEventArgs e)
-        {
-            if (e.IsAvailable)
-            {
-                try
-                {
-                    _netDaemon.LoadConfig("");
-                    _netDaemon.Start();
-                }
-                catch (Exception exception)
-                {
-                    Debug.Print("Network error: " + exception.Message + " stacktrace: " + exception.StackTrace);
-                }
-                
-            }
-            else
-            {
-                try
-                {
-                    _netDaemon.Stop();
-                }
-                catch (Exception exception)
-                {
-                    Debug.Print("Network error: " + exception.Message + " stacktrace: " + exception.StackTrace);
-                }
-            }
-        }
+        private static BLEModule _bleModule = null;
+        
+        
 
         /// <summary>
         ///     Main Launches the ECRU kernel
@@ -61,14 +36,16 @@ namespace ECRU
             Thread.Sleep(5000);
 
             
-            NetworkChange.NetworkAvailabilityChanged += NetworkAvailabilityChangedHandler;
+            //State 1 Load SystemInfo configuration
+            //GetSystemInfoConfig();
             
+
             try
             {
                 _netDaemon.LoadConfig("");
 
                 var tmp = IPAddress.GetDefaultLocalAddress().ToString().Split('.');
-                string n = "ECEC";
+                var n = "ECEC";
                 foreach (string s in tmp)
                 {
                     n += s;
@@ -92,158 +69,31 @@ namespace ECRU
 
             (new BLEModule()).Start();
 
-            //SystemInfo.ConnectedDevices.Add("E68170E5C578".FromHex());
+            SystemInfo.ConnectedDevices.Add("E68170E5C578".FromHex());
+            SystemInfo.ConnectedDevices.Add("F83A228CBA1C".FromHex());
 
-            //SystemInfo.ConnectedDevices.Add("F83A228CBA1C".FromHex());
-
-            //(new Thread(() =>
-            //{
-            //    FileBase file = FileSystem.GetFile("E68170E5C578.val", FileAccess.ReadWrite, FileType.Local);
-            //    ECRU.BLEController.Util.DeviceInfoValueFile t = new ECRU.BLEController.Util.DeviceInfoValueFile(file);
-
-            //    t.Update(35, new byte[] { 0x22, 0x22, 0xEC, 0xEC });
-            //    t.Close();
-            //})).Start();
-
-            //Thread.Sleep(15000);
-
-            //EventBus.Publish(new NewConnectionMessage { ConnectionCallback = test3, ConnectionType = "SetECMData", Receiver = SystemInfo.SystemMAC });
-
-            //Thread.Sleep(15000);
-            //EventBus.Publish(new NewConnectionMessage { ConnectionCallback = test2, ConnectionType = "RequestECMData", Receiver = SystemInfo.SystemMAC });
-
-            //while (true)
-            //{
-            //    Thread.Sleep(10000);
-            //    SystemInfo.ConnectedDevices.Add("E68170E5C578".FromHex());
-
-            //    Thread.Sleep(10000);
-            //    SystemInfo.ConnectedDevices.add("F83A228CBA1C".FromHex());
-            //}
-            
             Thread.Sleep(Timeout.Infinite);
         }
 
-        public static void test(Socket s, byte[] receiver)
+        private static void GetSystemInfoConfig()
         {
-            using (s)
+            var SysConfigFileBase = FileSystem.GetFile("SystemInfo.cfg", FileAccess.Read, FileType.Local);
+
+            if (SysConfigFileBase != null)
             {
-                try
-                {
-                    var connectioninfo = s.RemoteEndPoint as IPEndPoint;
-                    if (connectioninfo != null)
-                        Debug.Print("Connected to: " + connectioninfo.Address + ":" + connectioninfo.Port);
+                var sysConfigFile = new ConfigFile(SysConfigFileBase);
 
-                    s.Send("E68170E5C578".FromHex());
-                    
-                    var waitingForData = true;
+                SystemInfo.SystemMAC = sysConfigFile["SystemMac"].FromHex();
+                SystemInfo.Name = sysConfigFile["Name"];
+                SystemInfo.PassCode = sysConfigFile["PassCode"];
 
-                    while (waitingForData)
-                    {
-                        waitingForData = !s.Poll(10, SelectMode.SelectRead) && !s.Poll(10, SelectMode.SelectError);
-
-                        if (s.Available > 0)
-                        {
-                            var availableBytes = s.Available;
-
-                            var buffer = new byte[availableBytes];
-
-                            var bytesReceived = s.Receive(buffer);
-
-                            if (bytesReceived == availableBytes)
-                            {
-                                Debug.Print("Got device information");
-                            }
-                        }
-                    }
-                }
-                catch (Exception exception)
-                {
-                    Debug.Print("Network error: " + exception.Message + " stacktrace: " + exception.StackTrace);
-                }
-                finally
-                {
-                    if (s != null)
-                    {
-                        s.Close();
-                    }
-                }
+                
             }
-        }
-
-        public static void test2(Socket s, byte[] receiver)
-        {
-            using (s)
+            else
             {
-                try
-                {
-                    var connectioninfo = s.RemoteEndPoint as IPEndPoint;
-                    if (connectioninfo != null)
-                        Debug.Print("Connected to: " + connectioninfo.Address + ":" + connectioninfo.Port);
-
-                    s.Send("E68170E5C5780023".FromHex());
-
-                    var waitingForData = true;
-
-                    while (waitingForData)
-                    {
-                        waitingForData = !s.Poll(10, SelectMode.SelectRead) && !s.Poll(10, SelectMode.SelectError);
-
-                        if (s.Available > 0)
-                        {
-                            var availableBytes = s.Available;
-
-                            var buffer = new byte[availableBytes];
-
-                            var bytesReceived = s.Receive(buffer);
-
-                            if (bytesReceived == availableBytes)
-                            {
-                                Debug.Print("Got device information");
-                            }
-                        }
-                    }
-                }
-                catch (Exception exception)
-                {
-                    Debug.Print("Network error: " + exception.Message + " stacktrace: " + exception.StackTrace);
-                }
-                finally
-                {
-                    if (s != null)
-                    {
-                        s.Close();
-                    }
-                }
+                SysConfigFileBase = FileSystem.CreateFile("SystemInfo.cfg", FileType.Local);
             }
+            
         }
-
-        public static void test3(Socket s, byte[] receiver)
-        {
-            using (s)
-            {
-                try
-                {
-                    var connectioninfo = s.RemoteEndPoint as IPEndPoint;
-                    if (connectioninfo != null)
-                        Debug.Print("Connected to: " + connectioninfo.Address + ":" + connectioninfo.Port);
-
-                    s.Send("E68170E5C5780023ECECECEC".FromHex());
-
-                }
-                catch (Exception exception)
-                {
-                    Debug.Print("Network error: " + exception.Message + " stacktrace: " + exception.StackTrace);
-                }
-                finally
-                {
-                    if (s != null)
-                    {
-                        s.Close();
-                    }
-                }
-            }
-        }
-
     }
 }
