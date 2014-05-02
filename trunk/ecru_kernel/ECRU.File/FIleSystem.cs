@@ -12,7 +12,7 @@ namespace ECRU.File
         const string NetworkPath = @"\SD\Shared";
 
         static NetworkManager networkManager;
-        static LocalManager localManager; 
+        static LocalManager localManager;
 
         static FileSystem()
         {
@@ -31,11 +31,10 @@ namespace ECRU.File
                 }
                 networkManager = new NetworkManager(NetworkPath);
                 localManager = new LocalManager(LocalPath);
-                networkManager.StartNetShare();
             }
             else
             {
-                //no SD
+                // NO SD
             }
         }
 
@@ -43,34 +42,41 @@ namespace ECRU.File
 
         public static FileBase GetFile(string path, FileAccess access, FileType type)
         {
-            if(type == FileType.Local)
+            if (type == FileType.Local)
             {
-                if(access == FileAccess.Read)
+                if (access == FileAccess.Read)
                 {
-                    return localManager.GetReadOnlyFile(path); 
+                    return localManager.GetReadOnlyFile(path);
                 }
                 else
                 {
-                    return localManager.GetFile(path); 
+                    return localManager.GetFile(path);
                 }
             }
             else
             {
-
+                if (access == FileAccess.Read)
+                {
+                    return networkManager.GetReadOnlyFile(path);
+                }
+                else
+                {
+                    return networkManager.GetFile(path);
+                }
             }
 
-            return null; 
+            return null;
         }
 
         public static FileBase CreateFile(string path, FileType type)
         {
             if (type == FileType.Local)
             {
-                return localManager.CreateFile(path); 
+                return localManager.CreateFile(path);
             }
             else
             {
-
+                return networkManager.GetFile(path);
             }
 
 
@@ -79,9 +85,13 @@ namespace ECRU.File
 
         public static bool Exists(string path, FileType type)
         {
-            if(type == FileType.Local)
+            if (type == FileType.Local)
             {
                 return localManager.FileExists(path);
+            }
+            else
+            {
+                return networkManager.FileExists(path);
             }
 
             return false;
@@ -92,6 +102,10 @@ namespace ECRU.File
             if (type == FileType.Local)
             {
                 localManager.DeleteFile(path);
+            }
+            else
+            {
+                networkManager.DeleteFile(path);
             }
         }
 
