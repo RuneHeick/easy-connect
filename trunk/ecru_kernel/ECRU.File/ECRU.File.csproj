@@ -37,7 +37,6 @@
     <Compile Include="LocalManager.cs" />
     <Compile Include="NetworkManager.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="FileSystem.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="Microsoft.SPOT.Native">
