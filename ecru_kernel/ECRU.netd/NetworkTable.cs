@@ -200,7 +200,7 @@ namespace ECRU.netd
 
             var timeDifference = DateTime.Now - lastSeen;
 
-            return timeDifference.Ticks <= (TimeSpan.TicksPerMinute*3);
+            return timeDifference.Ticks <= (TimeSpan.TicksPerSecond*31);
         }
 
 

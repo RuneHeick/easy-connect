@@ -19,118 +19,138 @@ namespace ECRU.netd
         private string _ip;
         private int _port;
 
+        private int resets = 0;
+
         //setup subscriptions
         //setup ethernet after config
         //Network Discovery
         //Send network packets
         //get direct packets
         //get broadcast packets
-        //
+
+        public Netd() 
+        {
+            NetworkChange.NetworkAvailabilityChanged += NetworkAvailabilityChangedHandler;
+            _port = 4543;
+        }
 
         public void LoadConfig(string configFilePath)
         {
-            Debug.Print("Loading NetDaemon Configuration from " + configFilePath);
-
-            //wait for interfaces (Magic number dont change)
-            //Thread.Sleep(3000);
-
-            //var config = SD.ReadConfugurationFromFile(configFilePath);
-            //
-
-            //
-            //throw new NotImplementedException();
-
             //Network interface configuration
             
             var networkAdapter = NetworkInterface.GetAllNetworkInterfaces()[0];
 
             //Setup network configuration (Dynamic DNS/DCHP on ethernet interface)
-            if (networkAdapter.NetworkInterfaceType != NetworkInterfaceType.Ethernet)
+            if (networkAdapter == null || networkAdapter.NetworkInterfaceType != NetworkInterfaceType.Ethernet)
             {
-                throw new NotImplementedException();
+                Stop();
             }
-
-            var networkConfig = new EthernetConfig {EthernetInterface = networkAdapter, DynamicIP = true};
-
 
             try
             {
+                var networkConfig = new EthernetConfig {EthernetInterface = networkAdapter, DynamicIP = true};
                 networkConfig.InitNetworkInterface();
+                _ip = networkConfig.EthernetInterface.IPAddress;
+                
+                if (_ip.Equals("0.0.0.0"))
+                {
+                    throw new IPAddressNotValidException();
+                }
+
+                //Network Table Configuration
+                NetworkTable.SetLocalIP = networkConfig.EthernetInterface.IPAddress;
             }
             catch (Exception exception)
             {
                 Debug.Print("Network Config error: " + exception.Message + " stacktrace: " + exception.StackTrace);
-                throw;
+                Reset();
             }
 
-            _ip = networkConfig.EthernetInterface.IPAddress;
-
-            if (_ip.Equals("0.0.0.0"))
-            {
-                throw new Exception();
-            }
-
-            _port = 4543;
-
-            //Network Discovery Configuration
-            //netd.BroadcastNetworkDiscovery.UDPPort = _port;
-            //netd.BroadcastNetworkDiscovery.LocalIP = _ip.ToString();
-            //netd.BroadcastNetworkDiscovery.SubnetMask = networkAdapter.SubnetMask;
-            //netd.BroadcastNetworkDiscovery.BroadcastIntrevalSeconds = 30;
-            //netd.BroadcastNetworkDiscovery.EnableBroadcast = true;
-            //netd.BroadcastNetworkDiscovery.EnableListener = true;
-
-            //Network Table Configuration
-            NetworkTable.SetLocalIP = networkConfig.EthernetInterface.IPAddress;
-
-            //Network Communication Configuration
-
-
-            //Filesync sentbroadcast config
-            //Broadcast.LocalIP = networkConfig.EthernetInterface.IPAddress;
-            //Broadcast.SubnetMask = networkConfig.EthernetInterface.SubnetMask;
+            //Network Configuration done
 
             Debug.Print("Network config done. IP: " + _ip);
         }
 
         public void Start()
         {
-            //netd.BroadcastNetworkDiscovery.Start();
-            EasyConnectTCP.Start();
-            EasyConnectUDP.Start();
-            NetworkDiscovery.Start();
-            EventBus.Subscribe(typeof (ConnectionRequestMessage), MacSync.MacSync.RequestDevices);
-            EventBus.Subscribe(typeof (RecivedBroadcastMessage), MacSync.MacSync.GotDeviceNetworkEvent);
-            EventBus.Subscribe(typeof (RecivedBroadcastMessage), MacSync.MacSync.LostDeviceNetworkEvent);
+            try
+            {
+                EasyConnectTCP.Start();
+                EasyConnectUDP.Start();
+                NetworkDiscovery.Start();
+                EventBus.Subscribe(typeof(ConnectionRequestMessage), MacSync.MacSync.RequestDevices);
+                EventBus.Subscribe(typeof(RecivedBroadcastMessage), MacSync.MacSync.GotDeviceNetworkEvent);
+                EventBus.Subscribe(typeof(RecivedBroadcastMessage), MacSync.MacSync.LostDeviceNetworkEvent);
 
-            SystemInfo.ConnectedDevices.MacAdded += MacSync.MacSync.GotDevice;
-            SystemInfo.ConnectedDevices.MacRemoved += MacSync.MacSync.LostDevice;
+                if (SystemInfo.ConnectedDevices != null)
+                {
+                    SystemInfo.ConnectedDevices.MacAdded += MacSync.MacSync.GotDevice;
+                    SystemInfo.ConnectedDevices.MacRemoved += MacSync.MacSync.LostDevice;
+                }
+                else
+                {
+                    //The system was not configured correctly
+                    Stop();
+                }
 
-            EventBus.Publish(new NetworkStatusMessage { isinsync = true, NetState = "000000000000" });
+                //start sucess reset counter
+                resets = 0;
+
+                EventBus.Publish(new NetworkStatusMessage { isinsync = true, NetState = "000000000000" });
+            }
+            catch (Exception exception)
+            {
+                Debug.Print("Network start error: " + exception.Message + " stacktrace: " + exception.StackTrace);
+                Reset();
+            }
+            
         }
 
         public void Stop()
         {
-            //netd.BroadcastNetworkDiscovery.Stop();
-            EasyConnectTCP.Stop();
-            EasyConnectUDP.Stop();
-            NetworkDiscovery.Stop();
-            EventBus.Unsubscribe(typeof (ConnectionRequestMessage), MacSync.MacSync.RequestDevices);
-            EventBus.Unsubscribe(typeof(RecivedBroadcastMessage), MacSync.MacSync.GotDeviceNetworkEvent);
-            EventBus.Unsubscribe(typeof(RecivedBroadcastMessage), MacSync.MacSync.LostDeviceNetworkEvent);
+            try
+            {
+                EasyConnectTCP.Stop();
+                EasyConnectUDP.Stop();
+                NetworkDiscovery.Stop();
+                EventBus.Unsubscribe(typeof (ConnectionRequestMessage), MacSync.MacSync.RequestDevices);
+                EventBus.Unsubscribe(typeof (RecivedBroadcastMessage), MacSync.MacSync.GotDeviceNetworkEvent);
+                EventBus.Unsubscribe(typeof (RecivedBroadcastMessage), MacSync.MacSync.LostDeviceNetworkEvent);
 
-            if (SystemInfo.ConnectedDevices == null) return;
-            SystemInfo.ConnectedDevices.MacAdded -= MacSync.MacSync.GotDevice;
-            SystemInfo.ConnectedDevices.MacRemoved -= MacSync.MacSync.LostDevice;
+                if (SystemInfo.ConnectedDevices == null) return;
+                SystemInfo.ConnectedDevices.MacAdded -= MacSync.MacSync.GotDevice;
+                SystemInfo.ConnectedDevices.MacRemoved -= MacSync.MacSync.LostDevice;
+            }
+            catch (Exception exception)
+            {
+                Debug.Print("Network stop error: " + exception.Message + " stacktrace: " + exception.StackTrace);
+            }
         }
 
         public void Reset()
         {
-            throw new NotImplementedException();
+            Stop();
+
+            if (resets > 3) return;
+
+            LoadConfig("");
+            Start();
         }
 
-        private void BroadcastNetworkDiscovery()
+        private void NetworkAvailabilityChangedHandler(object sender, NetworkAvailabilityEventArgs e)
         {
+
+            if (e.IsAvailable)
+            {
+                LoadConfig("");
+                Start();
+
+            }
+            else
+            {
+                Stop();
+            }
         }
+
     }
 }
