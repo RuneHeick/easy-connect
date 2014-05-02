@@ -105,6 +105,8 @@ namespace ECRU.netd
 
             SystemInfo.ConnectedDevices.MacAdded += MacSync.MacSync.GotDevice;
             SystemInfo.ConnectedDevices.MacRemoved += MacSync.MacSync.LostDevice;
+
+            EventBus.Publish(new NetworkStatusMessage { isinsync = true, NetState = "000000000000" });
         }
 
         public void Stop()
