@@ -91,19 +91,10 @@ namespace ECRU.netd
             catch (Exception exception)
             {
                 Debug.Print("Start network discovery listener failed: " + exception.Message + " Stacktrace: " + exception.StackTrace);
-                if (_receiveSocket != null && _receiveSocket.Poll(-1, SelectMode.SelectRead))
+                if (_receiveSocket != null)
                 {
                     _receiveSocket.Close();
                 }
-
-                foreach (Thread t in _listenerThreadsArrayList)
-                {
-                    if (t.IsAlive)
-                    {
-                        t.Abort();
-                    }
-                }
-                _listenerThreadsArrayList.Clear();
             }
         }
 
