@@ -52,7 +52,6 @@ namespace ECRU.File
                 {
                     //I am cordinator 
                     cordinator = new CordinatorRole(InfoManager,NetFileManager);
-                    isOnline = true;
                 }
             }
             isOnline = true; 
@@ -76,10 +75,11 @@ namespace ECRU.File
                 NetworkStatusMessage changed = msg as NetworkStatusMessage;
                 if (changed != null)
                 {
+                    Debug.Print("is in Sync: " + changed.isinsync.ToString());
+                    Debug.Print("NetStage: " + changed.NetState.ToString()); 
                     if (isOnline == true && changed.isinsync == false)
                     {
                         StopNetShare();
-
                     }
                     if (isOnline == true && changed.isinsync == true)
                     {
