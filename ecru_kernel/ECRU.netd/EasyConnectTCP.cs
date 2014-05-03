@@ -245,15 +245,22 @@ namespace ECRU.netd
             var con = connection as Socket;
             if (con != null)
             {
-                con.Send("Not Accepted".StringToBytes());
-                con.Close();
+                try
+                {
+                    con.Send("Not Accepted".StringToBytes());
+                }
+                finally
+                {
+                    con.Close();
+                }
                 lock (_lock)
                 {
-                    if (!_connectionRequests.Contains(con)) return;
-
-                    var timer = _connectionRequests[con] as ECTimer;
-                    _connectionRequests.Remove(con);
-                    if (timer != null) timer.Stop();
+                    if (_connectionRequests.Contains(con))
+                    {
+                        var timer = _connectionRequests[con] as ECTimer;
+                        _connectionRequests.Remove(con);
+                        if (timer != null) timer.Stop();
+                    }
                 }
             }
         }
