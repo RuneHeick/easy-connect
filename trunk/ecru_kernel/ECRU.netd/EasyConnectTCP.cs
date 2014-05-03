@@ -194,29 +194,32 @@ namespace ECRU.netd
                 if (bytesSent == length)
                 {
                     var waitingForData = true;
+                    var TimeOut = false; 
+                    DateTime start = DateTime.Now; 
 
                     while (waitingForData)
                     {
                         waitingForData = !send.Poll(10, SelectMode.SelectRead) && !send.Poll(10, SelectMode.SelectError);
 
+                        if( ((DateTime.Now - start).Ticks / TimeSpan.TicksPerMillisecond) > 10000)
+                            throw new TimeOutException(); 
+
                         if (send.Available > 0)
                         {
                             var buffer = new byte[send.Available];
 
-                            send.Receive(buffer);
-                            Debug.Print("Data from sendRequest: " + buffer.GetString());
-                            switch (buffer.GetString())
+                            if (0 != send.Receive(buffer) && buffer.GetString() == "Accepted")
                             {
-                                case "Accepted":
-                                    new Thread(() => msg.ConnectionCallback(send, msg.Receiver)).Start();
-                                    waitingForData = false;
-                                    break;
-
-                                default:
-                                    new Thread(() => msg.ConnectionCallback(null, msg.Receiver)).Start();
-                                    waitingForData = false;
-                                    break;
+                                Debug.Print("Accepted Request: " + buffer.GetString());
+                                new Thread(() => msg.ConnectionCallback(send, msg.Receiver)).Start();
                             }
+                            else
+                            {
+                                send.Close(); // only close if not used; 
+                                new Thread(() => msg.ConnectionCallback(null, msg.Receiver)).Start();
+                            }
+
+                            waitingForData = false;
                         }
                     }
 
