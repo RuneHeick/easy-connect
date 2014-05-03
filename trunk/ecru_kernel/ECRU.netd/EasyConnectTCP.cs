@@ -252,8 +252,7 @@ namespace ECRU.netd
                 }
             }
         }
-
-        
+    
         public static Socket GetSocket(Socket connection)
         {
             Socket con = null;

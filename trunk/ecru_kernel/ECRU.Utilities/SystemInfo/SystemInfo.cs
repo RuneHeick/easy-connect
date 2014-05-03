@@ -15,7 +15,7 @@ namespace ECRU.Utilities
 
         public static byte[] SystemID
         {
-            get { return sysId; }
+            get { return doHash(PassCode); }
         }
 
         public static string PassCode
@@ -24,7 +24,6 @@ namespace ECRU.Utilities
             set
             {
                 passCode = value;
-                sysId = doHash(passCode);
             }
         }
 
