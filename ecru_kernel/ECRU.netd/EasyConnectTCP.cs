@@ -233,6 +233,7 @@ namespace ECRU.netd
             if (con != null)
             {
                 con.Send("Not Accepted".StringToBytes());
+                con.Close();
                 lock (_lock)
                 {
                     if (!_connectionRequests.Contains(con)) return;
@@ -241,7 +242,6 @@ namespace ECRU.netd
                     _connectionRequests.Remove(con);
                     if (timer != null) timer.Stop();
                 }
-                con.Close();
             }
         }
 
