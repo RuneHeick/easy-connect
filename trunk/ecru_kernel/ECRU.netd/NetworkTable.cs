@@ -36,7 +36,7 @@ namespace ECRU.netd
         {
             get
             {
-                return NetworkDiscovery.BroadcastIntrevalSeconds * 3;
+                return NetworkDiscovery.BroadcastIntrevalSeconds * 5;
             }
         }
         static NetworkTable()

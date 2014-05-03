@@ -425,23 +425,27 @@ namespace ECRU.File
             {
                 if(RU != Utilities.SystemInfo.SystemMAC.ToHex())
                 {
-                    NewConnectionMessage rq = new NewConnectionMessage() { Receiver = RU.FromHex(), ConnectionType = NetworkManager.connectionRQType, ConnectionCallback = (socket, r) => UpdateFileConnection(mutex.path, socket, this) };
+                    NewConnectionMessage rq = new NewConnectionMessage() { Receiver = RU.FromHex(), ConnectionType = NetworkManager.connectionRQType, ConnectionCallback = (socket, r) => UpdateFileConnection(mutex.path,r, socket, this) };
                     EventBus.Publish(rq);
                 }
             } 
         }
 
-        private static void UpdateFileConnection(string path, Socket socket, CordinatorRole item)
+        private static void UpdateFileConnection(string path, byte[] receiver, Socket socket, CordinatorRole item)
         {
-            if (socket != null && item.Disposed == false)
+            if (item.Disposed)
+            {
+                if (socket != null)
+                    socket.Close();
+                return;
+            }
+
+            if (socket != null)
             {
                     FileBase file = null;
                     FileBase info = null;
                 try
                 {
-
-                    if (item.HasMutex(path) == false)
-                    {
                         file = item.NetFileManager.GetFile(path);
                         if (file != null)
                         {
@@ -468,7 +472,6 @@ namespace ECRU.File
 
                             socket.Send(data);
                         }
-                    }
                 }
                 finally
                 {
@@ -483,6 +486,11 @@ namespace ECRU.File
                     }
                 }
 
+            }
+            else
+            {
+                NewConnectionMessage rq = new NewConnectionMessage() { Receiver = receiver, ConnectionType = NetworkManager.connectionRQType, ConnectionCallback = (s, r) => UpdateFileConnection(path, r, s, item) };
+                EventBus.Publish(rq);
             }
         }
 
@@ -513,8 +521,11 @@ namespace ECRU.File
 
             foreach (string RU in Users)
             {
-                lock (PacketSendTo)
-                    PacketSendTo.Add(RU); 
+                if (RU != Utilities.SystemInfo.SystemMAC.ToHex())
+                {
+                    lock (PacketSendTo)
+                        PacketSendTo.Add(RU);
+                }  
             }
 
             foreach (string RU in Users)
@@ -523,13 +534,21 @@ namespace ECRU.File
                 {
                     NewConnectionMessage rq = new NewConnectionMessage() { Receiver = RU.FromHex(), ConnectionType = NetworkManager.connectionRQType, ConnectionCallback = (socket, resiver) => FileStateConnection(socket, resiver, PacketSendTo, FileState, this) };
                     EventBus.Publish(rq);
+                    
                 }
             } 
         }
 
         private static void FileStateConnection(Socket socket, byte[] resiver, ArrayList PacketSendTo, Hashtable FileState, CordinatorRole item)
         {
-            if (socket != null && item.Disposed == false)
+            if (item.Disposed)
+            {
+                if (socket != null)
+                    socket.Close();
+                return;
+            }
+
+            if (socket != null)
             {
                 try
                 {
@@ -540,7 +559,7 @@ namespace ECRU.File
 
                     while (waitingForData)
                     {
-                        waitingForData = !socket.Poll(10, SelectMode.SelectRead) && !socket.Poll(10, SelectMode.SelectError);
+                        waitingForData = !socket.Poll(-1, SelectMode.SelectRead) && !socket.Poll(-1, SelectMode.SelectError);
 
                         if (socket.Available > 8)
                         {
@@ -566,19 +585,22 @@ namespace ECRU.File
                     }
                 }
 
-            }
-
-
-            lock (PacketSendTo)
-            {
-                PacketSendTo.Remove(resiver.ToHex());
-                if (PacketSendTo.Count == 0)
+                lock (PacketSendTo)
                 {
-                    item.GetNewestFiles(FileState);
+                    PacketSendTo.Remove(resiver.ToHex());
+                    if (PacketSendTo.Count == 0)
+                    {
+                        item.GetNewestFiles(FileState);
+                    }
                 }
             }
+            else //Retry;
+            {
+                NewConnectionMessage rq = new NewConnectionMessage() { Receiver = resiver, ConnectionType = NetworkManager.connectionRQType, ConnectionCallback = (so, re) => FileStateConnection(so, re, PacketSendTo, FileState, item) };
+                EventBus.Publish(rq);
+                return;
 
-
+            }
 
         }
 
@@ -649,13 +671,13 @@ namespace ECRU.File
                         {
                             Filestates.Remove(Utilities.SystemInfo.SystemMAC.ToHex());
                         }
+                        UpdateFiles(path, Filestates, best.version, this);
                     }
 
                     file.Close(); 
                 }
             }
-            if(HasAllFiles)
-                StartCordinator();
+                
 
         }
 
@@ -666,7 +688,7 @@ namespace ECRU.File
 
             foreach (object key in Filestates.Keys)
             {
-                long version = (long)Filestates[key];
+                long version = Convert.ToInt64(Filestates[key].ToString());
                 string mac = key as string;
 
                 if (version > bestVersion)
@@ -683,8 +705,15 @@ namespace ECRU.File
 
         private static void GetFileConnection(Socket socket, byte[] resiver, string path, Hashtable MasterFileStates, long version, CordinatorRole item)
         {
+
+            if (item.Disposed)
+            {
+                if (socket != null)
+                    socket.Close();
+                return;
+            }
             
-            if(socket != null && item.Disposed == false)
+            if(socket != null)
             {
                 try
                 {
@@ -724,11 +753,11 @@ namespace ECRU.File
 
                             if (item.InfoManager.FileExists(Path.GetFileNameWithoutExtension(path) + ".info"))
                             {
-                                item.InfoManager.GetFile(Path.GetFileNameWithoutExtension(path) + ".info");
+                                File_info = item.InfoManager.GetFile(Path.GetFileNameWithoutExtension(path) + ".info");
                             }
                             else
                             {
-                                item.InfoManager.CreateFile(Path.GetFileNameWithoutExtension(path) + ".info");
+                                File_info = item.InfoManager.CreateFile(Path.GetFileNameWithoutExtension(path) + ".info");
                             }
 
                             if (File_file != null && File_info != null)
@@ -743,7 +772,6 @@ namespace ECRU.File
                                 File_file.Close();
 
                             break; 
-
                         }
                     }
                 }
@@ -755,53 +783,52 @@ namespace ECRU.File
                     }
                 }
 
-                lock (MasterFileStates)
-                {
-                    // Update Others 
-                    if (MasterFileStates.Contains(path))
-                    {
-                        Hashtable FileStates = MasterFileStates[path] as Hashtable;
-                        FileStates.Remove(Utilities.SystemInfo.SystemMAC.ToHex()); // Remove Self. 
-
-                        foreach (object key in FileStates.Keys)
-                        {
-                            long ver = (long)FileStates[key];
-                            string mac = key as string;
-
-                            if (ver < version)
-                            {
-                                NewConnectionMessage rq = new NewConnectionMessage() { Receiver = mac.FromHex(), ConnectionType = NetworkManager.connectionRQType, ConnectionCallback = (s, r) => UpdateFileConnection(path, s, item) };
-                                EventBus.Publish(rq);
-                            }
-
-                        }
-
-
-
-                    }
-                }
-
-
-                // Check if Last 
-
-                lock (MasterFileStates)
-                {
-                    foreach (object Mkey in MasterFileStates.Keys)
-                    {
-                        Hashtable FileStates = MasterFileStates[Mkey] as Hashtable;
-                        if(FileStates.Contains(Utilities.SystemInfo.SystemMAC.ToHex()))
-                        {
-                            item.StartCordinator();
-                            break; 
-                        }
-
-                    }
-                }
-
-
+                UpdateFiles(path,MasterFileStates, version, item);
 
             }
+            else
+            {
+                NewConnectionMessage rq = new NewConnectionMessage() { Receiver = resiver, ConnectionType = NetworkManager.connectionRQType, ConnectionCallback = (so, re) => GetFileConnection(so, re, path, MasterFileStates, version, item) };
+                EventBus.Publish(rq);
+            }
 
+        }
+
+
+        private static void UpdateFiles(string path, Hashtable MasterFileStates, long version, CordinatorRole item)
+        {
+            lock (MasterFileStates)
+            {
+                // Update Others 
+                if (MasterFileStates.Contains(path))
+                {
+                    Hashtable FileStates = MasterFileStates[path] as Hashtable;
+                    FileStates.Remove(Utilities.SystemInfo.SystemMAC.ToHex()); // Remove Self. 
+
+                    foreach (object key in FileStates.Keys)
+                    {
+                        long ver = Convert.ToInt64(FileStates[key].ToString());
+                        string mac = key as string;
+
+                        if (ver < version)
+                        {
+                            NewConnectionMessage rq = new NewConnectionMessage() { Receiver = mac.FromHex(), ConnectionType = NetworkManager.connectionRQType, ConnectionCallback = (s, r) => UpdateFileConnection(path,r, s, item) };
+                            EventBus.Publish(rq);
+                        }
+                        else
+                        {
+                            FileStates.Remove(key);
+                            if (FileStates.Count == 0)
+                                MasterFileStates.Remove(path);
+                        }
+                    }
+
+                    if (MasterFileStates.Count == 0) // Check if Last 
+                    {
+                        item.StartCordinator();
+                    }
+                }
+            }
         }
 
         private void StartCordinator()
