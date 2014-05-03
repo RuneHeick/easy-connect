@@ -48,6 +48,7 @@ namespace ECRU.File
             {
                 // Get device with lowest Mac
                 cordinatorAddrs = ECRU.Utilities.SystemInfo.ConnectionOverview.GetSortedMasters()[0].FromHex();
+                Debug.Print("CORDINATOR LOAD : " + cordinatorAddrs.ToHex());
                 if (cordinatorAddrs.ByteArrayCompare(ECRU.Utilities.SystemInfo.SystemMAC))
                 {
                     //I am cordinator 
