@@ -192,15 +192,15 @@ namespace ECRU.netd
                 if (bytesSent == length)
                 {
                     var waitingForData = true;
-                    var TimeOut = false; 
-                    DateTime start = DateTime.Now; 
+                    var TimeOut = false;
+                    DateTime start = DateTime.Now;
 
                     while (waitingForData)
                     {
                         waitingForData = !send.Poll(10, SelectMode.SelectRead) && !send.Poll(10, SelectMode.SelectError);
 
-                        if( ((DateTime.Now - start).Ticks / TimeSpan.TicksPerMillisecond) > 10000)
-                            throw new TimeOutException(); 
+                        if (((DateTime.Now - start).Ticks / TimeSpan.TicksPerMillisecond) > 60000)
+                            throw new TimeOutException();
 
                         if (send.Available > 0)
                         {
@@ -222,6 +222,10 @@ namespace ECRU.netd
                     }
 
                 }
+            }
+            catch (TimeOutException exception)
+            {
+
             }
             catch (Exception exception)
             {
