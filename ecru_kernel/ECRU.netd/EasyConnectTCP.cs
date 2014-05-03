@@ -112,40 +112,57 @@ namespace ECRU.netd
         {
             Debug.Print("Connection from: " + connection.RemoteEndPoint);
             var waitingForData = true;
-
-            while (waitingForData)
+            try
             {
-                waitingForData = !connection.Poll(10, SelectMode.SelectRead) && !connection.Poll(10, SelectMode.SelectError);
-
-                if (connection.Available > 0)
+                while (waitingForData)
                 {
-                    var availableBytes = connection.Available;
+                    waitingForData = !connection.Poll(10, SelectMode.SelectRead) &&
+                                     !connection.Poll(10, SelectMode.SelectError);
 
-                    var buffer = new byte[availableBytes];
-
-                    var bytesReceived = connection.Receive(buffer);
-
-                    if (bytesReceived == availableBytes)
+                    if (connection.Available > 0)
                     {
-                        waitingForData = false;
-                        var timer = new ECTimer(ConnectionTimeout, connection, 5000, Timeout.Infinite);
-                        timer.Start();
+                        var availableBytes = connection.Available;
 
-                        var msg = new ConnectionRequestMessage() { connectionType = buffer.GetString(), GetSocket = () => GetSocket(connection) };
+                        var buffer = new byte[availableBytes];
 
-                        lock (_lock)
+                        var bytesReceived = connection.Receive(buffer);
+
+                        if (bytesReceived == availableBytes)
                         {
-                            _connectionRequests[connection] = timer;
-                        }
+                            waitingForData = false;
+                            var timer = new ECTimer(ConnectionTimeout, connection, 5000, Timeout.Infinite);
+                            timer.Start();
 
-                        //new eventbus event with
-                        EventBus.Publish(msg);
+                            var msg = new ConnectionRequestMessage()
+                            {
+                                connectionType = buffer.GetString(),
+                                GetSocket = () => GetSocket(connection)
+                            };
+
+                            lock (_lock)
+                            {
+                                _connectionRequests[connection] = timer;
+                            }
+
+                            //new eventbus event with
+                            EventBus.Publish(msg);
+                        }
                     }
                 }
             }
-            if (_listenerThreadsArrayList.Contains(Thread.CurrentThread))
+            catch (Exception exception)
             {
-                _listenerThreadsArrayList.Remove(Thread.CurrentThread);
+                if (connection != null)
+                {
+                    connection.Close();
+                }
+            }
+            finally
+            {
+                if (_listenerThreadsArrayList.Contains(Thread.CurrentThread))
+                {
+                    _listenerThreadsArrayList.Remove(Thread.CurrentThread);
+                }
             }
         }
 
