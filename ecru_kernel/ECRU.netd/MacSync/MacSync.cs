@@ -80,6 +80,7 @@ namespace ECRU.netd.MacSync
                 var obj = new Utilities.DeviceMacList();
 
                 obj.mac = SystemInfo.SystemMAC.ToHex();
+                obj.Name = SystemInfo.Name;
 
                 foreach (byte[] device in connectedDevices)
                 {
