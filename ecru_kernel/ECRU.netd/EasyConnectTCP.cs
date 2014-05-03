@@ -100,6 +100,7 @@ namespace ECRU.netd
                     {
                         t.Abort();
                     }
+                    _listenerThreadsArrayList.Remove(t);
                 }
             }
         }
@@ -139,9 +140,9 @@ namespace ECRU.netd
                     }
                 }
             }
-            if (!_connectionRequests.Contains(connection))
+            if (_listenerThreadsArrayList.Contains(Thread.CurrentThread))
             {
-                connection.Close();
+                _listenerThreadsArrayList.Remove(Thread.CurrentThread);
             }
         }
 
@@ -159,10 +160,12 @@ namespace ECRU.netd
 
             //Start Sender for EasyConnectTCP
             Debug.Print("Starting EasyConnectTCP SendRequest");
+
+            Socket send = null;
             try
             {
                 if (msg == null) return;
-                var send = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+                send = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
 
                 var ip = NetworkTable.GetAddress(msg.Receiver.ToHex());
 
@@ -195,12 +198,12 @@ namespace ECRU.netd
                             switch (buffer.GetString())
                             {
                                 case "Accepted":
-                                    new Thread(() => msg.ConnectionCallback.Invoke(send, msg.Receiver)).Start();
+                                    new Thread(() => msg.ConnectionCallback(send, msg.Receiver)).Start();
                                     waitingForData = false;
                                     break;
 
                                 default:
-                                    new Thread(() => msg.ConnectionCallback.Invoke(null, msg.Receiver)).Start();
+                                    new Thread(() => msg.ConnectionCallback(null, msg.Receiver)).Start();
                                     waitingForData = false;
                                     break;
                             }
@@ -212,6 +215,10 @@ namespace ECRU.netd
             catch (Exception exception)
             {
                 Debug.Print("SendRequest failed: " + exception.Message + " Stacktrace: " + exception.StackTrace);
+                if (send != null)
+                {
+                    send.Close();
+                }
                 new Thread(() => { if (msg != null) msg.ConnectionCallback.Invoke(null, msg.Receiver); }).Start();
             }
             
@@ -228,10 +235,13 @@ namespace ECRU.netd
                 con.Send("Not Accepted".StringToBytes());
                 lock (_lock)
                 {
+                    if (!_connectionRequests.Contains(con)) return;
+
                     var timer = _connectionRequests[con] as ECTimer;
                     _connectionRequests.Remove(con);
-                    timer.Stop();
+                    if (timer != null) timer.Stop();
                 }
+                con.Close();
             }
         }
 
