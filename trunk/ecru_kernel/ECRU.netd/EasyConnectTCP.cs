@@ -120,14 +120,17 @@ namespace ECRU.netd
                         if (bytesReceived == availableBytes)
                         {
                             waitingForData = false;
-                            var timer = new ECTimer(ConnectionTimeout, connection, 5000, Timeout.Infinite);
+                            var timer = new ECTimer(ConnectionTimeout, connection, 10000, Timeout.Infinite);
                             timer.Start();
+
 
                             var msg = new ConnectionRequestMessage()
                             {
                                 connectionType = buffer.GetString(),
                                 GetSocket = () => GetSocket(connection)
                             };
+
+                            Debug.Print("Connection Type RQ: " + msg.connectionType);
 
                             lock (_lock)
                             {
@@ -158,28 +161,23 @@ namespace ECRU.netd
 
         private static void SendRequest(object message)
         {
-            NewConnectionMessage msg = null;
-            try
-            {
-                msg = message as NewConnectionMessage;
-            }
-            catch (Exception exception)
-            {
-                Debug.Print("SendRequest failed: " + exception.Message + " Stacktrace: " + exception.StackTrace);
-            }
-
+            NewConnectionMessage msg = message as NewConnectionMessage;
+            if (msg == null) return;
             //Start Sender for EasyConnectTCP
             Debug.Print("Starting EasyConnectTCP SendRequest");
 
             Socket send = null;
             try
             {
-                if (msg == null) return;
-                send = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-
                 var ip = NetworkTable.GetAddress(msg.Receiver.ToHex());
 
-                //var ip = IPAddress.GetDefaultLocalAddress();
+                if (ip == null)
+                {
+                    new Thread(() => msg.ConnectionCallback(null, msg.Receiver)).Start();
+                    return;
+                }
+
+                send = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
 
                 var destination = new IPEndPoint(ip, Port);
 
@@ -207,8 +205,8 @@ namespace ECRU.netd
                         if (send.Available > 0)
                         {
                             var buffer = new byte[send.Available];
-
-                            if (0 != send.Receive(buffer) && buffer.GetString() == "Accepted")
+                            string s;
+                            if (0 != send.Receive(buffer) && buffer.GetString() != null && buffer.GetString() == "Accepted")
                             {
                                 Debug.Print("Accepted Request: " + buffer.GetString());
                                 new Thread(() => msg.ConnectionCallback(send, msg.Receiver)).Start();
