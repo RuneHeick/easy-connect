@@ -88,7 +88,10 @@ namespace ECRU.netd
                 netstateIPList = netstateIPList.Add(neighbour.IP.ToString());
 
                 //Call event
-                AddUnit(neighbour);
+                if (AddUnit != null)
+                    AddUnit(neighbour);
+
+                networkStatus();
             }
             else
             {
@@ -110,7 +113,7 @@ namespace ECRU.netd
                     UpdateNetstate();
                     networkStatus();
                 }
-                else if (_netstate != neighbour.Netstate)
+                else if (neb.Netstate != neighbour.Netstate)
                 {
                     networkStatus();
                 }
@@ -158,7 +161,7 @@ namespace ECRU.netd
                 netstateIPList = new[] { SetLocalIP };
             }
 
-            var neighbour = Neighbours[mac] as Neighbour ?? new Neighbour(mac);
+            var neighbour = new Neighbour(mac);
 
             neighbour.IP = ipAddress;
             neighbour.Netstate = netstate;
