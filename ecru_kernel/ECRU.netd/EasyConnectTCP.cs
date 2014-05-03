@@ -236,7 +236,7 @@ namespace ECRU.netd
                 {
                     send.Close();
                 }
-                new Thread(() => { if (msg != null) msg.ConnectionCallback.Invoke(null, msg.Receiver); }).Start();
+                new Thread(() => { if (msg != null) msg.ConnectionCallback(null, msg.Receiver); }).Start();
             }
             
         }
