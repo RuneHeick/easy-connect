@@ -44,7 +44,7 @@ namespace ECRU.netd
 
         public static void Stop()
         {
-            if (_receiveSocket != null && _receiveSocket.Poll(-1, SelectMode.SelectRead))
+            if (_receiveSocket != null)
             {
                 _receiveSocket.Close();
             }
