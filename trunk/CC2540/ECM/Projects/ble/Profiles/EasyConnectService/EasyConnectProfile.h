@@ -133,9 +133,10 @@ extern bStatus_t SimpleProfile_GetParameter( uint16 address, GenericValue* value
 
 extern void SimpleProfile_SetItemLocked(bool isLocked);
 extern void SimpleProfile_RegistreUnreadCallback(simpleProfileUnreadValueChange_t call);
+extern void SimpleProfile_RegistreBLEWriteCallback(simpleProfileUnreadValueChange_t call); 
+
 /*********************************************************************
 *********************************************************************/
-
 #ifdef __cplusplus
 }
 #endif

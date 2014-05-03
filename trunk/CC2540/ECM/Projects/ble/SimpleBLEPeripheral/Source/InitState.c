@@ -30,6 +30,8 @@
 #include "SmartCommandsProperties.h"
 #include "ECConnect.h"
 
+#include "FileManager.h"
+
 /*********************************************************************
  * CONSTANTS
  */
@@ -84,14 +86,22 @@
  */
 
 // GAP - SCAN RSP data (max size = 31 bytes)
-static GenericValue scanRspData;
+static GenericValue scanRspData = { .status = NOT_INIT, .pValue = NULL, .size = 0  };
 static uint8 TarskID;
 static bool IsInit = false; 
 
 static uint8 ScanLen = 0; 
+static bool StartDevice(); 
 
 void InitState_HandelUartPacket(osal_event_hdr_t * msg);
 uint16 addChar(uint8* buffer, uint8 count);
+
+pBuffer_t GAPManget_GetName()
+{
+  if(scanRspData.status == READY)
+    return (pBuffer_t) {scanRspData.size-9-2, &scanRspData.pValue[2] }; 
+  return (pBuffer_t) {0, NULL }; 
+}
 
 uint8 GAPManget_SetupName(char* DeviceName, uint8 nameSize)
 {
@@ -126,7 +136,7 @@ uint8 GAPManget_SetupName(char* DeviceName, uint8 nameSize)
     scanRspData.pValue[size++] = GAP_ADTYPE_POWER_LEVEL;
     scanRspData.pValue[size++] = 0 ;     // 0dBm
     
-    
+    ScanLen = size;
     return size; 
 }
 
@@ -308,9 +318,31 @@ void InitState_HandelUartPacket(osal_event_hdr_t * msg)
        }
        break;
     }
+    
+    case COMMAND_START:
+    {
+       if(StartDevice())
+       {
+         Uart_Send_Response(ack,1);
+       }
+       break;
+    }
+    
   }
   
 }
+
+
+static bool StartDevice()
+{
+  if(ScanLen != 0 && SmartCommandServices_Count != 0)
+  {
+    SimpleBLEPeripheral_SwitchState(NORMALSTATE_INDEX);
+    return true;  
+  }
+  return false; 
+}
+
 
 uint16 addChar(uint8* buffer, uint8 count)
 {
@@ -331,50 +363,53 @@ uint16 addChar(uint8* buffer, uint8 count)
     if(write) 
       rdwr = rdwr|GATT_PERMIT_WRITE;
     
-    PresentationFormat Format;
+    PresentationFormat Format = (PresentationFormat){0,0,0,0,0};
     Format.Format = buffer[1];
     GUIPresentationFormat FormatByteSize = (GUIPresentationFormat){buffer[2],buffer[3]};
     uint8 GPIO = buffer[4];
     uint8 size = buffer[5];
-    
-    
-    
-    return SmartCommandsManger_addCharacteristic(size,&buffer[6],count-6, FormatByteSize, Format,sub , rdwr); 
+      
+    return SmartCommandsManger_addCharacteristic(size,&buffer[6],count-6, FormatByteSize, Format,sub , rdwr,GPIO); 
   }
   
   return false; 
 }
 
+
+
+
+
 void InitState_Enter(uint8 tarskID)
-{
+{ 
+  ECConnect_Reset(); // must be before FileManager_Load 
+  
+  FileManager_Load(); // has an image in Flash 
+  StartDevice(); //Start if Image is Loaded. 
+  
+  
   TarskID = tarskID;
-  Uart_Subscribe(tarskID,0x11);
-  Uart_Subscribe(tarskID,0x12);
-  Uart_Subscribe(tarskID,0x13);
-  Uart_Subscribe(tarskID,0x14);
+  Uart_Subscribe(tarskID,COMMAND_DEVICENAME);
+  Uart_Subscribe(tarskID,COMMAND_MANIFACTURE);
+  Uart_Subscribe(tarskID,COMMAND_MODELNR);
+  Uart_Subscribe(tarskID,COMMAND_SERIALNR);
   Uart_Subscribe(tarskID,COMMAND_SMARTFUNCTION);
-  
-  
-  if(IsInit==false)
-  {
-    char name[] = "Runes meget meget lange navn som er længer end man tror";
-    DevInfo_SetParameter(DEVINFO_MANUFACTURER_NAME,strlen(name),name);
-    SimpleBLEPeripheral_SwitchState(NORMALSTATE_INDEX);
-    IsInit = true; 
-  }
-  
-  
-  
+  Uart_Subscribe(tarskID,COMMAND_GENRICVALUE);
+  Uart_Subscribe(tarskID,COMMAND_REANGES);
+  Uart_Subscribe(tarskID,COMMAND_START);
+ 
 }
 
 void InitState_Exit()
 {
   
-  Uart_Unsubscribe(TarskID,0x11);
-  Uart_Unsubscribe(TarskID,0x12);
-  Uart_Unsubscribe(TarskID,0x13);
-  Uart_Unsubscribe(TarskID,0x14);
+  Uart_Unsubscribe(TarskID,COMMAND_DEVICENAME);
+  Uart_Unsubscribe(TarskID,COMMAND_MANIFACTURE);
+  Uart_Unsubscribe(TarskID,COMMAND_MODELNR);
+  Uart_Unsubscribe(TarskID,COMMAND_SERIALNR);
   Uart_Unsubscribe(TarskID,COMMAND_SMARTFUNCTION);
+  Uart_Unsubscribe(TarskID,COMMAND_GENRICVALUE);
+  Uart_Unsubscribe(TarskID,COMMAND_REANGES);
+  Uart_Unsubscribe(TarskID,COMMAND_START);
   
   // Setup the GAP Peripheral Role Profile
   {
@@ -385,7 +420,6 @@ void InitState_Exit()
     uint16 desired_slave_latency = DEFAULT_DESIRED_SLAVE_LATENCY;
     uint16 desired_conn_timeout = DEFAULT_DESIRED_CONN_TIMEOUT;
     
-    ScanLen = GAPManget_SetupName("TEST",4);
     GAPRole_SetParameter( GAPROLE_SCAN_RSP_DATA, ScanLen*sizeof( uint8 ) , scanRspData.pValue );
     Setup_discoverableMode(DEFAULT_DISCOVERABLE_MODE,false,0);
     
@@ -455,5 +489,8 @@ void InitState_Exit()
   
       // Start Bond Manager
   VOID GAPBondMgr_Register( &simpleBLEPeripheral_BondMgrCBs );
-    
+  
+  
+  FileManager_Save(); //Save Image To Flash; 
+
 }

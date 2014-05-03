@@ -160,8 +160,8 @@ namespace UartTester.Commands
                     packet.Add((byte)GUI);
                     packet.Add((byte)GUIcolor);
                     packet.Add(GPIO);
-                    packet.AddRange(descript);
                     packet.Add(MaxSize);
+                    packet.AddRange(descript);
 
                     return packet.ToArray();
                 }

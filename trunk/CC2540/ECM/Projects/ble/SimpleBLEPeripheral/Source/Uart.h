@@ -11,7 +11,7 @@
 #define UART_ACK_TIMEOUT_TIME   (uint32)RETRANSMIT_TIME*0.9
 
 #define RETRY_COUNT 3
-#define UART_MAX_SUBCRIPTIONS 10
+#define UART_MAX_SUBCRIPTIONS 15
 #define UART_BUFFER_SIZE 128
 
 
@@ -24,6 +24,16 @@
 #define COMMAND_SMARTFUNCTION   0x15
 #define COMMAND_GENRICVALUE     0x16
 #define COMMAND_REANGES         0x17
+#define COMMAND_START           0x18
+
+#define SOFTRESET               0x20
+#define PASSCLEARRESET          0x21
+#define FACTORYRESET            0x22
+
+#define READ                    0x30
+#define UPDATE                  0x31
+#define WRITE                   0x40
+
 
 #define UART_RQ 0x0005
 

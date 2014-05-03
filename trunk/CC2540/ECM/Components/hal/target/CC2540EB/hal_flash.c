@@ -71,6 +71,7 @@ void HalFlashRead(uint8 pg, uint16 offset, uint8 *buf, uint16 cnt)
   // Calculate the offset into the containing flash bank as it gets mapped into XDATA.
   uint8 *ptr = (uint8 *)(offset + HAL_FLASH_PAGE_MAP) +
                ((pg % HAL_FLASH_PAGE_PER_BANK) * HAL_FLASH_PAGE_SIZE);
+  
   uint8 memctr = MEMCTR;  // Save to restore.
 
 #if !defined HAL_OAD_BOOT_CODE

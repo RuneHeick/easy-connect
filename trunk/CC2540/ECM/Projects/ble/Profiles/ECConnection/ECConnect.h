@@ -1,5 +1,5 @@
 #pragma once 
-
+#include "bcomdef.h"
 
 #define SYSID_SIZE 8
 #define ECCONNECT_STARTTIME 60000 // in ms
@@ -14,6 +14,8 @@ typedef enum
 }ECC_Status_t;
 
 typedef void (*ECConnect_StatusChange_t)(ECC_Status_t newState );
+
+typedef void (*ECConnect_GotPassCode)(void);
 
 extern ECC_Status_t ECConnect_AcceptedHost;
 
@@ -66,3 +68,11 @@ extern uint16 ECConnect_ProcessEvent( uint8 task_id, uint16 events );
     This is called if there is any changes in the ECConnect State. 
  */
 extern void ECConnect_RegistreChangedCallback(ECConnect_StatusChange_t handler);
+
+extern void ECConnect_RegistrePassCodeCallback(ECConnect_GotPassCode handler);
+
+extern uint8* GetSetSystemID();
+
+extern void ECConnect_Reset();
+
+extern void ECConnect_ClearPassCode();

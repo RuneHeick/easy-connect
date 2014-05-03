@@ -92,6 +92,7 @@ gattCharCfg_t UpdateConfig[GATT_MAX_NUM_CONN];
 
 static bool EC_isLocked = TRUE; 
 static simpleProfileUnreadValueChange_t  unreadValueChange = NULL;
+static simpleProfileUnreadValueChange_t  blewriteChangedData = NULL;
 /*********************************************************************
  * LOCAL FUNCTIONS
  */
@@ -133,6 +134,12 @@ void SimpleProfile_RegistreUnreadCallback(simpleProfileUnreadValueChange_t call)
   unreadValueChange = call;
 }
 
+void SimpleProfile_RegistreBLEWriteCallback(simpleProfileUnreadValueChange_t call)
+{
+  blewriteChangedData = call;
+}
+
+
 /*********************************************************************
  * @fn      SimpleProfile_AddService
  *
@@ -155,7 +162,7 @@ bStatus_t SimpleProfile_AddService( uint32 services )
   // Register with Link DB to receive link status change callback
   VOID linkDB_Register( simpleProfile_HandleConnStatusCB );  
     
-  
+  /*
   
   SmartService* Testservice = SmartCommandsManger_CreateService("Lav Kaffe",10); 
   SmartCommandsManger_addCharacteristic(50,"Antal kopper",13,(GUIPresentationFormat){00,00},(PresentationFormat){1,2,3,4,5},NONE,GATT_PERMIT_READ|GATT_PERMIT_WRITE);
@@ -166,6 +173,16 @@ bStatus_t SimpleProfile_AddService( uint32 services )
   status = GATTServApp_RegisterService( Testservice->llReg, 
                                           SmartCommandsManger_ElementsInService(Testservice),
                                           &simpleProfileCBs );
+  */
+  
+  SmartCommandsManger_CompileServices();
+  
+  for(uint8 i = 0; i < SmartCommandServices_Count; i++)
+  {
+    status = GATTServApp_RegisterService( SmartCommandServices[i]->llReg, 
+                                          SmartCommandsManger_ElementsInService(SmartCommandServices[i]),
+                                          &simpleProfileCBs );
+  }
   
   return ( status );
 }
@@ -293,6 +310,7 @@ static uint8 simpleProfile_ReadAttrCB( uint16 connHandle, gattAttribute_t *pAttr
       //   included here
       // characteristic 4 does not have read permissions, but because it
       //   can be sent as a notification, it is included here
+      case DESCRIPTIONSTR_CHARACTERISTICS_UUID:
       case GENERICVALUE_CHARACTERISTICS_UUID:
         {
           GenericValue* value = (GenericValue*) pAttr->pValue;
@@ -308,22 +326,6 @@ static uint8 simpleProfile_ReadAttrCB( uint16 connHandle, gattAttribute_t *pAttr
             return ( ATT_ERR_INVALID_OFFSET );
           }
         }
-        
-      case DESCRIPTIONSTR_CHARACTERISTICS_UUID:
-        {
-          uint8 len = strlen(pAttr->pValue);
-          if(offset<=len)
-          {
-            *pLen = len-offset>maxLen ? maxLen: len-offset;
-            osal_memcpy(pValue,&pAttr->pValue[offset],*pLen); 
-            break;
-          }
-          else
-          {
-            return ( ATT_ERR_INVALID_OFFSET );
-          }
-        }
-        
       case SUPSCRIPTIONOPTION_DESCRIPTOR_UUID:
         {
           Subscription* value = (Subscription*) pAttr->pValue;
@@ -428,6 +430,10 @@ static bStatus_t simpleProfile_WriteAttrCB( uint16 connHandle, gattAttribute_t *
           if(offset+len<=value->size)
           {
             osal_memcpy(&value->pValue[offset],pValue,len);
+            
+            if(blewriteChangedData != NULL)
+              blewriteChangedData(true,GetCharacteristicUartHandle(value));
+                
             break;
           }
           else

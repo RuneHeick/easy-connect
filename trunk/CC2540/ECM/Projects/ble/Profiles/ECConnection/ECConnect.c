@@ -59,7 +59,8 @@ CONST uint8 ecConnectUpdateTimeUUID[ATT_BT_UUID_SIZE] =
 
 ECC_Status_t ECConnect_AcceptedHost = DISCONNECTED; 
 
-ECConnect_StatusChange_t CallBackhandler = NULL; 
+static ECConnect_StatusChange_t CallBackhandler = NULL; 
+static ECConnect_GotPassCode   passCodeCallback = NULL;
 /*********************************************************************
  * EXTERNAL VARIABLES
  */
@@ -91,6 +92,8 @@ static uint32 UpdateTime = ECCONNECT_STARTTIME;
 /*********************************************************************
  * Profile Attributes - Table
  */
+
+
 
 static gattAttribute_t ECConnectAttrTbl[] =
 {
@@ -187,10 +190,8 @@ CONST gattServiceCBs_t ECConnectCBs =
  */
 bStatus_t ECConnect_AddService()
 {
-  ECConnect_Reset();
   KnownAddresList = GenericList_create();
   LastSysClock = osal_GetSystemClock();
-  osal_memset(SysID,0,SYSID_SIZE);
   
   VOID linkDB_Register( ECConnect_HandleConnStatusCB );  
   // Register GATT attribute list and CBs with GATT Server App
@@ -358,6 +359,8 @@ static uint8 ECConnect_WriteAttrCB( uint16 connHandle, gattAttribute_t *pAttr,
           if(osal_memcmp(SysID,InitialSysID,SYSID_SIZE)==TRUE)
           {
               osal_memcpy(SysID,pValue,len);
+              if(passCodeCallback)
+                passCodeCallback();
               addConnectionToList();
           }
           else if(osal_memcmp(SysID,pValue,len))
@@ -523,4 +526,22 @@ void ECConnect_Init( uint8 task_id )
 void ECConnect_RegistreChangedCallback(ECConnect_StatusChange_t handler)
 {
   CallBackhandler = handler;
+}
+
+void ECConnect_RegistrePassCodeCallback(ECConnect_GotPassCode handler)
+{
+  passCodeCallback = handler;
+}
+
+
+uint8* GetSetSystemID()
+{
+    return InitialSysID;
+}
+
+void ECConnect_ClearPassCode()
+{
+    ECConnect_Reset();
+    if(passCodeCallback)
+      passCodeCallback();       
 }

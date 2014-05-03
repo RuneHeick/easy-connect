@@ -95,56 +95,63 @@ namespace UartTester
         private List<byte> buffer = new List<byte>(128);  
         void serialport_DataReceived(object sender, SerialDataReceivedEventArgs e)
         {
-            int bytetoread = serialport.BytesToRead;
-            byte[] resived = new byte[bytetoread];
-            serialport.Read(resived, 0, bytetoread);
-
-            if (buffer.Count == 0)
+            try
             {
-                buffer.Add(resived[0]);
-                buffer.Add(resived[1]);
-                --bytetoread;
-                byte[] temp = new byte[--bytetoread];
-                if (temp != null)
-                {
-                    Array.Copy(resived, 2, temp, 0, bytetoread);
-                    resived = temp;
-                }
-            }
+                int bytetoread = serialport.BytesToRead;
+                byte[] resived = new byte[bytetoread];
+                serialport.Read(resived, 0, bytetoread);
 
-            if (buffer.Count > 0)
-            {
-                int len = (buffer[1] & 0x7F)+1;
-
-                if (len >= buffer.Count + bytetoread)
+                if (buffer.Count == 0)
                 {
-                    buffer.AddRange(resived);
-                }
-                else
-                {
-                    for (int i = 0; buffer.Count < len; i++)
+                    buffer.Add(resived[0]);
+                    buffer.Add(resived[1]);
+                    --bytetoread;
+                    byte[] temp = new byte[--bytetoread];
+                    if (temp != null)
                     {
-                        buffer.Add(resived[i]);
+                        Array.Copy(resived, 2, temp, 0, bytetoread);
+                        resived = temp;
                     }
                 }
 
-                if (buffer.Count == len)
+                if (buffer.Count > 0)
                 {
-                    LastPacket = new SerialCommand(buffer);
-                    Application.Current.Dispatcher.Invoke(DispatcherPriority.Input, new ThreadStart(() =>
+                    int len = (buffer[1] & 0x7F) + 1;
+
+                    if (len >= buffer.Count + bytetoread)
                     {
+                        buffer.AddRange(resived);
+                    }
+                    else
+                    {
+                        for (int i = 0; buffer.Count < len; i++)
+                        {
+                            buffer.Add(resived[i]);
+                        }
+                    }
 
-                        Log.Add(new SerialCommand(buffer.ToArray().ToList()));
+                    if (buffer.Count == len)
+                    {
+                        LastPacket = new SerialCommand(buffer);
+                        Application.Current.Dispatcher.Invoke(DispatcherPriority.Input, new ThreadStart(() =>
+                        {
 
-                    }));
+                            Log.Add(new SerialCommand(buffer.ToArray().ToList()));
+
+                        }));
 
 
-                    buffer = new List<byte>();
+                        buffer = new List<byte>();
+                    }
+                    if (buffer.Count > len)
+                    {
+                        buffer.Clear(); // skulle aldrig ske;
+                    }
                 }
-                if (buffer.Count > len)
-                {
-                    buffer.Clear(); // skulle aldrig ske;
-                }
+            }
+            catch
+            {
+                buffer.Clear();
             }
 
         }
