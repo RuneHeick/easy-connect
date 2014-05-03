@@ -272,13 +272,20 @@ namespace ECRU.netd
             //end timer
             lock (_lock)
             {
-                var timer = _connectionRequests[connection] as ECTimer;
-                if (timer != null) timer.Stop();
-
                 if (_connectionRequests.Contains(connection))
                 {
+                    var timer = _connectionRequests[connection] as ECTimer;
+                    if (timer != null) timer.Stop();
+                    
                     //send message that socket is accepted
-                    connection.Send("Accepted".StringToBytes());
+                    try
+                    {
+                        connection.Send("Accepted".StringToBytes());
+                    }
+                    catch (Exception)
+                    {
+                        connection.Close();
+                    }
 
                     //remove socket and timer from connection queue
                     _connectionRequests.Remove(connection);
