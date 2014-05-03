@@ -144,9 +144,9 @@ namespace ECRU.File
 
                             case 0x05: //Get File
                                 {
-                                    string file = data.GetString();
+                                    string file = pack.GetString();
 
-                                    FileBase b = InfoManager.GetReadOnlyFile(file);
+                                    FileBase b = NetFileManager.GetReadOnlyFile(file);
                                     string infoname = Path.GetFileNameWithoutExtension(file) + ".info";
                                     FileBase i = InfoManager.GetReadOnlyFile(infoname);
 
@@ -182,7 +182,7 @@ namespace ECRU.File
                                                 InfoFile infof = new InfoFile(b);
 
                                                 byte[] packet = infof.Version.ToByte();
-                                                packet.Add(filename.StringToBytes());
+                                                packet = packet.Add(filename.StringToBytes());
                                                 socket.Send(packet);
 
                                             }
