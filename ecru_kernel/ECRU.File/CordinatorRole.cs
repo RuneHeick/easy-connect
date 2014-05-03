@@ -526,30 +526,30 @@ namespace ECRU.File
 
         private static void FileStateConnection(Socket socket, byte[] resiver, ArrayList PacketSendTo, Hashtable FileState, CordinatorRole item)
         {
-            if(socket != null && item.Disposed == false)
+            if (socket != null && item.Disposed == false)
             {
                 try
                 {
                     var waitingForData = true;
 
-                    byte[] rq = new byte[] {0x07};
-                    socket.Send(rq); 
+                    byte[] rq = new byte[] { 0x07 };
+                    socket.Send(rq);
 
                     while (waitingForData)
                     {
                         waitingForData = !socket.Poll(10, SelectMode.SelectRead) && !socket.Poll(10, SelectMode.SelectError);
 
-                        if(socket.Available > 8 )
+                        if (socket.Available > 8)
                         {
-                            byte[] data = new byte[socket.Available]; 
+                            byte[] data = new byte[socket.Available];
                             socket.Receive(data);
 
                             long version = data.ToLong(0);
-                            string Path = data.GetPart(8, data.Length - 8).GetString(); 
-                            
-                            lock(FileState)
+                            string Path = data.GetPart(8, data.Length - 8).GetString();
+
+                            lock (FileState)
                             {
-                                AddINTable(Path, FileState, version,resiver, item);
+                                AddINTable(Path, FileState, version, resiver, item);
                             }
 
                         }
@@ -563,17 +563,19 @@ namespace ECRU.File
                     }
                 }
 
-
-                lock (PacketSendTo)
-                {
-                    PacketSendTo.Remove(resiver.ToHex());
-                    if (PacketSendTo.Count == 0)
-                    {
-                        item.GetNewestFiles(FileState);
-                    }
-                }
-
             }
+
+
+            lock (PacketSendTo)
+            {
+                PacketSendTo.Remove(resiver.ToHex());
+                if (PacketSendTo.Count == 0)
+                {
+                    item.GetNewestFiles(FileState);
+                }
+            }
+
+
 
         }
 

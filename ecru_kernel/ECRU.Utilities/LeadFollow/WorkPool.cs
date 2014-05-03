@@ -20,11 +20,6 @@ namespace ECRU.Utilities.LeadFollow
             lock (poolLock)
             {
                 pool = new Thread[ThreadPoolSize];
-                for (int i = 0; i < pool.Length; i++)
-                {
-                    pool[i] = new Thread(Threadrun);
-                    pool[i].Start();
-                }
             }
         }
 
@@ -46,34 +41,17 @@ namespace ECRU.Utilities.LeadFollow
             }
         }
 
-        public void AddThisThreadNoReturn()
-        {
-            Thread thisThread = Thread.CurrentThread;
-            Thread[] Temppool = new Thread[pool.Length + 1];
-            lock (poolLock)
-            {
-                for(int i = 0; i<pool.Length;i++)
-                {
-                    Temppool[i] = pool[i];
-                    if (pool[i] == thisThread)
-                        return;
-                }
-                Temppool[pool.Length] = thisThread;
-                pool = Temppool;
-            }
-            Threadrun();
-        }
-
-
         private void TryStart()
         {
             lock (poolLock)
             {
-                foreach (Thread t in pool)
+                for (int i = 0; i < pool.Length; i++)
                 {
-                    if (t.ThreadState == ThreadState.Suspended)
+                    if (pool[i] == null || pool[i].IsAlive == false)
                     {
-                        t.Resume();
+
+                        pool[i] = new Thread(()=>Threadrun(i));
+                        pool[i].Start(); 
                         break;
                     }
                 }
@@ -95,9 +73,9 @@ namespace ECRU.Utilities.LeadFollow
         }
 
 
-        private void Threadrun()
+        private void Threadrun(int poolindex)
         {
-            while (running)
+            try
             {
                 while (actionQueue.Count > 0)
                 {
@@ -105,7 +83,31 @@ namespace ECRU.Utilities.LeadFollow
                     if (item != null)
                         item();
                 }
-                Thread.CurrentThread.Suspend();
+            }
+            catch
+            {
+                pool[poolindex] = null; 
+            }
+        }
+
+        public void StopAll()
+        {
+            lock (actionQueueLock)
+            {
+                actionQueue.Clear(); 
+            }
+
+            lock (poolLock)
+            {
+                for (int i = 0; i < pool.Length; i++)
+                {
+                    if (pool[i] != null)
+                    {
+                        if (pool[i].IsAlive == true)
+                            pool[i].Abort();
+                        pool[i] = null; 
+                    }
+                }
             }
         }
     }

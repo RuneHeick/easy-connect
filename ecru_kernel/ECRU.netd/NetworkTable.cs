@@ -46,8 +46,14 @@ namespace ECRU.netd
         {
             UpdateNetstate();
 
+            SystemInfo.ConnectionOverview.Add(neighbour.Mac.FromHex());
+
             // update request devices from roomunit
             EventBus.Publish(new NewConnectionMessage { ConnectionCallback = RequestedDevices, ConnectionType = "RequestDevices", Receiver = neighbour.Mac.FromHex() });
+
+            // network status -> eventbus
+            networkStatus();
+
         }
 
         private static void NeighbourRemoved(Neighbour neighbour)
@@ -94,7 +100,7 @@ namespace ECRU.netd
                     UpdateNetstate();
                     networkStatus();
                 }
-                else if (neb.Netstate != neighbour.Netstate)
+                else if (_netstate != neighbour.Netstate)
                 {
                     networkStatus();
                 }
@@ -229,8 +235,9 @@ namespace ECRU.netd
             }
 
             Debug.Print("Netstate: " + _netstate);
-
-            NetstateChanged(_netstate);
+            if (NetstateChanged != null)
+                NetstateChanged(_netstate);
+            networkStatus();
         }
 
 
@@ -276,9 +283,6 @@ namespace ECRU.netd
 
                             if (nMac == null) continue;
 
-                            SystemInfo.ConnectionOverview.Add(nMac.FromHex());
-                            // network status -> eventbus
-                            networkStatus();
 
                             var nDevices = result["Devices"] as ArrayList;
 

@@ -9,6 +9,7 @@ using ECRU.Utilities.HelpFunction;
 using ECRU.Utilities.Timers;
 using Microsoft.SPOT;
 using Microsoft.SPOT.Hardware;
+using ECRU.Utilities.LeadFollow;
 
 namespace ECRU.netd
 {
@@ -16,7 +17,6 @@ namespace ECRU.netd
     {
         private static Socket _receiveSocket;
 
-        private static ArrayList _listenerThreadsArrayList = new ArrayList();
         private static Thread _ecThread;
 
         public static int Port { get; set; }
@@ -45,14 +45,6 @@ namespace ECRU.netd
             if (_receiveSocket != null && _receiveSocket.Poll(-1, SelectMode.SelectRead))
             {
                 _receiveSocket.Close();
-            }
-
-            foreach (Thread thread in _listenerThreadsArrayList)
-            {
-                if (thread.IsAlive)
-                {
-                    thread.Abort();
-                }
             }
 
             if (_ecThread != null && _ecThread.IsAlive)
@@ -89,9 +81,8 @@ namespace ECRU.netd
 
                         if (endpoint1 == null || Equals(endpoint1.Address, IPAddress.GetDefaultLocalAddress()) || length < 1) continue; // packet not correct size - discard it.
 
-                        var t = new Thread(() => OnDataReceived(buffer, length, endpoint1));
-                        _listenerThreadsArrayList.Add(t);
-                        t.Start();
+                        OnDataReceived(buffer, length, endpoint1);
+                        
                     }
                     else
                     {
@@ -105,14 +96,6 @@ namespace ECRU.netd
                 if (_receiveSocket != null && _receiveSocket.Poll(-1, SelectMode.SelectRead))
                 {
                     _receiveSocket.Close();
-                }
-
-                foreach (Thread t in _listenerThreadsArrayList)
-                {
-                    if (t.IsAlive)
-                    {
-                        t.Abort();
-                    }
                 }
             }
         }
@@ -128,7 +111,6 @@ namespace ECRU.netd
                 var _messageType = data.GetPart(0, 1);
                 var _message = data.GetPart(1, length-1);
 
-                _listenerThreadsArrayList.Remove(Thread.CurrentThread);
                 if (_message.Length > 0)
                 {
                     EventBus.Publish(new RecivedBroadcastMessage { Message = _message, MessageType = _messageType, SenderIPAddress = ep.Address});
@@ -138,10 +120,6 @@ namespace ECRU.netd
             {
                 Debug.Print("EasyConnect packet incorrect: " + exception.Message + " Stacktrace: " + exception.StackTrace);
                 // packet not correct - discard it.
-                if (_listenerThreadsArrayList.Contains(Thread.CurrentThread))
-                {
-                    _listenerThreadsArrayList.Remove(Thread.CurrentThread);
-                }
             }
 
         }
