@@ -21,6 +21,7 @@ namespace ECRU.netd
         private static readonly Hashtable Neighbours = new Hashtable();
         private static string[] netstateIPList;
 
+        private static String _PublishedNetstate;
         private static String _netstate;
         private static bool _isInSync;
 
@@ -106,15 +107,17 @@ namespace ECRU.netd
             lock (Lock)
             {
                 var tmpNetworkStatus = _isInSync;
-
+                
+                
                 _isInSync = true;
                 foreach (Neighbour neighbour in Neighbours.Values)
                 {
                     if (neighbour.Netstate == _netstate) continue;
                     _isInSync = false;
                 }
-                if (tmpNetworkStatus != _isInSync)
+                if (tmpNetworkStatus != _isInSync || _PublishedNetstate != _netstate)
                 {
+                    _PublishedNetstate = _netstate;
                     EventBus.Publish(new NetworkStatusMessage { isinsync = _isInSync, NetState = _netstate });
                 }
             }

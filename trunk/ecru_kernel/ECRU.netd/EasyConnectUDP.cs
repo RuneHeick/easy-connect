@@ -121,7 +121,7 @@ namespace ECRU.netd
         {
 
             var ep = sender as IPEndPoint;
-            Debug.Print(data.ToHex() + " received from: " + ep.Address + " with length: " + length);
+            Debug.Print(data.ToHex().Substring(0,length*2) + " received from: " + ep.Address + " with length: " + length);
 
             try
             {
