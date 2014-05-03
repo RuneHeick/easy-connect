@@ -17,7 +17,7 @@ namespace ECRU.netd
     public static class NetworkTable
     {
         public static event NetworkStateChange NetstateChanged;
-   
+
         private static readonly Hashtable Neighbours = new Hashtable();
         private static string[] netstateIPList;
 
@@ -32,7 +32,13 @@ namespace ECRU.netd
         private static event NetworkTableChange RemovedUnit;
         private delegate void NetworkTableChange(Neighbour neighbour);
 
-        
+        public static int MaxLastSeenTimeSeconds
+        {
+            get
+            {
+                return NetworkDiscovery.BroadcastIntrevalSeconds * 3;
+            }
+        }
         static NetworkTable()
         {
             _isInSync = false;
@@ -85,7 +91,7 @@ namespace ECRU.netd
                 var neb = Neighbours[neighbour.Mac] as Neighbour;
 
                 if (neb == null) return;
-                
+
                 //overwrite unit
                 Neighbours.Remove(neb.Mac);
                 Neighbours[neighbour.Mac] = neighbour;
@@ -104,7 +110,7 @@ namespace ECRU.netd
                 {
                     networkStatus();
                 }
-                
+
             }
         }
 
@@ -113,8 +119,8 @@ namespace ECRU.netd
             lock (Lock)
             {
                 var tmpNetworkStatus = _isInSync;
-                
-                
+
+
                 _isInSync = true;
                 foreach (Neighbour neighbour in Neighbours.Values)
                 {
@@ -145,7 +151,7 @@ namespace ECRU.netd
         {
             if (netstateIPList == null)
             {
-                netstateIPList = new []{SetLocalIP};
+                netstateIPList = new[] { SetLocalIP };
             }
 
             var neighbour = Neighbours[mac] as Neighbour ?? new Neighbour(mac);
@@ -163,22 +169,28 @@ namespace ECRU.netd
             {
                 return IPAddress.GetDefaultLocalAddress();
             }
-            var neighbourIP = ((Neighbour) Neighbours[mac]).IP;
 
-            //check if address is valid
-            if (ValidAddress(mac))
+            var n = Neighbours[mac] as Neighbour;
+            if (n != null)
             {
-                return neighbourIP;
+                var neighbourIP = n.IP;
+
+                //check if address is valid
+                if (ValidAddress(mac))
+                {
+                    return neighbourIP;
+                }
+                else
+                {
+                    Remove(n);
+                }
             }
-            else
-            {
-                throw new IPAddressNotValidException();
-            }
+            return null;
         }
 
         public static byte[] GetMac(IPAddress ip)
         {
-            var returnval = new byte[6]; 
+            var returnval = new byte[6];
             foreach (Neighbour neighbour in Neighbours)
             {
                 if (neighbour.IP.Equals(ip))
@@ -205,11 +217,11 @@ namespace ECRU.netd
 
         public static bool ValidAddress(string mac)
         {
-            var lastSeen = ((Neighbour) Neighbours[mac]).Lastseen;
+            var lastSeen = ((Neighbour)Neighbours[mac]).Lastseen;
 
             var timeDifference = DateTime.Now - lastSeen;
 
-            return timeDifference.Ticks <= (TimeSpan.TicksPerSecond*31);
+            return timeDifference.Ticks <= (TimeSpan.TicksPerSecond * MaxLastSeenTimeSeconds);
         }
 
 
@@ -243,13 +255,7 @@ namespace ECRU.netd
 
         private static void RequestedDevices(Socket s, byte[] receiver)
         {
-            if (s == null)
-            {
-                var n = new Neighbour(receiver.ToHex());
-                n.IP = GetAddress(receiver.ToHex());
-                Remove(n);
-            }
-            else
+            if (s != null)
             {
                 using (s)
                 {
@@ -307,6 +313,9 @@ namespace ECRU.netd
                     }
                 }
             }
+
+
+
         }
     }
 

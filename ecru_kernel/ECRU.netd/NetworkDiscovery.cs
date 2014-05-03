@@ -17,12 +17,7 @@ namespace ECRU.netd
         private static ArrayList _listenerThreadsArrayList = new ArrayList();
 
         private static Thread _broadcastThread;
-        private static Thread _listenerThread;
 
-        private static Socket _sendSocket;
-        private static IPEndPoint _broadcastEndPoint;
-
-        private static Socket _receiveSocket;
         public static int UDPPort { get; set; }
         public static string LocalIP { get; set; }
         public static string SubnetMask { get; set; }
@@ -45,7 +40,8 @@ namespace ECRU.netd
 
         public static void Start()
         {
-            BroadcastIntrevalSeconds = 1;
+            BroadcastIntrevalSeconds = 5;
+
             //Subscribe to network state changes
             NetworkTable.NetstateChanged += UpdateBroadcastMessage;
             EventBus.Subscribe(typeof (RecivedBroadcastMessage), ReceivedBroadcast);
