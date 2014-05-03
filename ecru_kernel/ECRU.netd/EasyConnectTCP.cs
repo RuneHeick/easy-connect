@@ -57,6 +57,8 @@ namespace ECRU.netd
                 }
             }
 
+            _listenerThreadsArrayList.Clear();
+
             if (_ecThread != null && _ecThread.IsAlive)
             {
                 _ecThread.Abort();
