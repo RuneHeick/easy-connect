@@ -100,7 +100,10 @@ namespace ECRU.netd
                     {
                         t.Abort();
                     }
-                    _listenerThreadsArrayList.Remove(t);
+                    if (_listenerThreadsArrayList.Contains(t))
+                    {
+                        _listenerThreadsArrayList.Remove(t);
+                    }
                 }
             }
         }
