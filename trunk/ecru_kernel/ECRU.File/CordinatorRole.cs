@@ -26,7 +26,7 @@ namespace ECRU.File
         bool Disposed = false; 
 
         CordinatorState state { get; set; }
-        string[] Users = Utilities.SystemInfo.ConnectionOverview.GetSortedMasters();
+        string[] Users;
 
 
         public CordinatorRole(LocalManager InfoManager, LocalManager NetFileManager)
@@ -42,7 +42,15 @@ namespace ECRU.File
             this.NetFileManager = NetFileManager;
             
             EventBus.Subscribe(typeof(ConnectionRequestMessage), ConnectionHandel);
-            GetFileStates();
+            Users = Utilities.SystemInfo.ConnectionOverview.GetSortedMasters();
+            if (Users.Length != 1)
+            {
+                GetFileStates();
+            }
+            else
+            {
+                StartCordinator();
+            }
         }
 
         private void ConnectionHandel(object message)
@@ -482,11 +490,6 @@ namespace ECRU.File
 
         private void GetFileStates()
         {
-            if(Users.Length==1)
-            {
-                StartCordinator();
-                return; 
-            }
 
             ArrayList PacketSendTo = new ArrayList();
             Hashtable FileState = new Hashtable();
