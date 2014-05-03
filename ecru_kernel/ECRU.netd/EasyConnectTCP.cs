@@ -278,17 +278,20 @@ namespace ECRU.netd
                     try
                     {
                         connection.Send("Accepted".StringToBytes());
+                    
+                        //remove socket and timer from connection queue
+                        _connectionRequests.Remove(connection);
+
+                        //handover reference to requester
+                        con = connection;
+
                     }
                     catch (Exception)
                     {
-                        connection.Close();
+                        if (connection != null)
+                            connection.Close();
+                        con = null; 
                     }
-
-                    //remove socket and timer from connection queue
-                    _connectionRequests.Remove(connection);
-
-                    //handover reference to requester
-                    con = connection;
                 }
             }
 

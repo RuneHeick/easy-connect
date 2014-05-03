@@ -32,6 +32,7 @@ namespace ECRU
         public static void Main()
         {
             Debug.EnableGCMessages(true);
+
             // write your code here
             Thread.Sleep(5000);
 
