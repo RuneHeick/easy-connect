@@ -27,11 +27,13 @@ namespace ECRU.netd
 
         private static byte[] _broadcastMessage = new byte[38];
 
+        private static bool _broadcastrunning = true; 
+
         public static void Stop()
         {
             if (_broadcastThread != null && _broadcastThread.IsAlive)
             {
-                _broadcastThread.Abort();
+                _broadcastrunning = false; 
             }
 
             NetworkTable.NetstateChanged -= UpdateBroadcastMessage;
@@ -44,14 +46,16 @@ namespace ECRU.netd
 
             //Subscribe to network state changes
             NetworkTable.NetstateChanged += UpdateBroadcastMessage;
-            EventBus.Subscribe(typeof (RecivedBroadcastMessage), ReceivedBroadcast);
 
             //first time broadcastMessage
             Array.Copy(SystemInfo.SystemMAC, _broadcastMessage, SystemInfo.SystemMAC.Length);
             Array.Copy("00000000000000000000000000000000".StringToBytes(), 0, _broadcastMessage, 6, "00000000000000000000000000000000".StringToBytes().Length);
 
+            _broadcastrunning = true; 
             _broadcastThread = new Thread(Broadcast);
             _broadcastThread.Start();
+            Thread.Sleep(200); // allow first Broadcast
+            EventBus.Subscribe(typeof(RecivedBroadcastMessage), ReceivedBroadcast);
 
         }
 
@@ -82,9 +86,8 @@ namespace ECRU.netd
 
         private static void Broadcast()
         {
-            while (true)
+            while (_broadcastrunning)
             {
-                Thread.Sleep(BroadcastIntrevalSeconds*1000);
                 NetworkTable.CheckTable();
 
                 try
@@ -100,6 +103,8 @@ namespace ECRU.netd
                 {
                     Debug.Print("Broadcast failed: " + exception);
                 }
+
+                Thread.Sleep(BroadcastIntrevalSeconds * 1000);
             }
         }
 

@@ -75,6 +75,8 @@ namespace ECRU.netd
         {
             try
             {
+                EventBus.Publish(new NetworkStatusMessage { isinsync = true, NetState = "000000000000" });
+
                 EasyConnectTCP.Start();
                 EasyConnectUDP.Start();
                 NetworkDiscovery.Start();
@@ -96,7 +98,7 @@ namespace ECRU.netd
                 //start sucess reset counter
                 resets = 0;
 
-                EventBus.Publish(new NetworkStatusMessage { isinsync = true, NetState = "000000000000" });
+                
             }
             catch (Exception exception)
             {
