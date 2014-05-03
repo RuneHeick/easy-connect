@@ -30,7 +30,6 @@
   </PropertyGroup>
   <Import Project="$(NetMfTargetsBaseDir)$(TargetFrameworkVersion)\CSharp.Targets" />
   <ItemGroup>
-    <Compile Include="BroadcastNetworkDiscovery.cs" />
     <Compile Include="Configuration\EthernetConfig.cs" />
     <Compile Include="EasyConnectTCP.cs" />
     <Compile Include="EasyConnectUDP.cs" />
