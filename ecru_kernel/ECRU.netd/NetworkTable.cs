@@ -21,7 +21,7 @@ namespace ECRU.netd
         private static readonly Hashtable Neighbours = new Hashtable();
         private static string[] netstateIPList;
 
-        private static String _PublishedNetstate;
+        private static String _PublishedNetstate = "";
         private static String _netstate;
         private static bool _isInSync;
 
@@ -52,15 +52,15 @@ namespace ECRU.netd
         {
             Debug.Print("Added neighbour: " + neighbour.IP.ToString());
 
-            UpdateNetstate();
 
             SystemInfo.ConnectionOverview.Add(neighbour.Mac.FromHex());
+
+            networkStatus();
 
             // update request devices from roomunit
             EventBus.Publish(new NewConnectionMessage { ConnectionCallback = RequestedDevices, ConnectionType = "RequestDevices", Receiver = neighbour.Mac.FromHex() });
 
-            // network status -> eventbus
-            networkStatus();
+
 
         }
 
@@ -68,12 +68,8 @@ namespace ECRU.netd
         {
             Debug.Print("Removed neighbour: " + neighbour.IP.ToString()+ "                                         Waring");
 
-            UpdateNetstate();
-
             // update MacHierachy / MacList
             SystemInfo.ConnectionOverview.Remove(neighbour.Mac.FromHex());
-
-            // network status -> eventbus
             networkStatus();
         }
 
@@ -91,7 +87,7 @@ namespace ECRU.netd
                 if (AddUnit != null)
                     AddUnit(neighbour);
 
-                networkStatus();
+               
             }
             else
             {
@@ -110,8 +106,8 @@ namespace ECRU.netd
                     netstateIPList = netstateIPList.Add(neighbour.IP.ToString());
 
                     //Update netstate to reflect changes
-                    UpdateNetstate();
                     networkStatus();
+                    
                 }
                 else if (neb.Netstate != neighbour.Netstate)
                 {
@@ -123,6 +119,8 @@ namespace ECRU.netd
 
         private static void networkStatus()
         {
+            UpdateNetstate();
+
             lock (Lock)
             {
                 var tmpNetworkStatus = _isInSync;
@@ -151,7 +149,8 @@ namespace ECRU.netd
             netstateIPList = netstateIPList.Remove(neighbour.IP.ToString());
 
             //Call Event
-            RemovedUnit(neighbour);
+            if (RemovedUnit != null)
+                RemovedUnit(neighbour);
         }
 
         public static void UpdateNetworkTableEntry(IPAddress ipAddress, string mac, string netstate)
@@ -256,7 +255,6 @@ namespace ECRU.netd
             Debug.Print("Netstate: " + _netstate);
             if (NetstateChanged != null)
                 NetstateChanged(_netstate);
-            networkStatus();
         }
 
 
