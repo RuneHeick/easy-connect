@@ -234,8 +234,6 @@ namespace ECRU.netd
             
         }
 
-        
-
         private static void ConnectionTimeout(object connection)
         {
             //Noone wanted connection so we terminate it
