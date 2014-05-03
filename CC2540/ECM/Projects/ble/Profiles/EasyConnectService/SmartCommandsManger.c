@@ -35,8 +35,6 @@ static void Local_Insert(gattAttribute_t* att, gattAttrType_t type, uint8 permis
 static uint8* GetReadAddress(uint8 readwrite);
 static bool SmartCommandsManger_CompileService(SmartService* service);
 
-
-
 uint8 SmartCommandsManger_ElementsInService(SmartService* service)
 {
   uint8 count = SERVICE_SELF_COUNT+CHAR_SELF_COUNT+CHAR_SELF_COUNT+DESC_SELF_COUNT; //the service and the description and the Update 
@@ -71,6 +69,7 @@ SmartService* SmartCommandsManger_CreateService(uint8* description, uint8 len)
   SmartService* returnvalue = osal_mem_alloc(sizeof(SmartService));
   if(returnvalue!=NULL)
   {
+    osal_memset((uint8*)returnvalue,0,sizeof(SmartService)); // init
     succses = GenericValue_SetValue(&returnvalue->description, description, len);
     returnvalue->llReg = NULL; 
     returnvalue->first = NULL; 
@@ -93,7 +92,7 @@ bool SmartCommandsManger_DeleteService(SmartService* service)
   return false; 
 }
 
-uint16 SmartCommandsManger_addCharacteristic(uint8 initialValueSize,uint8* description, uint8 descriptionCount, GUIPresentationFormat guiPresentationFormat, PresentationFormat typeFormat, Subscription subscription, uint8 premission)
+uint16 SmartCommandsManger_addCharacteristic(uint8 initialValueSize,uint8* description, uint8 descriptionCount, GUIPresentationFormat guiPresentationFormat, PresentationFormat typeFormat, Subscription subscription, uint8 premission, uint8 gpio)
 {
   SmartService* service; 
   
@@ -106,6 +105,7 @@ uint16 SmartCommandsManger_addCharacteristic(uint8 initialValueSize,uint8* descr
   {
     uint8 address = 1; 
     GenericCharacteristic* chare = osal_mem_alloc(sizeof(GenericCharacteristic));
+    osal_memset((uint8*)chare,0,sizeof(GenericCharacteristic)); // set to init state
     bool succses = true; 
     if(chare == NULL) 
       return 0; 
@@ -114,12 +114,13 @@ uint16 SmartCommandsManger_addCharacteristic(uint8 initialValueSize,uint8* descr
     chare->guiPresentationFormat = guiPresentationFormat; 
     chare->subscribtion = subscription; 
     chare->typePresentationFormat = typeFormat;
+    chare->gpio = gpio;
     chare->nextitem = NULL; 
     
     if(!GenericValue_CreateContainer(&chare->value, initialValueSize))
       succses = false;
     
-    if(!GenericValue_SetValue(&chare->userDescription, description, descriptionCount))
+    if(!GenericValue_SetValue(&chare->userDescription, description, descriptionCount+1)) // one for the zero termination. 
       succses = false; 
     
     if(succses == false)
@@ -128,6 +129,7 @@ uint16 SmartCommandsManger_addCharacteristic(uint8 initialValueSize,uint8* descr
     }
     else
     {
+      chare->userDescription.pValue[chare->userDescription.size-1] = 0; // must be 0 terminated; 
       if(service->first==NULL)
       {
         service->first = chare; 
@@ -330,9 +332,16 @@ uint8 SmartCommandsManger_GetUpdate(uint8* ptr, uint8 maxsize)
 
 GenericValue* GetCharacteristic(uint8 service,uint8 characteristic)
 {
+  GenericCharacteristic* chara = GetChare(service,characteristic);
+  return &chara->value;
+}
+
+
+GenericCharacteristic* GetChare(uint8 service,uint8 characteristic)
+{
   uint8 count = 1; 
   
-  if(service>SmartCommandServices_Count)
+  if(service>SmartCommandServices_Count||service==0)
     return NULL;
   
   
@@ -342,14 +351,34 @@ GenericValue* GetCharacteristic(uint8 service,uint8 characteristic)
   if(chara==NULL)
     return NULL; 
   
-  for(;count=!characteristic;count++)
+  for(;count != characteristic;count++)
   {
     chara = chara->nextitem;
     if(chara == NULL)
       return NULL;
   }
   
-  return &chara->value;
+  return chara;
+}
+
+
+uint16 GetCharacteristicUartHandle(GenericValue* data)
+{
+  for(uint8 s = 0; s < SmartCommandServices_Count; s++)
+  {
+    GenericCharacteristic* temp = SmartCommandServices[s]->first; 
+    uint8 count = 1; 
+    
+    while(temp!=NULL)
+    {
+      if(&temp->value == data)
+      return ((s+1)<<8)+count;
+      
+      temp = temp->nextitem;
+      count++;
+    }
+    
+  }
 }
 
 
@@ -385,6 +414,46 @@ uint16 GetCharacteristicHandel(uint8 service,uint8 characteristic)
   }
   
   return 0; 
+}
+
+
+GenericCharacteristic* GetCharaFromHandle(uint16 handle)
+{
+   for(uint8 s = 0; s < SmartCommandServices_Count; s++)
+   {
+      SmartService* servicePtr = SmartCommandServices[s-1];
+      
+      if(servicePtr != NULL && servicePtr->llReg != NULL)
+      {
+        uint8 count = SERVICE_SELF_COUNT+CHAR_SELF_COUNT+CHAR_SELF_COUNT+DESC_SELF_COUNT; //the service and the description and the Update 
+        uint8 addrCount = 1; 
+        GenericCharacteristic* temp = servicePtr->first; 
+        
+        while(temp!=NULL)
+        {
+          
+          if(servicePtr->llReg[++count].handle == handle)
+            return temp;
+          
+          count += CHAR_SELF_COUNT+(DESC_SELF_COUNT*GENERICCHAR_MANDATORY_DESCRIPTORS_COUNT); // Contains a Characteristic and have 3 mandatory Decriptors. 
+          
+          if(temp->range.status != NOT_INIT)
+          {
+            count+=DESC_SELF_COUNT;                          //have optinal descriptor
+          }
+          
+          if(temp->subscribtion != NONE)
+          {
+            count+=DESC_SELF_COUNT;                          //have optinal descriptor
+          }
+          
+          temp = temp->nextitem;
+          addrCount++;
+        }
+      }
+    
+   }
+   return NULL; 
 }
 
 static bool SmartCommandsManger_CompileService(SmartService* service)
@@ -426,7 +495,7 @@ static uint8 Local_CreateInfo(SmartService* service, gattAttribute_t* att, uint8
       Local_Insert(&att[index++],(gattAttrType_t){ ATT_BT_UUID_SIZE, primaryServiceUUID },GATT_PERMIT_READ,(uint8 *)&smartConnectService); // service start;
       
       Local_Insert(&att[index++],(gattAttrType_t){ ATT_BT_UUID_SIZE, characterUUID },GATT_PERMIT_READ,&ReadProps); //Description String Declaration    
-      Local_Insert(&att[index++],(gattAttrType_t){ ATT_BT_UUID_SIZE, descriptionStringCharUUID },GATT_PERMIT_READ,service->description.pValue); //Description String Value
+      Local_Insert(&att[index++],(gattAttrType_t){ ATT_BT_UUID_SIZE, descriptionStringCharUUID },GATT_PERMIT_READ,(uint8*)&service->description); //Description String Value
       
       Local_Insert(&att[index++],(gattAttrType_t){ ATT_BT_UUID_SIZE, characterUUID },GATT_PERMIT_READ,&ReadWriteProps); //Description String Declaration    
       Local_Insert(&att[index++],(gattAttrType_t){ ATT_BT_UUID_SIZE, updateCharUUID },GATT_PERMIT_READ|GATT_PERMIT_WRITE,NULL); //Description String Value

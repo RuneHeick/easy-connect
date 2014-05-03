@@ -113,15 +113,15 @@ static CONST gattAttrType_t devInfoService = { ATT_BT_UUID_SIZE, devInfoServUUID
 
 // Model Number String characteristic
 static uint8 devInfoModelNumberProps = GATT_PROP_READ;
-static GenericValue devInfoModelNumber; // = "Model Number";
+static GenericValue devInfoModelNumber = { .status = NOT_INIT, .pValue = NULL, .size = 0  }; // = "Model Number";
 
 // Serial Number String characteristic
 static uint8 devInfoSerialNumberProps = GATT_PROP_READ;
-static GenericValue devInfoSerialNumber; // = "Serial Number";
+static GenericValue devInfoSerialNumber = { .status = NOT_INIT, .pValue = NULL, .size = 0  }; // = "Serial Number";
 
 // Manufacturer Name String characteristic
 static uint8 devInfoMfrNameProps = GATT_PROP_READ;
-static GenericValue devInfoMfrName; // = "Manufacturer Name som er meget meget langt fordi det er fra kina";
+static GenericValue devInfoMfrName = { .status = NOT_INIT, .pValue = NULL, .size = 0  }; // = "Manufacturer Name som er meget meget langt fordi det er fra kina";
 
 
 /*********************************************************************
@@ -316,14 +316,14 @@ bStatus_t DevInfo_GetParameter( uint8 param, void *value )
   switch ( param )
   {
     case DEVINFO_MODEL_NUMBER:
-      osal_memcpy(value, devInfoModelNumber.pValue, devInfoModelNumber.size);
+      osal_memcpy(value, &devInfoModelNumber, sizeof(GenericValue));
       break;
     case DEVINFO_SERIAL_NUMBER:
-      osal_memcpy(value, devInfoSerialNumber.pValue, devInfoSerialNumber.size);
+      osal_memcpy(value, &devInfoSerialNumber, sizeof(GenericValue));
       break;
 
     case DEVINFO_MANUFACTURER_NAME:
-      osal_memcpy(value, devInfoMfrName.pValue, devInfoMfrName.size);
+      osal_memcpy(value, &devInfoMfrName, sizeof(GenericValue));
       break;
 
     default:
@@ -369,7 +369,7 @@ static uint8 devInfo_ReadAttrCB( uint16 connHandle, gattAttribute_t *pAttr,
       else
       {
         // determine read length (exclude null terminating character)
-        *pLen = MIN(maxLen, (devInfoModelNumber.size - 1) - offset);
+        *pLen = MIN(maxLen, (devInfoModelNumber.size) - offset);
 
         // copy data
         osal_memcpy(pValue, &devInfoModelNumber.pValue[offset], *pLen);
@@ -389,7 +389,7 @@ static uint8 devInfo_ReadAttrCB( uint16 connHandle, gattAttribute_t *pAttr,
       else
       {
         // determine read length (exclude null terminating character)
-        *pLen = MIN(maxLen, (devInfoSerialNumber.size - 1) - offset);
+        *pLen = MIN(maxLen, (devInfoSerialNumber.size) - offset);
 
         // copy data
         osal_memcpy(pValue, &devInfoSerialNumber.pValue[offset], *pLen);
@@ -409,7 +409,7 @@ static uint8 devInfo_ReadAttrCB( uint16 connHandle, gattAttribute_t *pAttr,
       else
       {
         // determine read length (exclude null terminating character)
-        *pLen = MIN(maxLen, (devInfoMfrName.size - 1) - offset);
+        *pLen = MIN(maxLen, (devInfoMfrName.size) - offset);
         
         // copy data
         osal_memcpy(pValue, &devInfoMfrName.pValue[offset], *pLen);

@@ -168,14 +168,20 @@ uint16 Uart_ProcessEvent( uint8 task_id, uint16 events )
           }
         }
         
+        bufferRX.status = Ready;
+        bufferRX.count = 0;
+        
       }
       else // request 
       {
          Uart_HandelRequest();
       } 
     }
-    bufferRX.status = Ready;
-    bufferRX.count = 0; 
+    else
+    {
+      bufferRX.status = Ready;
+      bufferRX.count = 0;
+    }
     return (events ^ UART_PACKET_EVENT);
   }
   
@@ -247,9 +253,7 @@ static void Uart_HandelRequest()
       return;
     }
   }
-  osal_start_timerEx( Uart_TaskID, UART_ACK_TIMEOUT_EVENT, UART_ACK_TIMEOUT_TIME); 
-  bufferRX.count = 0; 
-  bufferRX.status = Ready; 
+  osal_start_timerEx( Uart_TaskID, UART_ACK_TIMEOUT_EVENT, UART_ACK_TIMEOUT_TIME);  
 }
 
 bool Uart_Send_Response(uint8* buffer, uint8 len)
@@ -286,6 +290,10 @@ bool Uart_Send_Response(uint8* buffer, uint8 len)
 static void Uart_ClearPendingResponse()
 {
   pendingResponse = false;
+  
+  bufferRX.count = 0; 
+  bufferRX.status = Ready;
+  
   osal_stop_timerEx( Uart_TaskID, UART_ACK_TIMEOUT_EVENT);
 }
 

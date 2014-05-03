@@ -8476,7 +8476,34 @@
   <group>
     <name>APP</name>
     <group>
-      <name>Manger</name>
+      <name>Com</name>
+      <file>
+        <name>$PROJ_DIR$\..\Source\Uart.c</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\..\Source\Uart.h</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\..\Source\UartClearCommands.c</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\..\Source\UartClearCommands.h</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\..\Source\UartReadWriteCommands.c</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\..\Source\UartReadWriteCommands.h</name>
+      </file>
+    </group>
+    <group>
+      <name>Manager</name>
+      <file>
+        <name>$PROJ_DIR$\..\Source\FileManager.c</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\..\Source\FileManager.h</name>
+      </file>
       <file>
         <name>$PROJ_DIR$\..\..\SimpleBLECentral\Source\GenericList.c</name>
       </file>
@@ -8525,12 +8552,6 @@
     </file>
     <file>
       <name>$PROJ_DIR$\..\Source\State.h</name>
-    </file>
-    <file>
-      <name>$PROJ_DIR$\..\Source\Uart.c</name>
-    </file>
-    <file>
-      <name>$PROJ_DIR$\..\Source\Uart.h</name>
     </file>
   </group>
   <group>

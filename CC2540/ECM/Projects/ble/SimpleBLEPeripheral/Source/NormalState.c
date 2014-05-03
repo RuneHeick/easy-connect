@@ -29,9 +29,11 @@
 #include "SmartCommandsProperties.h"
 #include "ECConnect.h"
 #include "InitState.h"
-
+#include "FileManager.h"
+#include "UartReadWriteCommands.h"
 
 #define PERIODIC_TEST_EVENT (1<<10)
+
 
 //variabels 
 static uint8 TarskID;
@@ -40,6 +42,9 @@ static uint16 NewUpdateHandle = 0;
 //prototypes
 static void ECConnectionChanged(ECC_Status_t newState);
 static void hasApplicationUnreadData(bool hasUnreadData, uint16 handle);
+static void WriteFromBLE(bool hasUnreadData, uint16 handle);
+static void GotPasscode();
+static void UpdateGPIO(uint8 gpio);
 
 static ECC_Status_t currentState = DISCONNECTED;
 
@@ -78,14 +83,17 @@ void NormalState_Enter(uint8 tarskID)
 {
   TarskID = tarskID;
   ECConnect_RegistreChangedCallback(ECConnectionChanged);
+  ECConnect_RegistrePassCodeCallback(GotPasscode);
   SimpleProfile_RegistreUnreadCallback(hasApplicationUnreadData);
-  osal_start_reload_timer(tarskID,PERIODIC_TEST_EVENT,30000);
+  SimpleProfile_RegistreBLEWriteCallback(WriteFromBLE); 
+  //osal_start_reload_timer(tarskID,PERIODIC_TEST_EVENT,30000);
 }
 
 void NormalState_Exit()
 {
   ECConnect_RegistreChangedCallback(NULL);
   SimpleProfile_RegistreUnreadCallback(NULL);
+  SimpleProfile_RegistreBLEWriteCallback(NULL); 
 }
 
 
@@ -133,6 +141,28 @@ static void hasApplicationUnreadData(bool hasUnreadData, uint16 handle)
   requestRead = hasUnreadData;
   NewUpdateHandle = handle;
   
+  GenericCharacteristic* chara =  GetCharaFromHandle(handle);
+  UpdateGPIO(chara);
+  
   if(hasUnreadData == true && currentState == CONNECTED_SLEEPING)
     Setup_discoverableMode(GAP_ADTYPE_FLAGS_GENERAL,requestRead,handle);
+}
+
+static void WriteFromBLE(bool hasUnreadData, uint16 uarthandle)
+{
+  UartReadWrite_UpdateHandle(uarthandle); 
+  
+  GenericCharacteristic* chara = GetChare((uint8)(uarthandle>>8),(uint8)(uarthandle));
+  UpdateGPIO(chara);
+}
+
+static void GotPasscode()
+{
+  FileManager_Save();
+}
+
+static void UpdateGPIO(GenericCharacteristic* chara)
+{
+  
+  
 }
