@@ -51,7 +51,7 @@ namespace ECRU
                 {
                     n += s;
                 }
-
+                n = n.Substring(n.Length - 1 - 12, 12);
                 SystemInfo.SystemMAC = n.FromHex();
 
                 //SystemInfo.SystemMAC = "B3E795111C11".FromHex();
