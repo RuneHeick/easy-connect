@@ -50,6 +50,8 @@ namespace ECRU.netd
 
         private static void NeighbourAdded(Neighbour neighbour)
         {
+            Debug.Print("Added neighbour: " + neighbour.IP.ToString());
+
             UpdateNetstate();
 
             SystemInfo.ConnectionOverview.Add(neighbour.Mac.FromHex());
@@ -64,6 +66,8 @@ namespace ECRU.netd
 
         private static void NeighbourRemoved(Neighbour neighbour)
         {
+            Debug.Print("Removed neighbour: " + neighbour.IP.ToString()+ "                                         Waring");
+
             UpdateNetstate();
 
             // update MacHierachy / MacList
@@ -281,6 +285,8 @@ namespace ECRU.netd
 
                             if (bytesReceived != availableBytes) continue;
 
+                            waitingForData = false;
+
                             var result = JsonSerializer.DeserializeString(buffer.GetString()) as Hashtable;
 
                             if (result == null) continue;
@@ -292,7 +298,7 @@ namespace ECRU.netd
 
                             var nDevices = result["Devices"] as ArrayList;
 
-                            if (nDevices == null) continue;
+                            if (nDevices == null && SystemInfo.ConnectionOverview != null) continue;
                             foreach (string nDevice in nDevices)
                             {
                                 SystemInfo.ConnectionOverview.Add(nMac.FromHex(), nDevice.FromHex());

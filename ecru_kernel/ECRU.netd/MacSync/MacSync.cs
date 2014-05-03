@@ -69,40 +69,44 @@ namespace ECRU.netd.MacSync
             if (msg == null) return;
 
             if (msg.connectionType != "RequestDevices") return;
+            var socket = msg.GetSocket();
 
-            using (var socket = msg.GetSocket())
+            if (socket != null)
             {
-                //fetch mac hirachy and transform to json
-
-                var sysMac = SystemInfo.SystemMAC;
-                var connectedDevices = SystemInfo.ConnectedDevices.GetElements();
-
-                var obj = new Utilities.DeviceMacList();
-
-                obj.mac = SystemInfo.SystemMAC.ToHex();
-                obj.Name = SystemInfo.Name;
-
-                foreach (byte[] device in connectedDevices)
+                using (socket)
                 {
-                    obj.Devices.Add(device.ToHex());
-                }
+                    //fetch mac hirachy and transform to json
 
-                var result = JsonSerializer.SerializeObject(obj);
-                Debug.Print(result);
+                    var sysMac = SystemInfo.SystemMAC;
+                    var connectedDevices = SystemInfo.ConnectedDevices.GetElements();
 
-                try
-                {
-                    socket.Send(result.StringToBytes());
-                }
-                catch (Exception exception)
-                {
-                    Debug.Print("Network error: " + exception.Message + " stacktrace: " + exception.StackTrace);
-                }
-                finally
-                {
-                    if (socket != null)
+                    var obj = new Utilities.DeviceMacList();
+
+                    obj.mac = SystemInfo.SystemMAC.ToHex();
+                    obj.Name = SystemInfo.Name;
+
+                    foreach (byte[] device in connectedDevices)
                     {
-                        socket.Close();
+                        obj.Devices.Add(device.ToHex());
+                    }
+
+                    var result = JsonSerializer.SerializeObject(obj);
+                    Debug.Print(result);
+
+                    try
+                    {
+                        socket.Send(result.StringToBytes());
+                    }
+                    catch (Exception exception)
+                    {
+                        Debug.Print("Network error: " + exception.Message + " stacktrace: " + exception.StackTrace);
+                    }
+                    finally
+                    {
+                        if (socket != null)
+                        {
+                            socket.Close();
+                        }
                     }
                 }
             }
