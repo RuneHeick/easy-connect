@@ -51,7 +51,6 @@ namespace ECRU.BLEController.Util
             }
         }
 
-
         public class DeviceInfo
         {
             public string Name { get; private set; }
