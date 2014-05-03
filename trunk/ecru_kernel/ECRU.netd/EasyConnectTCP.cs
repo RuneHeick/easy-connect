@@ -100,11 +100,8 @@ namespace ECRU.netd
                     {
                         t.Abort();
                     }
-                    if (_listenerThreadsArrayList.Contains(t))
-                    {
-                        _listenerThreadsArrayList.Remove(t);
-                    }
                 }
+                _listenerThreadsArrayList.Clear();
             }
         }
 
