@@ -41,6 +41,7 @@ namespace ECRU.netd
         {
             private ArrayList _devices = new ArrayList();
             public string mac { get; set; }
+            public string Name { get; set; }
             public ArrayList Devices { get { return _devices; } set { _devices = value; } }
         }
     }
