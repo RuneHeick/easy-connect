@@ -420,18 +420,25 @@ namespace ECRU.File
 
         private void UpdateFile(FileMutex mutex)
         {
-            ReleasMutex(mutex.path);
+            ArrayList UsersToUpdate = new ArrayList(); 
+            foreach(string RU in Users)
+            {
+                if(RU != Utilities.SystemInfo.SystemMAC.ToHex())
+                    UsersToUpdate.Add(RU);
+            }
+
+
             foreach(string RU in Users)
             {
                 if(RU != Utilities.SystemInfo.SystemMAC.ToHex())
                 {
-                    NewConnectionMessage rq = new NewConnectionMessage() { Receiver = RU.FromHex(), ConnectionType = NetworkManager.connectionRQType, ConnectionCallback = (socket, r) => UpdateFileConnection(mutex.path,r, socket, this) };
+                    NewConnectionMessage rq = new NewConnectionMessage() { Receiver = RU.FromHex(), ConnectionType = NetworkManager.connectionRQType, ConnectionCallback = (socket, r) => UpdateFileConnection(mutex.path,r, socket, UsersToUpdate, this) };
                     EventBus.Publish(rq);
                 }
             } 
         }
 
-        private static void UpdateFileConnection(string path, byte[] receiver, Socket socket, CordinatorRole item)
+        private static void UpdateFileConnection(string path, byte[] receiver, Socket socket, ArrayList UsersToUpdate, CordinatorRole item)
         {
             if (item.Disposed)
             {
@@ -471,6 +478,17 @@ namespace ECRU.File
                             data.Set(info.Data, fileLength + pathlen + 2 + 5);                  
 
                             socket.Send(data);
+
+                            if (UsersToUpdate != null)
+                            {
+                                lock (UsersToUpdate)
+                                {
+                                    UsersToUpdate.Remove(receiver.ToHex());
+                                    if (UsersToUpdate.Count == 0)
+                                        item.ReleasMutex(path);
+                                }
+                            }
+
                         }
                 }
                 finally
@@ -489,7 +507,7 @@ namespace ECRU.File
             }
             else
             {
-                NewConnectionMessage rq = new NewConnectionMessage() { Receiver = receiver, ConnectionType = NetworkManager.connectionRQType, ConnectionCallback = (s, r) => UpdateFileConnection(path, r, s, item) };
+                NewConnectionMessage rq = new NewConnectionMessage() { Receiver = receiver, ConnectionType = NetworkManager.connectionRQType, ConnectionCallback = (s, r) => UpdateFileConnection(path, r, s, UsersToUpdate, item) };
                 EventBus.Publish(rq);
             }
         }
@@ -671,10 +689,10 @@ namespace ECRU.File
                         {
                             Filestates.Remove(Utilities.SystemInfo.SystemMAC.ToHex());
                         }
-                        UpdateFiles(path, Filestates, best.version, this);
+                        UpdateFiles(path, FileState, best.version, this);
                     }
-
-                    file.Close(); 
+                    if (file != null)
+                        file.Close(); 
                 }
             }
                 
@@ -812,7 +830,7 @@ namespace ECRU.File
 
                         if (ver < version)
                         {
-                            NewConnectionMessage rq = new NewConnectionMessage() { Receiver = mac.FromHex(), ConnectionType = NetworkManager.connectionRQType, ConnectionCallback = (s, r) => UpdateFileConnection(path,r, s, item) };
+                            NewConnectionMessage rq = new NewConnectionMessage() { Receiver = mac.FromHex(), ConnectionType = NetworkManager.connectionRQType, ConnectionCallback = (s, r) => UpdateFilesAtStartup(s, r, path, MasterFileStates, item) };
                             EventBus.Publish(rq);
                         }
                         else
@@ -828,6 +846,39 @@ namespace ECRU.File
                         item.StartCordinator();
                     }
                 }
+            }
+        }
+
+
+        private static void UpdateFilesAtStartup(Socket socket, byte[] resiver, string path, Hashtable MasterFileStates, CordinatorRole item)
+        {
+            if (item.Disposed)
+            {
+                if (socket != null)
+                    socket.Close();
+                return;
+            }
+
+            if (socket != null)
+            {
+                UpdateFileConnection(path, resiver, socket, null,item);
+                lock (MasterFileStates)
+                {
+                    Hashtable FileStates = MasterFileStates[path] as Hashtable;
+                    FileStates.Remove(resiver.ToHex());
+                    if (FileStates.Count == 0)
+                        MasterFileStates.Remove(path);
+
+                    if (MasterFileStates.Count == 0) // Check if Last 
+                    {
+                       item.StartCordinator();
+                    }
+                }
+            }
+            else
+            {
+                NewConnectionMessage rq = new NewConnectionMessage() { Receiver = resiver, ConnectionType = NetworkManager.connectionRQType, ConnectionCallback = (s, r) => UpdateFilesAtStartup(s, r, path, MasterFileStates, item) };
+                EventBus.Publish(rq);
             }
         }
 

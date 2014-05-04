@@ -209,12 +209,12 @@ namespace ECRU.netd
                             if (0 != send.Receive(buffer) && buffer.GetString() != null && buffer.GetString() == "Accepted")
                             {
                                 Debug.Print("Accepted Request: " + buffer.GetString());
-                                new Thread(() => msg.ConnectionCallback(send, msg.Receiver)).Start();
+                                // to finaly
                             }
                             else
                             {
                                 send.Close(); // only close if not used; 
-                                new Thread(() => msg.ConnectionCallback(null, msg.Receiver)).Start();
+                                send = null; 
                             }
 
                             waitingForData = false;
@@ -225,7 +225,12 @@ namespace ECRU.netd
             }
             catch (TimeOutException exception)
             {
-
+                new Thread(() => { if (msg != null) msg.ConnectionCallback(null, msg.Receiver); }).Start();
+                if (send != null)
+                {
+                    send.Close();
+                    send = null;
+                }
             }
             catch (Exception exception)
             {
@@ -233,8 +238,15 @@ namespace ECRU.netd
                 if (send != null)
                 {
                     send.Close();
+                    send = null; 
                 }
-                new Thread(() => { if (msg != null) msg.ConnectionCallback(null, msg.Receiver); }).Start();
+                
+            }
+            finally
+            {
+
+                new Thread(() => { if (msg != null) msg.ConnectionCallback(send, msg.Receiver); }).Start();
+
             }
             
         }
