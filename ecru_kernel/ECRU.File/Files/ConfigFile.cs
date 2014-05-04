@@ -7,7 +7,7 @@ namespace ECRU.File.Files
 {
     public class ConfigFile
     {
-        private FileBase File;
+        public FileBase File { get; private set; }
         Hashtable values = new Hashtable();
         private CloseFunction closeFunc; 
 
@@ -23,6 +23,7 @@ namespace ECRU.File.Files
 
         public ConfigFile(FileBase file)
         {
+            if (File == null) return;
             File = file;
             closeFunc = File.Closefunc;
             File.Closefunc = (f) => Close();
