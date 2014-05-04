@@ -187,6 +187,8 @@ namespace ECRU.File
 
                                             }
                                         }
+
+                                        socket.Close();
                                     }
                                 }
                                 break;
@@ -210,14 +212,14 @@ namespace ECRU.File
         {
 
             int pathLength = (pack[0] << 8) + pack[1];
-            byte[] filePath = pack.GetPart(3, pathLength);
+            byte[] filePath = pack.GetPart(2, pathLength);
             string path = filePath.GetString(); 
 
-            int fileLength = (pack[3 + pathLength] << 8) + pack[4 + pathLength];
-            byte[] file = pack.GetPart(4 + pathLength + 1, fileLength);
+            int fileLength = (pack[2 + pathLength] << 8) + pack[3 + pathLength];
+            byte[] file = pack.GetPart(3 + pathLength + 1, fileLength);
 
-            int infoLength = (pack[4 + pathLength + 1 + fileLength] << 8) + pack[4 + pathLength + 2+ fileLength];
-            byte[] info = pack.GetPart(4 + pathLength + 3 + fileLength, infoLength);
+            int infoLength = (pack[3 + pathLength + 1 + fileLength] << 8) + pack[3 + pathLength + 2+ fileLength];
+            byte[] info = pack.GetPart(3 + pathLength + 3 + fileLength, infoLength);
 
             lock (BusyLock)
             {
@@ -235,11 +237,11 @@ namespace ECRU.File
 
                 if (InfoManager.FileExists(Path.GetFileNameWithoutExtension(path) + ".info"))
                 {
-                    InfoManager.GetFile(Path.GetFileNameWithoutExtension(path) + ".info");
+                    File_info = InfoManager.GetFile(Path.GetFileNameWithoutExtension(path) + ".info");
                 }
                 else
                 {
-                    InfoManager.CreateFile(Path.GetFileNameWithoutExtension(path) + ".info");
+                    File_info = InfoManager.CreateFile(Path.GetFileNameWithoutExtension(path) + ".info");
                 }
 
                 if (File_file != null && File_info != null)
