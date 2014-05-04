@@ -23,7 +23,7 @@ public class FunctionList {
 	public ArrayList<String> getECRUNames(){
 		ArrayList<String> temp = new ArrayList<String>();
 		for (ECRU e : ECRUList){
-			temp.add(e._ECRUName);
+			temp.add(e.mac);
 		}
 		return temp;
 	}
@@ -32,8 +32,8 @@ public class FunctionList {
 		ArrayList<String> temp = new ArrayList<String>();
 		
 		for (ECRU e : ECRUList){
-			if (s.equals(e._ECRUName)){
-				for (String mns : e._moduleNameList){
+			if (s.equals(e.mac)){
+				for (String mns : e.Devices){
 					temp.add(mns);
 				}
 			}

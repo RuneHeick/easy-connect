@@ -17,8 +17,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ExpandableListView;
-import android.widget.Toast;
-import android.widget.ExpandableListView.OnChildClickListener;
 
 public class ModuleFragment extends Fragment {
 	private final String LOG_TAG = "ModuleFragment";

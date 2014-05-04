@@ -3,30 +3,28 @@ package iha.bachelor.smo.aba.rah.easyconnect_v3.model;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.google.gson.Gson;
+
 import android.util.Log;
 
 public class ECRU {
 	private static final String LOG_TAG = "ECRU class";
-	public String _ECRUName;
-	public List<String> _moduleNameList = new ArrayList<String>();
+	public String mac;
+	public List<String> Devices = new ArrayList<String>();
 	
 	public ECRU(String name){
-		_ECRUName = name;
+		mac = name;
 		Log.i(LOG_TAG,"ConstructerCalled");
 	}
 	
-	public void InsertModuleName(String name){
-		_moduleNameList.add(name);
-		Log.i(LOG_TAG, "module "+ name + "added to functionlist");
+	public void insertModuleMac(String mac){
+		Devices.add(mac);
+		Log.i(LOG_TAG, "module :"+ mac + ". added to functionlist");
 	}
 	
 	@Override
 	public String toString(){
-		String temp = "\t" + _ECRUName + "\n";
-		
-		for (String s : _moduleNameList){
-			temp += "\t\t" + s + "\n";
-		}
-		return temp;
+		Gson gson = new Gson();
+		return gson.toJson(this);
 	}
 }
