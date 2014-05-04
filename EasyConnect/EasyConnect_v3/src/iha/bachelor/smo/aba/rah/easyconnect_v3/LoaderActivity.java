@@ -1,6 +1,7 @@
 package iha.bachelor.smo.aba.rah.easyconnect_v3;
 
 import iha.bachelor.smo.aba.rah.easyconnect_v3.contentprovider.ProfileContentProvider;
+import iha.bachelor.smo.aba.rah.easyconnect_v3.service.NetworkService;
 import iha.bachelor.smo.aba.rah.easyconnect_v3.sqlite.ProfilesTable;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
@@ -12,6 +13,7 @@ import android.util.Log;
 import android.view.Menu;
 
 public class LoaderActivity extends Activity {
+	private final String LOG_TAG = "Loader Activity";
 	private WifiManager wifiManager;
 	
 	public static final int CREATE_PROFILE = 10;
@@ -22,8 +24,10 @@ public class LoaderActivity extends Activity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_initial);
+		Log.i(LOG_TAG, "Starting Service!");
+		Intent intent = new Intent(this, NetworkService.class);
+		startService(intent);
 		
-
 		wifiManager = (WifiManager) this.getSystemService(WIFI_SERVICE);
 		CheckConnection();
 	}
@@ -67,11 +71,10 @@ public class LoaderActivity extends Activity {
 	}
 	
 	public boolean SeachProfilesForCurrentWifi(CharSequence CurrentWifi){
-		//FIX ME - Insert code for searching the database
-		Log.i("InitCheckForProfile", "Starting function");
-		Log.i("InitCheckForProfile", "CurrentWifi: " + CurrentWifi);
-		String[] PROJECTION = { ProfilesTable.COLUMN_Id, 
-				ProfilesTable.COLUMN_ProfileName, 
+		Log.i(LOG_TAG +"InitCheckForProfile", "Starting function");
+		Log.i(LOG_TAG +"InitCheckForProfile", "CurrentWifi: " + CurrentWifi);
+		String[] PROJECTION = { ProfilesTable.COLUMN_Id,
+				ProfilesTable.COLUMN_ProfileName,
 				ProfilesTable.COLUMN_ProfilePassword,
 				ProfilesTable.COLUMN_WifiName,
 				ProfilesTable.COLUMN_WifiPassword};
@@ -82,16 +85,16 @@ public class LoaderActivity extends Activity {
 		if (cursor.getCount() != 0){
 			cursor.moveToFirst();
 			
-			Log.i("InitCheckForProfile", "profile: " + 
+			Log.i(LOG_TAG +"InitCheckForProfile", "profile: " + 
 			cursor.getString(cursor.getColumnIndexOrThrow(ProfilesTable.COLUMN_ProfileName)) + 
 			". For wifi: " + 
 			cursor.getString(cursor.getColumnIndexOrThrow(ProfilesTable.COLUMN_WifiName)) + ".");
 		
 			
-			Log.i("InitCheckForProfile", "Cursor not equal to null");
+			Log.i(LOG_TAG + "InitCheckForProfile", "Cursor not equal to null");
 			return true;
 		} else {
-			Log.i("InitCheckForProfile", "Cursor equal to null");
+			Log.i(LOG_TAG +"InitCheckForProfile", "Cursor equal to null");
 			return false;
 		}
 	}

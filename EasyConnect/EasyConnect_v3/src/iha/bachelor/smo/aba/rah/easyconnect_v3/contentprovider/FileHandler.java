@@ -42,6 +42,24 @@ public class FileHandler {
 		}
 	}
 	
+	public void writeToFile(Context context,String CurrentProfile, String DirType, String FileName, byte[] bytes){
+		File StorageDir = getStorageDir(context, CurrentProfile, DirType);
+		File myFile = new File(StorageDir, FileName);
+		
+		try {
+	        FileOutputStream f = new FileOutputStream(myFile);
+	        f.write(bytes);
+//	        PrintWriter pw = new PrintWriter(f);
+//	        pw.print(bytes);
+//	        pw.flush();
+//	        pw.close();
+	        f.close();
+	    } catch (Exception e) {
+	        e.printStackTrace();
+	        Log.i(LOG_TAG, "******* File not found. Did you add a WRITE_EXTERNAL_STORAGE permission to the manifest?");
+	    }
+	}
+	
 	public void writeToFile(Context context,String CurrentProfile, String DirType, String FileName, String Text){
 		File StorageDir = getStorageDir(context, CurrentProfile, DirType);
 		File myFile = new File(StorageDir, FileName);

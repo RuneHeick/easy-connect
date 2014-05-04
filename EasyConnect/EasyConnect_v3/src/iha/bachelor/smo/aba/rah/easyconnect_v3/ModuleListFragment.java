@@ -36,7 +36,7 @@ public class ModuleListFragment extends Fragment{
 		if (savedInstanceState != null){
 			return rootView;
 		}
-//		createTestFunctionList();
+		createTestFunctionList();
 		createREALCollection();
 		
 		expListView = (ExpandableListView) rootView.findViewById(R.id.function_list);
@@ -67,13 +67,13 @@ public class ModuleListFragment extends Fragment{
 	public FunctionList createTestFunctionList(){
 		FunctionList fl = new FunctionList("FunctionList");
 		ECRU ru = new ECRU("A4B627FE2F7A");
-		ru.InsertModuleName("E68170E5C578");
-		ru.InsertModuleName("F83A228CBA1C");
+		ru.insertModuleMac("E68170E5C578");
+		ru.insertModuleMac("F83A228CBA1C");
 		fl.addECRU(ru);
 		writeFileToSDCard("EC_CONNECT", FileHandler.NET_DIR, "FunctionList.txt", EncodeGSoN(fl));
 		return null;
 	}
-		
+
 	public String EncodeGSoN(Object m){
 		Gson gson = new Gson();
 		return gson.toJson(m);
@@ -84,6 +84,7 @@ public class ModuleListFragment extends Fragment{
 		return gson.fromJson(s, FunctionList.class);
 	}
 	
+
 	public void writeFileToSDCard(String ProfileName, String fileType, String fileName, String GSoNString){
 		FileHandler fh = new FileHandler();
 		fh.writeToFile(getActivity(), ProfileName, fileType, fileName, GSoNString);
