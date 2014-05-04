@@ -1,4 +1,6 @@
 using System;
+using ECRU.Utilities.Factories.ModuleFactory;
+
 namespace ECRU.Utilities
 {
     public static class SystemInfo
