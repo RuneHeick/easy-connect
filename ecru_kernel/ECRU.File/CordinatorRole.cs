@@ -15,7 +15,7 @@ namespace ECRU.File
     {
         const int MUTEX_MAX_LOCKTIME = 300000;  // 5 min
         const string CordinatorType = "CordinatorRq";
-        const int ConnectionTimeOut = 3000; 
+        const int ConnectionTimeOut = 10000; 
 
         ArrayList Mutexs = new ArrayList();
         readonly object Lock = new object();
@@ -57,13 +57,20 @@ namespace ECRU.File
         {
             var msg = message as ConnectionRequestMessage;
             
-            if (msg != null  && state == CordinatorState.Running)
+            if (msg != null )
             {
                 if(msg.connectionType == CordinatorType)
                 {
                     Socket con = msg.GetSocket();
+                
                     if (con != null)
                     {
+                        if (state != CordinatorState.Running)
+                        {
+                            con.Close(); // not started yet 
+                            return; 
+                        }
+
                         DateTime StartTime = DateTime.Now;
 
                         bool Handeled = false;
@@ -920,7 +927,6 @@ namespace ECRU.File
                     ReleasMutex(mutex.path); 
                 }
             }
-            MutexHandler.Abort(); 
             EventBus.Unsubscribe(typeof(ConnectionRequestMessage), ConnectionHandel);
         }
     }
