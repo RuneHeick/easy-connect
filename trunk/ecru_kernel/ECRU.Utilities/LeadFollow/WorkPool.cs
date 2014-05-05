@@ -6,10 +6,10 @@ namespace ECRU.Utilities.LeadFollow
 {
     public class WorkPool
     {
-        private ArrayList actionQueue = new ArrayList();
+        private readonly ArrayList actionQueue = new ArrayList();
         private readonly Object actionQueueLock = new object();
 
-        private  Thread[] pool;
+        private readonly Thread[] pool;
         private readonly Object poolLock = new object();
 
 
@@ -49,9 +49,8 @@ namespace ECRU.Utilities.LeadFollow
                 {
                     if (pool[i] == null || pool[i].IsAlive == false)
                     {
-
-                        pool[i] = new Thread(()=>Threadrun(i));
-                        pool[i].Start(); 
+                        pool[i] = new Thread(() => Threadrun(i));
+                        pool[i].Start();
                         break;
                     }
                 }
@@ -86,7 +85,7 @@ namespace ECRU.Utilities.LeadFollow
             }
             catch
             {
-                pool[poolindex] = null; 
+                pool[poolindex] = null;
             }
         }
 
@@ -94,7 +93,7 @@ namespace ECRU.Utilities.LeadFollow
         {
             lock (actionQueueLock)
             {
-                actionQueue.Clear(); 
+                actionQueue.Clear();
             }
 
             lock (poolLock)
@@ -103,9 +102,9 @@ namespace ECRU.Utilities.LeadFollow
                 {
                     if (pool[i] != null)
                     {
-                        if (pool[i].IsAlive == true)
+                        if (pool[i].IsAlive)
                             pool[i].Abort();
-                        pool[i] = null; 
+                        pool[i] = null;
                     }
                 }
             }

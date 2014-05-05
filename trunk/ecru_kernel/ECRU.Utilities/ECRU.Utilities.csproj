@@ -39,6 +39,13 @@
     <Compile Include="EventBus\Events\ResetEvent.cs" />
     <Compile Include="Factories\ModuleFactory\IModule.cs" />
     <Compile Include="Factories\ModuleFactory\ModuleFactory.cs" />
+    <Compile Include="FileSystem\CordinatorRole.cs" />
+    <Compile Include="FileSystem\FIleSystem.cs" />
+    <Compile Include="FileSystem\Files\ConfigFile.cs" />
+    <Compile Include="FileSystem\Files\FileBase.cs" />
+    <Compile Include="FileSystem\Files\InfoFile.cs" />
+    <Compile Include="FileSystem\LocalManager.cs" />
+    <Compile Include="FileSystem\NetworkManager.cs" />
     <Compile Include="HelpFunction\ByteExtension.cs" />
     <Compile Include="HelpFunction\Knuthhash.cs" />
     <Compile Include="HelpFunction\MD5.cs" />
@@ -50,9 +57,9 @@
     <Compile Include="SD\SD.cs" />
     <Compile Include="SD\Types\IConfigurationFile.cs" />
     <Compile Include="SD\Types\IFile.cs" />
+    <Compile Include="SystemInfo\SystemInfo.cs" />
     <Compile Include="SystemInfo\MacHierarchy.cs" />
     <Compile Include="SystemInfo\MacList.cs" />
-    <Compile Include="SystemInfo\SystemInfo.cs" />
     <Compile Include="Timers\Timer.cs" />
   </ItemGroup>
   <ItemGroup>

@@ -1,5 +1,4 @@
 ﻿using System;
-using Microsoft.SPOT;
 using System.Collections;
 using ECRU.Utilities.HelpFunction;
 
@@ -7,8 +6,9 @@ namespace ECRU.Utilities
 {
     public class MacList
     {
-        ArrayList mackList = new ArrayList();
-        readonly object Lock = new object(); 
+        private readonly object Lock = new object();
+        private readonly ArrayList mackList = new ArrayList();
+
         public void Add(byte[] mac)
         {
             try
@@ -26,7 +26,6 @@ namespace ECRU.Utilities
             }
             catch
             {
-                
             }
         }
 
@@ -61,20 +60,19 @@ namespace ECRU.Utilities
             }
             catch
             {
-
             }
         }
 
-        bool HasElement(out int index,byte[] mac)
+        private bool HasElement(out int index, byte[] mac)
         {
-            index = 0; 
+            index = 0;
             for (int i = 0; i < mackList.Count; i++)
             {
-                byte[] item = (byte[])mackList[i];
-                if(item.ByteArrayCompare(mac))
+                var item = (byte[]) mackList[i];
+                if (item.ByteArrayCompare(mac))
                 {
-                    index = i; 
-                    return true; 
+                    index = i;
+                    return true;
                 }
             }
 
@@ -92,22 +90,21 @@ namespace ECRU.Utilities
 
         public void Clear()
         {
-            lock(Lock)
+            lock (Lock)
             {
-                while(mackList.Count >0)
+                while (mackList.Count > 0)
                 {
-                    byte[] mac = (byte[])mackList[0];
+                    var mac = (byte[]) mackList[0];
                     Remove(mac);
                 }
-
             }
         }
-            
+
         public event MacListChange MacAdded;
 
         public event MacListChange MacRemoved;
         public event MacListChange MacStartRemoved;
     }
 
-    public delegate void MacListChange(byte[] mac); 
+    public delegate void MacListChange(byte[] mac);
 }

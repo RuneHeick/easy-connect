@@ -1,8 +1,6 @@
 using System;
 using System.Net.Sockets;
 using ECRU.Utilities;
-using ECRU.Utilities.EventBus;
-using ECRU.Utilities.EventBus.Events;
 using ECRU.Utilities.HelpFunction;
 using Json.NETMF;
 using Microsoft.SPOT;
@@ -11,12 +9,11 @@ namespace ECRU.netd.MacSync
 {
     public static class MacSync
     {
-
         public static void GotDevice(byte[] unit)
         {
-            var msg = SystemInfo.SystemMAC;
+            byte[] msg = SystemInfo.SystemMAC;
             msg = msg.Add(unit);
-            EventBus.Publish(new SendBroadcastMessage{BroadcastType = new byte[] { 3 }, Message = msg});
+            EventBus.Publish(new SendBroadcastMessage {BroadcastType = new byte[] {3}, Message = msg});
         }
 
         public static void GotDeviceNetworkEvent(object message)
@@ -25,11 +22,11 @@ namespace ECRU.netd.MacSync
 
             if (msg == null) return;
 
-            if (!msg.MessageType.ByteArrayCompare(new byte[] { 3 })) return;
+            if (!msg.MessageType.ByteArrayCompare(new byte[] {3})) return;
 
-            var roomunit = msg.Message.GetPart(0, 6);
-            var ecm = msg.Message.GetPart(6, 6);
-            
+            byte[] roomunit = msg.Message.GetPart(0, 6);
+            byte[] ecm = msg.Message.GetPart(6, 6);
+
             if (roomunit != null && ecm != null)
             {
                 SystemInfo.ConnectionOverview.Add(roomunit, ecm);
@@ -38,9 +35,9 @@ namespace ECRU.netd.MacSync
 
         public static void LostDevice(byte[] unit)
         {
-            var msg = SystemInfo.SystemMAC;
+            byte[] msg = SystemInfo.SystemMAC;
             msg = msg.Add(unit);
-            EventBus.Publish(new SendBroadcastMessage { BroadcastType = new byte[] { 4 }, Message = msg });
+            EventBus.Publish(new SendBroadcastMessage {BroadcastType = new byte[] {4}, Message = msg});
         }
 
         public static void LostDeviceNetworkEvent(object message)
@@ -49,17 +46,16 @@ namespace ECRU.netd.MacSync
 
             if (msg == null) return;
 
-            if (!msg.MessageType.ByteArrayCompare(new byte[] { 4 })) return;
+            if (!msg.MessageType.ByteArrayCompare(new byte[] {4})) return;
 
-            var roomunit = msg.Message.GetPart(0, 6);
-            var ecm = msg.Message.GetPart(6, 6);
+            byte[] roomunit = msg.Message.GetPart(0, 6);
+            byte[] ecm = msg.Message.GetPart(6, 6);
 
             if (roomunit != null && ecm != null)
             {
                 SystemInfo.ConnectionOverview.Remove(roomunit, ecm);
             }
         }
-
 
 
         public static void RequestDevices(object message)
@@ -69,7 +65,7 @@ namespace ECRU.netd.MacSync
             if (msg == null) return;
 
             if (msg.connectionType != "RequestDevices") return;
-            var socket = msg.GetSocket();
+            Socket socket = msg.GetSocket();
 
             if (socket != null)
             {
@@ -77,8 +73,8 @@ namespace ECRU.netd.MacSync
                 {
                     //fetch mac hirachy and transform to json
 
-                    var sysMac = SystemInfo.SystemMAC;
-                    var connectedDevices = SystemInfo.ConnectedDevices.GetElements();
+                    byte[] sysMac = SystemInfo.SystemMAC;
+                    Array connectedDevices = SystemInfo.ConnectedDevices.GetElements();
 
                     var obj = new Utilities.DeviceMacList();
 
@@ -90,7 +86,7 @@ namespace ECRU.netd.MacSync
                         obj.Devices.Add(device.ToHex());
                     }
 
-                    var result = JsonSerializer.SerializeObject(obj);
+                    string result = JsonSerializer.SerializeObject(obj);
                     Debug.Print(result);
 
                     try
@@ -114,42 +110,41 @@ namespace ECRU.netd.MacSync
 
         public static void WhoHasDevice(object message)
         {
-
             var msg = message as ConnectionRequestMessage;
 
             if (msg != null)
             {
                 if (msg.connectionType == "HasDevice")
                 {
-                    using (var socket = msg.GetSocket())
+                    using (Socket socket = msg.GetSocket())
                     {
                         //We receive a connection where a roomunit wants to tell us that it has the device we asked about
 
                         try
                         {
-                            var waitingForData = true;
+                            bool waitingForData = true;
 
                             while (waitingForData)
                             {
-                                waitingForData = !socket.Poll(10, SelectMode.SelectRead) && !socket.Poll(10, SelectMode.SelectError);
+                                waitingForData = !socket.Poll(10, SelectMode.SelectRead) &&
+                                                 !socket.Poll(10, SelectMode.SelectError);
 
                                 if (socket.Available > 0)
                                 {
-                                    var availableBytes = socket.Available;
+                                    int availableBytes = socket.Available;
 
                                     var buffer = new byte[availableBytes];
 
-                                    var bytesReceived = socket.Receive(buffer);
+                                    int bytesReceived = socket.Receive(buffer);
 
                                     if (bytesReceived == availableBytes)
                                     {
                                         Debug.Print("Got device: " + buffer.ToHex());
                                     }
 
-                                    SystemInfo.ConnectionOverview.Add(buffer.GetPart(0,6), buffer.GetPart(6,6));
+                                    SystemInfo.ConnectionOverview.Add(buffer.GetPart(0, 6), buffer.GetPart(6, 6));
                                 }
                             }
-
                         }
                         catch (Exception exception)
                         {
@@ -162,15 +157,9 @@ namespace ECRU.netd.MacSync
                                 socket.Close();
                             }
                         }
-
-
                     }
-
                 }
             }
         }
-
     }
 }
-
-

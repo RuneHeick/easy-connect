@@ -1,23 +1,20 @@
-﻿using System;
-using Microsoft.SPOT;
+﻿using System.Threading;
+using ECRU.BLEController.Packets;
+using ECRU.BLEController.Util;
 using ECRU.Utilities;
 using ECRU.Utilities.Factories.ModuleFactory;
-using ECRU.Utilities.EventBus;
-using ECRU.BLEController.Packets;
-using System.Threading;
-using ECRU.BLEController.Util;
 using ECRU.Utilities.HelpFunction;
+using Microsoft.SPOT;
+using ResetEvent = ECRU.BLEController.Packets.ResetEvent;
 
 namespace ECRU.BLEController
 {
-    public class BLEModule: IModule
+    public class BLEModule : IModule
     {
-        SerialController serial = new SerialController();
-        PacketManager packetmanager;
-        DataManager data;
-        DeviceInfoFactory Infofactory; 
-
-        bool IsInitMode { get; set; }
+        private readonly PacketManager packetmanager;
+        private readonly SerialController serial = new SerialController();
+        private DeviceInfoFactory Infofactory;
+        private DataManager data;
 
         public BLEModule()
         {
@@ -25,16 +22,18 @@ namespace ECRU.BLEController
             Infofactory = new DeviceInfoFactory(packetmanager);
         }
 
+        private bool IsInitMode { get; set; }
+
         public void LoadConfig(string configFilePath)
         {
-            if(SystemInfo.Name != "" && SystemInfo.Name != null
+            if (SystemInfo.Name != "" && SystemInfo.Name != null
                 && SystemInfo.PassCode != "" && SystemInfo.PassCode != null)
             {
-                IsInitMode = false; 
+                IsInitMode = false;
             }
             else
             {
-                IsInitMode = true; 
+                IsInitMode = true;
             }
         }
 
@@ -54,7 +53,7 @@ namespace ECRU.BLEController
             packetmanager.Subscrib(CommandType.DisconnectEvent, RecivedDisconnectEvnet);
 
             //Setup Information 
-            packetmanager.Subscrib(CommandType.Info, DeviceInfoRecived );
+            packetmanager.Subscrib(CommandType.Info, DeviceInfoRecived);
             packetmanager.Subscrib(CommandType.AddrEvent, AddrsEventRecived);
             packetmanager.Subscrib(CommandType.Reset, BLEControllerReset);
 
@@ -62,7 +61,6 @@ namespace ECRU.BLEController
             packetmanager.Subscrib(CommandType.DataEvent, RecivedDataEvnet);
 
             SendReset();
-
         }
 
 
@@ -79,7 +77,7 @@ namespace ECRU.BLEController
 
             //Data Update 
             packetmanager.Unsubscrib(CommandType.DataEvent, RecivedDataEvnet);
-            
+
             data.Dispose();
             SendReset();
         }
@@ -97,10 +95,10 @@ namespace ECRU.BLEController
 
         private void FoundDevices(IPacket pack)
         {
-            DeviceEvent newDevice = pack as DeviceEvent;
+            var newDevice = pack as DeviceEvent;
             Debug.Print("Found Device: " + newDevice.Address.ToHex());
 
-            if(newDevice != null)
+            if (newDevice != null)
             {
                 if (data.IsSystemDevice(newDevice.Address))
                 {
@@ -133,7 +131,7 @@ namespace ECRU.BLEController
         private void AddDevice(DeviceInfo item)
         {
             data.addConnectedDevice(item.Address);
-            AddDeviceEvent add = new AddDeviceEvent();
+            var add = new AddDeviceEvent();
             add.Address = item.Address;
             add.ConnectionTimeHandle = item.TimeHandel;
             add.PassCodeHandle = item.PassCodeHandel;
@@ -178,7 +176,7 @@ namespace ECRU.BLEController
 
         public void RecivedDataEvnet(IPacket packet)
         {
-            DataEvent DataPacket = packet as DataEvent;
+            var DataPacket = packet as DataEvent;
             if (DataPacket != null)
             {
                 data.GotData(DataPacket);
@@ -187,8 +185,8 @@ namespace ECRU.BLEController
 
         public void RecivedDisconnectEvnet(IPacket packet)
         {
-            DisconnectEvent DisPacket = packet as DisconnectEvent;
-            if(DisPacket != null)
+            var DisPacket = packet as DisconnectEvent;
+            if (DisPacket != null)
             {
                 Debug.Print("Recived Dis :" + DisPacket.Address.ToHex());
                 data.DisconnectDevice(DisPacket.Address);
@@ -199,27 +197,25 @@ namespace ECRU.BLEController
         //******************   Init Mode *********************
         private void DeviceInfoRecived(IPacket packet)
         {
-            NameEvent namePacket = packet as NameEvent;
-            PassCodeEvent codePacket = packet as PassCodeEvent;
+            var namePacket = packet as NameEvent;
+            var codePacket = packet as PassCodeEvent;
 
-            if(namePacket != null)
+            if (namePacket != null)
             {
                 SystemInfo.Name = namePacket.Name;
                 return;
             }
 
-            if(codePacket != null)
+            if (codePacket != null)
             {
                 SystemInfo.PassCode = codePacket.Code;
-                return;
             }
-
         }
 
         private void AddrsEventRecived(IPacket packet)
         {
-            AddrEvent addr = packet as AddrEvent; 
-            if(addr != null)
+            var addr = packet as AddrEvent;
+            if (addr != null)
             {
                 SystemInfo.SystemMAC = addr.Address;
             }
@@ -230,7 +226,7 @@ namespace ECRU.BLEController
 
         public void SendSystemInfo()
         {
-            SystemInfoEvent info = new SystemInfoEvent();
+            var info = new SystemInfoEvent();
             info.SystemID = SystemInfo.SystemID;
             info.InitMode = IsInitMode;
             packetmanager.Send(info);
@@ -238,10 +234,8 @@ namespace ECRU.BLEController
 
         public void SendReset()
         {
-            ResetEvent reset = new ResetEvent();
+            var reset = new ResetEvent();
             packetmanager.Send(reset);
         }
-
-
     }
 }

@@ -1,4 +1,4 @@
-namespace ECRU.Utilities.EventBus.Events
+namespace ECRU.Utilities
 {
     public class ResetEvent
     {

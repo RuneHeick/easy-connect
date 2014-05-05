@@ -1,25 +1,18 @@
 ﻿using System;
-using System.Net;
-using System.Threading;
 using ECRU.netd.Configuration;
-using ECRU.netd.FileSync;
-using ECRU.Utilities.EventBus.Events;
+using ECRU.Utilities;
 using ECRU.Utilities.Factories.ModuleFactory;
 using Microsoft.SPOT;
 using Microsoft.SPOT.Net.NetworkInformation;
-using ECRU.Utilities;
-using ECRU.Utilities.EventBus;
-using ECRU.netd.MacSync;
 
 namespace ECRU.netd
 {
     public class Netd : IModule
     {
-
         private string _ip;
         private int _port;
 
-        private int resets = 0;
+        private int resets;
 
         //setup subscriptions
         //setup ethernet after config
@@ -28,7 +21,7 @@ namespace ECRU.netd
         //get direct packets
         //get broadcast packets
 
-        public Netd() 
+        public Netd()
         {
             NetworkChange.NetworkAvailabilityChanged += NetworkAvailabilityChangedHandler;
             _port = 4543;
@@ -37,8 +30,8 @@ namespace ECRU.netd
         public void LoadConfig(string configFilePath)
         {
             //Network interface configuration
-            
-            var networkAdapter = NetworkInterface.GetAllNetworkInterfaces()[0];
+
+            NetworkInterface networkAdapter = NetworkInterface.GetAllNetworkInterfaces()[0];
 
             //Setup network configuration (Dynamic DNS/DCHP on ethernet interface)
             if (networkAdapter == null || networkAdapter.NetworkInterfaceType != NetworkInterfaceType.Ethernet)
@@ -51,7 +44,7 @@ namespace ECRU.netd
                 var networkConfig = new EthernetConfig {EthernetInterface = networkAdapter, DynamicIP = true};
                 networkConfig.InitNetworkInterface();
                 _ip = networkConfig.EthernetInterface.IPAddress;
-                
+
                 if (_ip.Equals("0.0.0.0"))
                 {
                     throw new IPAddressNotValidException();
@@ -75,14 +68,14 @@ namespace ECRU.netd
         {
             try
             {
-                EventBus.Publish(new NetworkStatusMessage { isinsync = true, NetState = "000000000000" });
+                EventBus.Publish(new NetworkStatusMessage {isinsync = true, NetState = "000000000000"});
 
                 EasyConnectTCP.Start();
                 EasyConnectUDP.Start();
                 NetworkDiscovery.Start();
-                EventBus.Subscribe(typeof(ConnectionRequestMessage), MacSync.MacSync.RequestDevices);
-                EventBus.Subscribe(typeof(RecivedBroadcastMessage), MacSync.MacSync.GotDeviceNetworkEvent);
-                EventBus.Subscribe(typeof(RecivedBroadcastMessage), MacSync.MacSync.LostDeviceNetworkEvent);
+                EventBus.Subscribe(typeof (ConnectionRequestMessage), MacSync.MacSync.RequestDevices);
+                EventBus.Subscribe(typeof (RecivedBroadcastMessage), MacSync.MacSync.GotDeviceNetworkEvent);
+                EventBus.Subscribe(typeof (RecivedBroadcastMessage), MacSync.MacSync.LostDeviceNetworkEvent);
 
                 if (SystemInfo.ConnectedDevices != null)
                 {
@@ -97,15 +90,12 @@ namespace ECRU.netd
 
                 //start sucess reset counter
                 resets = 0;
-
-                
             }
             catch (Exception exception)
             {
                 Debug.Print("Network start error: " + exception.Message + " stacktrace: " + exception.StackTrace);
                 Reset();
             }
-            
         }
 
         public void Stop()
@@ -141,18 +131,15 @@ namespace ECRU.netd
 
         private void NetworkAvailabilityChangedHandler(object sender, NetworkAvailabilityEventArgs e)
         {
-
             if (e.IsAvailable)
             {
                 LoadConfig("");
                 Start();
-
             }
             else
             {
                 Stop();
             }
         }
-
     }
 }

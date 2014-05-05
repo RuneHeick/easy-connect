@@ -1,18 +1,8 @@
 ﻿using System;
-using System.Net;
-using System.Net.Sockets;
 using System.Threading;
 using ECRU.BLEController;
-using ECRU.File;
-using ECRU.File.Files;
 using ECRU.netd;
 using ECRU.Utilities;
-using ECRU.Utilities.EventBus;
-using ECRU.Utilities.EventBus.Events;
-using ECRU.Utilities.HelpFunction;
-using Microsoft.SPOT;
-using Microsoft.SPOT.Net.NetworkInformation;
-using ECRU.SystemInfo;
 
 namespace ECRU
 {
@@ -21,14 +11,13 @@ namespace ECRU
     /// </summary>
     public class Program
     {
+        private static readonly Netd _netDaemon = new Netd();
+        private static readonly BLEModule _bleModule = null;
 
-        private static Netd _netDaemon = new Netd();
-        private static BLEModule _bleModule = null;
-
-        private static event SystemInfoChanged systemInfoChanged;
         private static Thread mainThread;
 
-        private static int state = 0;
+        private static int state;
+        private static event SystemInfoChanged systemInfoChanged;
 
         /// <summary>
         ///     Main Launches the ECRU kernel
@@ -40,11 +29,11 @@ namespace ECRU
             // write your code here
             //Thread.Sleep(5000);
 
-            
+
             //State 1 Load SystemInfo configuration
             //GetSystemInfoConfig();
 
-            
+
             systemInfoChanged += (StateSwitch);
 
             mainThread = Thread.CurrentThread;
@@ -54,8 +43,8 @@ namespace ECRU
                 switch (state)
                 {
                     case 1: //Load System Information state
-                        SystemInfo.SystemInfo.LoadConfig("SysInfoConfig.cfg");
-                        SystemInfo.SystemInfo.Start();
+                        SystemInfo.LoadConfig("SysInfoConfig.cfg");
+                        SystemInfo.Start();
                         break;
 
                     case 2: //System Configuration state
@@ -72,7 +61,7 @@ namespace ECRU
 
                 Thread.Sleep(Timeout.Infinite);
             }
-            
+
 
             //try
             //{
@@ -105,8 +94,6 @@ namespace ECRU
 
             //SystemInfo.ConnectedDevices.Add("E68170E5C578".FromHex());
             //SystemInfo.ConnectedDevices.Add("F83A228CBA1C".FromHex());
-
-            
         }
 
         private static void StateSwitch(Byte[] sysMac, string name, string passCode)
@@ -115,7 +102,8 @@ namespace ECRU
             {
                 //System configured
                 state = 3;
-            } else if (state == 1)
+            }
+            else if (state == 1)
             {
                 state = 2;
             }
@@ -123,7 +111,6 @@ namespace ECRU
             {
                 mainThread.Resume();
             }
-            
         }
     }
 }

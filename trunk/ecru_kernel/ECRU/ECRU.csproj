@@ -59,17 +59,9 @@
       <Project>{6B29AE16-6946-4943-BA13-A1E57605A963}</Project>
       <Name>ECRU.BLEControler</Name>
     </ProjectReference>
-    <ProjectReference Include="..\ECRU.File\ECRU.File.csproj">
-      <Project>{21395F92-A680-483C-AC16-F2EF644FF640}</Project>
-      <Name>ECRU.File</Name>
-    </ProjectReference>
     <ProjectReference Include="..\ECRU.netd\ECRU.netd.csproj">
       <Project>{CC50D845-8A55-4787-81F4-16793837A047}</Project>
       <Name>ECRU.netd</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\ECRU.SystemInfo\ECRU.SystemInfo.csproj">
-      <Project>{E0D4DFFB-423A-4CE4-8719-E6A518B51CA5}</Project>
-      <Name>ECRU.SystemInfo</Name>
     </ProjectReference>
     <ProjectReference Include="..\ECRU.Utilities\ECRU.Utilities.csproj">
       <Project>{5B778498-CDC7-4CE6-8CD3-FD20D04EBF93}</Project>

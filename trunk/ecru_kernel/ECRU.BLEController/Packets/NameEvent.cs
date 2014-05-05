@@ -1,13 +1,10 @@
-﻿using System;
-using Microsoft.SPOT;
-using ECRU.Utilities.HelpFunction;
+﻿using ECRU.Utilities.HelpFunction;
 
 namespace ECRU.BLEController.Packets
 {
-    class NameEvent:IPacket
+    internal class NameEvent : IPacket
     {
-
-        byte[] payload = new byte[9]; 
+        private byte[] payload = new byte[9];
 
         public string Name
         {
@@ -19,30 +16,20 @@ namespace ECRU.BLEController.Packets
                 }
                 catch
                 {
-                    return ""; 
+                    return "";
                 }
             }
-
         }
 
         public byte[] Payload
         {
-            get
-            {
-                return payload; 
-            }
-            set
-            {
-                payload = value; 
-            }
+            get { return payload; }
+            set { payload = value; }
         }
 
         public CommandType Command
         {
-            get
-            {
-                return CommandType.NameEvent;
-            }
+            get { return CommandType.NameEvent; }
         }
     }
 }

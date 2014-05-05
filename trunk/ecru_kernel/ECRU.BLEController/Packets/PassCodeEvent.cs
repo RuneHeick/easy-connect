@@ -1,13 +1,10 @@
-﻿using System;
-using Microsoft.SPOT;
-using ECRU.Utilities.HelpFunction;
+﻿using ECRU.Utilities.HelpFunction;
 
 namespace ECRU.BLEController.Packets
 {
-    class PassCodeEvent : IPacket
+    internal class PassCodeEvent : IPacket
     {
-
-        byte[] payload = new byte[9];
+        private byte[] payload = new byte[9];
 
         public string Code
         {
@@ -22,27 +19,17 @@ namespace ECRU.BLEController.Packets
                     return "";
                 }
             }
-
         }
 
         public byte[] Payload
         {
-            get
-            {
-                return payload;
-            }
-            set
-            {
-                payload = value;
-            }
+            get { return payload; }
+            set { payload = value; }
         }
 
         public CommandType Command
         {
-            get
-            {
-                return CommandType.PassCode;
-            }
+            get { return CommandType.PassCode; }
         }
     }
 }

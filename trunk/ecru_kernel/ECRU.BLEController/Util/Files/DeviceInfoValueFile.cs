@@ -1,16 +1,14 @@
 ﻿using System;
-using Microsoft.SPOT;
-using ECRU.File.Files;
+using ECRU.Utilities;
 using ECRU.Utilities.HelpFunction;
 
 namespace ECRU.BLEController.Util
 {
-    public class DeviceInfoValueFile: ConfigFile
+    public class DeviceInfoValueFile : ConfigFile
     {
-        public DeviceInfoValueFile(FileBase file):
+        public DeviceInfoValueFile(FileBase file) :
             base(file)
         {
-
         }
 
         public void Add(UInt16 handle, byte[] data, byte WRProp)
@@ -20,7 +18,7 @@ namespace ECRU.BLEController.Util
 
         public void Update(UInt16 handle, byte[] data)
         {
-            if(base.Contains(handle.ToString()))
+            if (base.Contains(handle.ToString()))
             {
                 var wrprop = base[handle.ToString()].Substring(0, 2);
                 byte[] wr = wrprop.FromHex();
@@ -31,7 +29,7 @@ namespace ECRU.BLEController.Util
         public byte[] GetData(UInt16 handle)
         {
             string data = base[handle.ToString()];
-            return data != null && data.Length>2 ? data.Substring(2,data.Length-2).FromHex() : null; 
+            return data != null && data.Length > 2 ? data.Substring(2, data.Length - 2).FromHex() : null;
         }
 
         public byte GetWrProp(UInt16 handle)
@@ -42,20 +40,18 @@ namespace ECRU.BLEController.Util
                 byte[] wr = wrprop.FromHex();
                 return wr[0];
             }
-            return 0; 
+            return 0;
         }
 
         public void Create(DeviceInfo info)
         {
-            foreach(Service s in info.Services)
+            foreach (Service s in info.Services)
             {
-                foreach(Characteristic c in s.Characteristics)
+                foreach (Characteristic c in s.Characteristics)
                 {
                     Add(c.Value.handle, c.Value.Value, c.Value.ReadWriteProps);
                 }
-
             }
         }
-
     }
 }

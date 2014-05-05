@@ -1,45 +1,37 @@
 ﻿using System;
 using System.Collections;
-using System.IO.Ports;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading;
-using ECRU.Utilities.EventBus.Events;
+using ECRU.Utilities;
 using ECRU.Utilities.HelpFunction;
 using ECRU.Utilities.Timers;
 using Microsoft.SPOT;
-using ECRU.Utilities.EventBus;
-using Microsoft.SPOT.Hardware;
 
 namespace ECRU.netd
 {
-    
-
-    static class EasyConnectTCP
+    internal static class EasyConnectTCP
     {
-
         private static Socket _receiveSocket;
-        private static Hashtable _connectionRequests = new Hashtable();
-        private static object _lock = new object();
+        private static readonly Hashtable _connectionRequests = new Hashtable();
+        private static readonly object _lock = new object();
 
-        private static ArrayList _listenerThreadsArrayList = new ArrayList();
+        private static readonly ArrayList _listenerThreadsArrayList = new ArrayList();
         private static Thread _ecThread;
-
-        public static int Port { get; set; }
 
         static EasyConnectTCP()
         {
             Port = 4543;
         }
 
+        public static int Port { get; set; }
+
         public static void Start()
         {
-
-            EventBus.Subscribe(typeof(NewConnectionMessage), SendRequest);
+            EventBus.Subscribe(typeof (NewConnectionMessage), SendRequest);
 
             _ecThread = new Thread(Listen);
             _ecThread.Start();
-
         }
 
         public static void Stop()
@@ -65,7 +57,6 @@ namespace ECRU.netd
             }
 
             EventBus.Unsubscribe(typeof (NewConnectionMessage), SendRequest);
-
         }
 
         private static void Listen()
@@ -80,17 +71,17 @@ namespace ECRU.netd
 
                 while (true)
                 {
-                    var connection = _receiveSocket.Accept();
+                    Socket connection = _receiveSocket.Accept();
 
                     var t = new Thread(() => OnDataReceived(connection));
                     _listenerThreadsArrayList.Add(t);
                     t.Start();
                 }
-
             }
             catch (Exception exception)
             {
-                Debug.Print("Start network discovery listener failed: " + exception.Message + " Stacktrace: " + exception.StackTrace);
+                Debug.Print("Start network discovery listener failed: " + exception.Message + " Stacktrace: " +
+                            exception.StackTrace);
                 if (_receiveSocket != null)
                 {
                     _receiveSocket.Close();
@@ -101,7 +92,7 @@ namespace ECRU.netd
         private static void OnDataReceived(Socket connection)
         {
             Debug.Print("Connection from: " + connection.RemoteEndPoint);
-            var waitingForData = true;
+            bool waitingForData = true;
             try
             {
                 while (waitingForData)
@@ -111,11 +102,11 @@ namespace ECRU.netd
 
                     if (connection.Available > 0)
                     {
-                        var availableBytes = connection.Available;
+                        int availableBytes = connection.Available;
 
                         var buffer = new byte[availableBytes];
 
-                        var bytesReceived = connection.Receive(buffer);
+                        int bytesReceived = connection.Receive(buffer);
 
                         if (bytesReceived == availableBytes)
                         {
@@ -124,7 +115,7 @@ namespace ECRU.netd
                             timer.Start();
 
 
-                            var msg = new ConnectionRequestMessage()
+                            var msg = new ConnectionRequestMessage
                             {
                                 connectionType = buffer.GetString(),
                                 GetSocket = () => GetSocket(connection)
@@ -161,7 +152,7 @@ namespace ECRU.netd
 
         private static void SendRequest(object message)
         {
-            NewConnectionMessage msg = message as NewConnectionMessage;
+            var msg = message as NewConnectionMessage;
             if (msg == null) return;
             //Start Sender for EasyConnectTCP
             Debug.Print("Starting EasyConnectTCP SendRequest");
@@ -169,7 +160,7 @@ namespace ECRU.netd
             Socket send = null;
             try
             {
-                var ip = NetworkTable.GetAddress(msg.Receiver.ToHex());
+                IPAddress ip = NetworkTable.GetAddress(msg.Receiver.ToHex());
 
                 if (ip == null)
                 {
@@ -183,30 +174,32 @@ namespace ECRU.netd
 
                 send.Connect(destination);
 
-                Debug.Print("Socket information: remote-" + send.RemoteEndPoint + " local-" + send.LocalEndPoint + " timeout-" + send.ReceiveTimeout);
+                Debug.Print("Socket information: remote-" + send.RemoteEndPoint + " local-" + send.LocalEndPoint +
+                            " timeout-" + send.ReceiveTimeout);
 
-                var length = msg.ConnectionType.StringToBytes().Length;
+                int length = msg.ConnectionType.StringToBytes().Length;
 
-                var bytesSent = send.Send(msg.ConnectionType.StringToBytes());
+                int bytesSent = send.Send(msg.ConnectionType.StringToBytes());
 
                 if (bytesSent == length)
                 {
-                    var waitingForData = true;
-                    var TimeOut = false;
+                    bool waitingForData = true;
+                    bool TimeOut = false;
                     DateTime start = DateTime.Now;
 
                     while (waitingForData)
                     {
                         waitingForData = !send.Poll(10, SelectMode.SelectRead) && !send.Poll(10, SelectMode.SelectError);
 
-                        if (((DateTime.Now - start).Ticks / TimeSpan.TicksPerMillisecond) > 60000)
+                        if (((DateTime.Now - start).Ticks/TimeSpan.TicksPerMillisecond) > 60000)
                             throw new TimeOutException();
 
                         if (send.Available > 0)
                         {
                             var buffer = new byte[send.Available];
                             string s;
-                            if (0 != send.Receive(buffer) && buffer.GetString() != null && buffer.GetString() == "Accepted")
+                            if (0 != send.Receive(buffer) && buffer.GetString() != null &&
+                                buffer.GetString() == "Accepted")
                             {
                                 Debug.Print("Accepted Request: " + buffer.GetString());
                                 // to finaly
@@ -214,13 +207,12 @@ namespace ECRU.netd
                             else
                             {
                                 send.Close(); // only close if not used; 
-                                send = null; 
+                                send = null;
                             }
 
                             waitingForData = false;
                         }
                     }
-
                 }
             }
             catch (TimeOutException exception)
@@ -238,17 +230,13 @@ namespace ECRU.netd
                 if (send != null)
                 {
                     send.Close();
-                    send = null; 
+                    send = null;
                 }
-                
             }
             finally
             {
-
                 new Thread(() => { if (msg != null) msg.ConnectionCallback(send, msg.Receiver); }).Start();
-
             }
-            
         }
 
         private static void ConnectionTimeout(object connection)
@@ -276,7 +264,7 @@ namespace ECRU.netd
                 }
             }
         }
-    
+
         public static Socket GetSocket(Socket connection)
         {
             Socket con = null;
@@ -287,24 +275,23 @@ namespace ECRU.netd
                 {
                     var timer = _connectionRequests[connection] as ECTimer;
                     if (timer != null) timer.Stop();
-                    
+
                     //send message that socket is accepted
                     try
                     {
                         connection.Send("Accepted".StringToBytes());
-                    
+
                         //remove socket and timer from connection queue
                         _connectionRequests.Remove(connection);
 
                         //handover reference to requester
                         con = connection;
-
                     }
                     catch (Exception)
                     {
                         if (connection != null)
                             connection.Close();
-                        con = null; 
+                        con = null;
                     }
                 }
             }
@@ -312,7 +299,5 @@ namespace ECRU.netd
             //Give socket
             return con;
         }
-
     }
-
 }

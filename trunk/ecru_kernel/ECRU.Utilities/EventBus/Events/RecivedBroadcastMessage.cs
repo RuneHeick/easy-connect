@@ -1,9 +1,6 @@
-using System;
 using System.Net;
-using Microsoft.SPOT;
-using Microsoft.SPOT.Messaging;
 
-namespace ECRU.Utilities.EventBus.Events
+namespace ECRU.Utilities
 {
     public class RecivedBroadcastMessage
     {

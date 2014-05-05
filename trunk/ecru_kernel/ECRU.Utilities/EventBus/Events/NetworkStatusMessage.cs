@@ -1,7 +1,4 @@
-﻿using System;
-using Microsoft.SPOT;
-
-namespace ECRU.Utilities.EventBus.Events
+﻿namespace ECRU.Utilities
 {
     public class NetworkStatusMessage
     {

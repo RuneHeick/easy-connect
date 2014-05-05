@@ -1,6 +1,4 @@
 using System;
-using System.Collections;
-using Microsoft.SPOT;
 
 namespace ECRU.Utilities.HelpFunction
 {
@@ -14,7 +12,7 @@ namespace ECRU.Utilities.HelpFunction
 
 
             int i = left, j = right;
-            IComparable pivot = sortedElements[(left + right) / 2];
+            IComparable pivot = sortedElements[(left + right)/2];
 
             while (i <= j)
             {
@@ -31,7 +29,7 @@ namespace ECRU.Utilities.HelpFunction
                 if (i <= j)
                 {
                     // Swap
-                    var tmp = sortedElements[i];
+                    string tmp = sortedElements[i];
                     sortedElements[i] = sortedElements[j];
                     sortedElements[j] = tmp;
 
@@ -58,8 +56,7 @@ namespace ECRU.Utilities.HelpFunction
         //Add element
         public static string[] Add(this string[] elements, string element)
         {
-
-            for (var i = 0; i < elements.Length; i++)
+            for (int i = 0; i < elements.Length; i++)
             {
                 if (elements[i] == element)
                 {
@@ -75,14 +72,14 @@ namespace ECRU.Utilities.HelpFunction
 
             return newElements;
         }
-        
+
         //Remove element
         public static string[] Remove(this string[] elements, string element)
         {
-            var newElements = new string[elements.Length-1];
+            var newElements = new string[elements.Length - 1];
 
-            var j = 0;
-            for (var i = 0; i < elements.Length; i++)
+            int j = 0;
+            for (int i = 0; i < elements.Length; i++)
             {
                 if (elements[i] != element)
                 {
@@ -92,14 +89,13 @@ namespace ECRU.Utilities.HelpFunction
             }
 
             return newElements;
-
         }
 
         //Has element
         public static bool HasElement(this string[] elements, string element)
         {
-            var result = false;
-            foreach (var s in elements)
+            bool result = false;
+            foreach (string s in elements)
             {
                 if (s == element)
                 {
@@ -109,6 +105,5 @@ namespace ECRU.Utilities.HelpFunction
 
             return result;
         }
-
     }
 }

@@ -1,16 +1,14 @@
-﻿using System;
-using Microsoft.SPOT;
-using System.Collections;
+﻿using System.Collections;
 using ECRU.Utilities.HelpFunction;
 
 namespace ECRU.Utilities
 {
     public class MacHierarchy
     {
-        Hashtable data = new Hashtable(); 
-        readonly object Lock = new object(); 
+        private readonly object Lock = new object();
+        private readonly Hashtable data = new Hashtable();
 
-        public void Add(byte[] master, byte[] unit )
+        public void Add(byte[] master, byte[] unit)
         {
             if (unit != null)
             {
@@ -20,16 +18,16 @@ namespace ECRU.Utilities
                     Remove(unit);
                     if (data.Contains(masterMac))
                     {
-                        MacList list = (MacList)data[masterMac];
+                        var list = (MacList) data[masterMac];
                         list.Add(unit);
                     }
                     else
                     {
-                        MacList list = new MacList();
+                        var list = new MacList();
                         list.Add(unit);
                         data.Add(masterMac, list);
-                        list.MacAdded += ((o) => list_MacChanged(o, UnitAdded));
-                        list.MacStartRemoved += ((o) => list_MacChanged(o, UnitRemoved));
+                        list.MacAdded += (o => list_MacChanged(o, UnitAdded));
+                        list.MacStartRemoved += (o => list_MacChanged(o, UnitRemoved));
                     }
                     if (UnitAdded != null)
                         UnitAdded(master, unit);
@@ -37,19 +35,19 @@ namespace ECRU.Utilities
             }
         }
 
-        void list_MacChanged(byte[] mac,MacHierarchyChange call )
+        private void list_MacChanged(byte[] mac, MacHierarchyChange call)
         {
-            lock(Lock)
+            lock (Lock)
             {
                 if (call != null)
                 {
                     ICollection keyCollection = data.Keys;
-                    string[] keys = new string[keyCollection.Count];
+                    var keys = new string[keyCollection.Count];
                     keyCollection.CopyTo(keys, 0);
 
                     for (int i = 0; i < data.Count; i++)
                     {
-                        MacList maclist = (MacList)data[keys[i]];
+                        var maclist = (MacList) data[keys[i]];
                         if (maclist.Contains(mac))
                         {
                             call(keys[i].FromHex(), mac);
@@ -70,7 +68,7 @@ namespace ECRU.Utilities
                 }
                 else
                 {
-                    MacList list = new MacList();
+                    var list = new MacList();
                     data.Add(masterMac, list);
                 }
                 if (UnitAdded != null)
@@ -80,41 +78,41 @@ namespace ECRU.Utilities
 
         public void Remove(byte[] master, byte[] unit)
         {
-                string masterMac = master.ToHex();
-                if (data.Contains(masterMac))
-                {
-                    MacList list = (MacList)data[masterMac];
-                    list.Remove(unit);
-                    if (UnitRemoved != null)
-                        UnitRemoved(master, unit);
-                }
+            string masterMac = master.ToHex();
+            if (data.Contains(masterMac))
+            {
+                var list = (MacList) data[masterMac];
+                list.Remove(unit);
+                if (UnitRemoved != null)
+                    UnitRemoved(master, unit);
+            }
         }
 
         public void Remove(byte[] unit)
         {
             lock (Lock)
             {
-                    ICollection keyCollection = data.Keys;
-                    string[] keys = new string[keyCollection.Count];
-                    keyCollection.CopyTo(keys, 0);
+                ICollection keyCollection = data.Keys;
+                var keys = new string[keyCollection.Count];
+                keyCollection.CopyTo(keys, 0);
 
-                    for (int i = 0; i < data.Count; i++)
+                for (int i = 0; i < data.Count; i++)
+                {
+                    var maclist = (MacList) data[keys[i]];
+
+                    string k = keys[i];
+                    if (k.FromHex().ByteArrayCompare(unit))
                     {
-                        MacList maclist = (MacList)data[keys[i]];
-
-                        string k = keys[i];
-                        if (k.FromHex().ByteArrayCompare(unit))
-                        {
-                            maclist.Clear();
-                            data.Remove(k);
-                            break;
-                        }
-
-                        if (maclist.Contains(unit))
-                        {
-                            maclist.Remove(unit); // Event Will triger remove event. 
-                        }
+                        maclist.Clear();
+                        data.Remove(k);
+                        break;
                     }
+
+                    if (maclist.Contains(unit))
+                    {
+                        maclist.Remove(unit); // Event Will triger remove event. 
+                    }
+                }
             }
         }
 
@@ -122,11 +120,11 @@ namespace ECRU.Utilities
         {
             lock (Lock)
             {
-                string[] units = new string[data.Count];
-                int index = 0; 
-                foreach(var k in data.Keys)
+                var units = new string[data.Count];
+                int index = 0;
+                foreach (object k in data.Keys)
                 {
-                    units[index++] = (string)k; 
+                    units[index++] = (string) k;
                 }
                 return units.Quicksort(0, units.Length - 1);
             }
@@ -139,22 +137,17 @@ namespace ECRU.Utilities
                 string masterMac = Master.ToHex();
                 if (data.Contains(masterMac))
                 {
-                    MacList list = (MacList)data[masterMac];
-                    return list; 
+                    var list = (MacList) data[masterMac];
+                    return list;
                 }
             }
-            return null; 
-
+            return null;
         }
-
-
 
 
         public event MacHierarchyChange UnitRemoved;
         public event MacHierarchyChange UnitAdded;
-
     }
 
     public delegate void MacHierarchyChange(byte[] master, byte[] unit);
-
 }

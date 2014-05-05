@@ -1,6 +1,6 @@
 using System.Collections;
 
-namespace ECRU.Utilities.SD.Types
+namespace ECRU.Utilities
 {
     public interface IConfigurationFile : IFile
     {

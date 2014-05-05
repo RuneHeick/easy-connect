@@ -1,9 +1,5 @@
 ﻿using System;
-using System.IO;
-using ECRU.File;
-using ECRU.File.Files;
 using ECRU.Utilities;
-using ECRU.Utilities.Factories.ModuleFactory;
 using ECRU.Utilities.HelpFunction;
 
 namespace ECRU.SystemInfo
@@ -12,14 +8,12 @@ namespace ECRU.SystemInfo
 
     public static class SystemInfo
     {
-        public static event SystemInfoChanged SysInfoChange;
-
         public const int SYSID_LENGTH = 8;
         private static byte[] sysId = new byte[SYSID_LENGTH];
         private static byte[] _sysMac;
         private static string _systemConfigFilePath;
 
-        private static object writeLock = new object();
+        private static readonly object writeLock = new object();
 
         public static MacHierarchy ConnectionOverview { get; private set; }
 
@@ -28,19 +22,12 @@ namespace ECRU.SystemInfo
 
         public static byte[] SystemID
         {
-            get
-            {
-                return doHash(PassCode); 
-            }
+            get { return doHash(PassCode); }
         }
 
         public static string PassCode
         {
-            get
-            {
-                return ReadConfigValueFromFile("PassCode"); 
-                
-            }
+            get { return ReadConfigValueFromFile("PassCode"); }
             set
             {
                 WriteConfigValueToFile("PassCode", value);
@@ -53,11 +40,7 @@ namespace ECRU.SystemInfo
 
         public static string Name
         {
-            get
-            {
-                return ReadConfigValueFromFile("Name");
-                
-            }
+            get { return ReadConfigValueFromFile("Name"); }
             set
             {
                 WriteConfigValueToFile("Name", value);
@@ -70,10 +53,7 @@ namespace ECRU.SystemInfo
 
         public static byte[] SystemMAC
         {
-            get
-            {
-                return _sysMac ?? (_sysMac = ReadConfigValueFromFile("SystemMAC").FromHex()); 
-            }
+            get { return _sysMac ?? (_sysMac = ReadConfigValueFromFile("SystemMAC").FromHex()); }
             set
             {
                 _sysMac = value;
@@ -86,34 +66,36 @@ namespace ECRU.SystemInfo
             }
         }
 
+        public static event SystemInfoChanged SysInfoChange;
+
         private static byte[] doHash(string input)
         {
             UInt64 hashedValue = Knuthhash.doHash(input);
 
-            byte[] hash = new byte[SYSID_LENGTH];
-            for (int i = 0; i < 64 / 8; i++)
+            var hash = new byte[SYSID_LENGTH];
+            for (int i = 0; i < 64/8; i++)
             {
-                hash[i] = (byte)(hashedValue >> (8 * i));
+                hash[i] = (byte) (hashedValue >> (8*i));
             }
             return hash;
         }
 
         public static void LoadConfig(string configFilePath)
         {
-
             _systemConfigFilePath = configFilePath;
             ConfigFile systemConfigFile = null;
             lock (writeLock)
             {
                 try
                 {
-                    systemConfigFile = new ConfigFile(FileSystem.GetFile(configFilePath, FileAccess.Read, FileType.Local));
+                    systemConfigFile =
+                        new ConfigFile(FileSystem.GetFile(configFilePath, FileAccess.Read, FileType.Local));
 
                     if (systemConfigFile.File != null)
                     {
-
-                        _sysMac = systemConfigFile.Contains("SystemMAC") ? systemConfigFile["SystemMAC"].FromHex() : null;
-
+                        _sysMac = systemConfigFile.Contains("SystemMAC")
+                            ? systemConfigFile["SystemMAC"].FromHex()
+                            : null;
                     }
                     else
                     {
@@ -128,7 +110,6 @@ namespace ECRU.SystemInfo
                     if (systemConfigFile != null) systemConfigFile.Close();
                 }
             }
-            
         }
 
         public static void Start()
@@ -164,7 +145,6 @@ namespace ECRU.SystemInfo
                     {
                         systemConfigFile.Close();
                     }
-
                 }
             }
         }
@@ -173,10 +153,11 @@ namespace ECRU.SystemInfo
         {
             ConfigFile systemConfigFile = null;
             String returnValue = null;
-            
+
             try
             {
-                systemConfigFile = new ConfigFile(FileSystem.GetFile(_systemConfigFilePath, FileAccess.Read, FileType.Local));
+                systemConfigFile =
+                    new ConfigFile(FileSystem.GetFile(_systemConfigFilePath, FileAccess.Read, FileType.Local));
 
                 if (systemConfigFile.File != null)
                 {
@@ -192,7 +173,6 @@ namespace ECRU.SystemInfo
                 {
                     systemConfigFile.Close();
                 }
-
             }
 
             return returnValue;

@@ -1,5 +1,4 @@
 ﻿using System;
-using Microsoft.SPOT;
 
 namespace ECRU.Utilities.HelpFunction
 {
@@ -16,6 +15,5 @@ namespace ECRU.Utilities.HelpFunction
 
             return hashedValue;
         }
-
     }
 }
