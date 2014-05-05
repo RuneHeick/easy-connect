@@ -1,16 +1,12 @@
 ﻿using System;
-using System.Text;
 
 namespace ECRU.netd
 {
-    class TimeOutException : Exception
+    internal class TimeOutException : Exception
     {
         public override string Message
         {
-            get
-            {
-                return "Timed out";
-            }
+            get { return "Timed out"; }
         }
     }
 }

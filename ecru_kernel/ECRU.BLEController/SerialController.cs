@@ -1,21 +1,18 @@
 ﻿using System;
-using Microsoft.SPOT;
-using SecretLabs.NETMF.Hardware.NetduinoPlus;
-using System.Threading;
-using System.IO.Ports;
 using System.Collections;
+using System.IO.Ports;
+using SecretLabs.NETMF.Hardware.NetduinoPlus;
 
 namespace ECRU.BLEController
 {
-    class SerialController
+    internal class SerialController
     {
-
+        private readonly ArrayList packet = new ArrayList();
+        private readonly SerialPort serial = new SerialPort(SerialPorts.COM1, 115200, Parity.None, 8, StopBits.One);
+        private readonly object uartLock = new object();
         public Status SerialStatus { get; set; }
         public event Recived PacketRecived;
-        private readonly object uartLock = new object(); 
 
-        SerialPort serial = new SerialPort(SerialPorts.COM1, 115200, Parity.None, 8, StopBits.One);
-       
 
         public void Start()
         {
@@ -52,7 +49,7 @@ namespace ECRU.BLEController
 
         public void Reset()
         {
-            Stop(); 
+            Stop();
             Start();
         }
 
@@ -70,21 +67,19 @@ namespace ECRU.BLEController
                     }
                     catch
                     {
-                        return false; 
+                        return false;
                     }
-                   
                 }
                 return false;
             }
         }
 
-        ArrayList packet = new ArrayList(); 
-        void serialport_DataReceived(object sender, SerialDataReceivedEventArgs e)
+        private void serialport_DataReceived(object sender, SerialDataReceivedEventArgs e)
         {
             try
             {
                 int len = serial.BytesToRead;
-                byte[] data = new byte[len];
+                var data = new byte[len];
 
                 serial.Read(data, 0, len);
                 foreach (byte b in data)
@@ -95,17 +90,16 @@ namespace ECRU.BLEController
                     {
                         packet.Add(b);
 
-                        if (packet.Count - 1 == (((byte)packet[1]) & 0x7F))
+                        if (packet.Count - 1 == (((byte) packet[1]) & 0x7F))
                         {
                             if (PacketRecived != null)
-                                PacketRecived((byte[])packet.ToArray(typeof(byte)));
+                                PacketRecived((byte[]) packet.ToArray(typeof (byte)));
                             packet.Clear();
                         }
                         if (packet.Count > 128)
                         {
                             packet.Clear();
                         }
-
                     }
                 }
             }
@@ -114,24 +108,21 @@ namespace ECRU.BLEController
                 Stop();
                 SerialStatus = Status.Error;
             }
-
         }
 
-        void serial_ErrorReceived(object sender, SerialErrorReceivedEventArgs e)
+        private void serial_ErrorReceived(object sender, SerialErrorReceivedEventArgs e)
         {
             SerialStatus = Status.Error;
-            Reset(); 
+            Reset();
         }
-
-
     }
 
     public delegate void Recived(byte[] packet);
 
-    enum Status
+    internal enum Status
     {
         Running,
-        Stoped, 
+        Stoped,
         Error
     }
 }

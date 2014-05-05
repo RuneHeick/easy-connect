@@ -1,29 +1,22 @@
 using System;
 using System.Net.Sockets;
-using ECRU.Utilities.EventBus;
-using ECRU.Utilities.EventBus.Events;
-using ECRU.Utilities.Timers;
-using Microsoft.SPOT;
 using ECRU.BLEController.Packets;
-using ECRU.Utilities;
 using ECRU.BLEController.Util;
-using System.Threading;
-using ECRU.File;
+using ECRU.Utilities;
 using ECRU.Utilities.HelpFunction;
-using ECRU.File.Files;
+using Microsoft.SPOT;
 
 namespace ECRU.BLEController
 {
-    class DataManager : IDisposable
+    internal class DataManager : IDisposable
     {
-        MacList ConnectedDevices;
-        const string FileFolder = "BLE Devices";
+        private const string FileFolder = "BLE Devices";
+        private readonly MacList ConnectedDevices;
+        private readonly PacketManager packetmanager;
 
         //Seen
-        DeviceInfoList seenDevices = new DeviceInfoList();
-        DateTime LastUpdated;
-
-        PacketManager packetmanager;
+        private readonly DeviceInfoList seenDevices = new DeviceInfoList();
+        private DateTime LastUpdated;
 
         public DataManager(PacketManager packetmanager)
         {
@@ -32,8 +25,15 @@ namespace ECRU.BLEController
             LastUpdated = DateTime.Now;
             EventBus.Subscribe(typeof (ConnectionRequestMessage), RequestDeviceInformation);
             EventBus.Subscribe(typeof (ConnectionRequestMessage), RequestECMData);
-            EventBus.Subscribe(typeof(ConnectionRequestMessage), SetECMData);
+            EventBus.Subscribe(typeof (ConnectionRequestMessage), SetECMData);
+        }
 
+        public void Dispose()
+        {
+            EventBus.Unsubscribe(typeof (ConnectionRequestMessage), RequestDeviceInformation);
+            EventBus.Unsubscribe(typeof (ConnectionRequestMessage), RequestECMData);
+            EventBus.Unsubscribe(typeof (ConnectionRequestMessage), SetECMData);
+            Reset();
         }
 
         public void Reset()
@@ -55,9 +55,9 @@ namespace ECRU.BLEController
         {
             if (ConnectedDevices != null)
                 ConnectedDevices.Add(address);
-            return null; 
+            return null;
         }
-        
+
         public void DisconnectDevice(byte[] address)
         {
             if (ConnectedDevices != null)
@@ -70,7 +70,7 @@ namespace ECRU.BLEController
                 seenDevices.Clear();
 
             seenDevices.Add(device.Name, device.Address);
-            LastUpdated = DateTime.Now; 
+            LastUpdated = DateTime.Now;
         }
 
         public void GotData(DataEvent data)
@@ -81,7 +81,7 @@ namespace ECRU.BLEController
                 FileBase file = FileSystem.GetFile(data.Address.ToHex() + ".val", FileAccess.ReadWrite, FileType.Local);
                 if (file != null)
                 {
-                    DeviceInfoValueFile valfile = new DeviceInfoValueFile(file);
+                    var valfile = new DeviceInfoValueFile(file);
                     valfile.Update(data.Handel, data.Value);
                     valfile.Close();
                 }
@@ -91,7 +91,7 @@ namespace ECRU.BLEController
 
         internal bool hasInfoFile(byte[] addr)
         {
-            return FileSystem.Exists(addr.ToHex() + ".BLE", FileType.Local); 
+            return FileSystem.Exists(addr.ToHex() + ".BLE", FileType.Local);
         }
 
         internal DeviceInfo GetDeviceInfo(byte[] addr)
@@ -99,12 +99,12 @@ namespace ECRU.BLEController
             if (FileSystem.Exists(addr.ToHex() + ".BLE", FileType.Local))
             {
                 FileBase file = FileSystem.GetFile(addr.ToHex() + ".BLE", FileAccess.Read, FileType.Local);
-                DeviceInfoDefFile defFile = new DeviceInfoDefFile(file);
+                var defFile = new DeviceInfoDefFile(file);
                 defFile.Close();
                 return defFile.Object;
             }
 
-            return null; 
+            return null;
         }
 
         internal void DeleteSystemInfo(byte[] addr)
@@ -117,21 +117,20 @@ namespace ECRU.BLEController
 
         internal void UpdateOrCreateInfoFile(DeviceInfo item)
         {
-
             // info File 
             FileBase file = null;
-            if(FileSystem.Exists(item.Address.ToHex() + ".BLE",FileType.Local))
+            if (FileSystem.Exists(item.Address.ToHex() + ".BLE", FileType.Local))
             {
-                file = FileSystem.GetFile(item.Address.ToHex() + ".BLE",FileAccess.ReadWrite ,FileType.Local);
+                file = FileSystem.GetFile(item.Address.ToHex() + ".BLE", FileAccess.ReadWrite, FileType.Local);
             }
             else
             {
                 file = FileSystem.CreateFile(item.Address.ToHex() + ".BLE", FileType.Local);
             }
-            
-            DeviceInfoDefFile defFile = new DeviceInfoDefFile(file);
+
+            var defFile = new DeviceInfoDefFile(file);
             defFile.Object = item;
-            defFile.Close(); 
+            defFile.Close();
 
             // val file 
 
@@ -144,9 +143,9 @@ namespace ECRU.BLEController
                 file = FileSystem.CreateFile(item.Address.ToHex() + ".val", FileType.Local);
             }
 
-            DeviceInfoValueFile valfile = new DeviceInfoValueFile(file);
+            var valfile = new DeviceInfoValueFile(file);
             valfile.Create(item);
-            valfile.Close(); 
+            valfile.Close();
         }
 
         //****************************************************
@@ -161,11 +160,11 @@ namespace ECRU.BLEController
 
             FileBase file = null;
 
-            using (var socket = msg.GetSocket())
+            using (Socket socket = msg.GetSocket())
             {
                 try
                 {
-                    var waitingForData = true;
+                    bool waitingForData = true;
 
                     while (waitingForData)
                     {
@@ -174,16 +173,16 @@ namespace ECRU.BLEController
 
                         if (socket.Available <= 0) continue;
 
-                        var availableBytes = socket.Available;
+                        int availableBytes = socket.Available;
 
                         var buffer = new byte[availableBytes];
 
-                        var bytesReceived = socket.Receive(buffer);
+                        int bytesReceived = socket.Receive(buffer);
 
                         if (bytesReceived != availableBytes) continue;
                         waitingForData = false;
 
-                            
+
                         if (FileSystem.Exists(buffer.ToHex() + ".BLE", FileType.Local))
                         {
                             file = FileSystem.GetFile(buffer.ToHex() + ".BLE", FileAccess.Read, FileType.Local);
@@ -224,11 +223,11 @@ namespace ECRU.BLEController
 
             FileBase file = null;
 
-            using (var socket = msg.GetSocket())
+            using (Socket socket = msg.GetSocket())
             {
                 try
                 {
-                    var waitingForData = true;
+                    bool waitingForData = true;
 
                     while (waitingForData)
                     {
@@ -237,18 +236,18 @@ namespace ECRU.BLEController
 
                         if (socket.Available <= 0) continue;
 
-                        var availableBytes = socket.Available;
+                        int availableBytes = socket.Available;
 
                         var buffer = new byte[availableBytes];
 
-                        var bytesReceived = socket.Receive(buffer);
+                        int bytesReceived = socket.Receive(buffer);
 
                         if (bytesReceived != availableBytes) continue;
 
                         waitingForData = false;
 
-                        var mac = buffer.GetPart(0, 6);
-                        var handle = buffer.GetPart(6, 2);
+                        byte[] mac = buffer.GetPart(0, 6);
+                        byte[] handle = buffer.GetPart(6, 2);
 
                         if (FileSystem.Exists(mac.ToHex() + ".val", FileType.Local))
                         {
@@ -257,15 +256,15 @@ namespace ECRU.BLEController
 
                         var valfile = new DeviceInfoValueFile(file);
 
-                        var newHandle = (ushort)((handle[0] << 8) + handle[1]);
+                        var newHandle = (ushort) ((handle[0] << 8) + handle[1]);
 
-                        var data = valfile.GetData(newHandle);
-                        if (((valfile.GetWrProp(newHandle) & 0x02) > 0) && data != null )
+                        byte[] data = valfile.GetData(newHandle);
+                        if (((valfile.GetWrProp(newHandle) & 0x02) > 0) && data != null)
                         {
                             socket.Send(data);
                         }
 
-                        valfile.Close(); 
+                        valfile.Close();
                     }
                 }
                 catch (Exception exception)
@@ -298,11 +297,11 @@ namespace ECRU.BLEController
 
             FileBase file = null;
 
-            using (var socket = msg.GetSocket())
+            using (Socket socket = msg.GetSocket())
             {
                 try
                 {
-                    var waitingForData = true;
+                    bool waitingForData = true;
 
                     while (waitingForData)
                     {
@@ -311,36 +310,35 @@ namespace ECRU.BLEController
 
                         if (socket.Available <= 0) continue;
 
-                        var availableBytes = socket.Available;
+                        int availableBytes = socket.Available;
 
                         var buffer = new byte[availableBytes];
 
-                        var bytesReceived = socket.Receive(buffer);
+                        int bytesReceived = socket.Receive(buffer);
 
                         if (bytesReceived != availableBytes) continue;
 
                         waitingForData = false;
 
-                        var mac = buffer.GetPart(0, 6);
-                        var handle = buffer.GetPart(6, 2);
-                        var data = buffer.GetPart(8, availableBytes - 8);
+                        byte[] mac = buffer.GetPart(0, 6);
+                        byte[] handle = buffer.GetPart(6, 2);
+                        byte[] data = buffer.GetPart(8, availableBytes - 8);
 
 
                         if (!FileSystem.Exists(mac.ToHex() + ".val", FileType.Local)) continue;
 
-                        var newHandle = (ushort)((handle[0] << 8) + handle[1]);
+                        var newHandle = (ushort) ((handle[0] << 8) + handle[1]);
 
                         file = FileSystem.GetFile(mac.ToHex() + ".val", FileAccess.ReadWrite, FileType.Local);
 
                         var valfile = new DeviceInfoValueFile(file);
 
 
-                        
                         //write data to val file
                         valfile.Update(newHandle, data);
 
                         //send data event
-                        var packet = new Packets.WriteEvent();
+                        var packet = new WriteEvent();
 
                         packet.Address = mac;
                         packet.Handle = newHandle;
@@ -348,9 +346,6 @@ namespace ECRU.BLEController
 
                         packetmanager.Send(packet);
                     }
-
-                        
-                    
                 }
                 catch (Exception exception)
                 {
@@ -368,14 +363,6 @@ namespace ECRU.BLEController
                     }
                 }
             }
-        }
-
-        public void Dispose()
-        {
-            EventBus.Unsubscribe(typeof (ConnectionRequestMessage), RequestDeviceInformation);
-            EventBus.Unsubscribe(typeof(ConnectionRequestMessage), RequestECMData);
-            EventBus.Unsubscribe(typeof(ConnectionRequestMessage), SetECMData);
-            Reset();
         }
     }
 }

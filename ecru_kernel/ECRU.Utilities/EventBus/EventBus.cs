@@ -2,9 +2,8 @@
 using System.Collections;
 using ECRU.Utilities.LeadFollow;
 using Microsoft.SPOT;
-using Microsoft.SPOT.Messaging;
 
-namespace ECRU.Utilities.EventBus
+namespace ECRU.Utilities
 {
     /// <summary>
     ///     The EventBus class implements the Publisher/Subscriber design pattern. The class is threadsafe.

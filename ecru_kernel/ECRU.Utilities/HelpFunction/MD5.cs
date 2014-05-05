@@ -32,13 +32,33 @@ namespace ECRU.Utilities.HelpFunction
     // These notices must be retained in any copies of any part of this
     // documentation and/or software.
     //
-    
+
     /// <summary>
     ///     MD5: A MD5 Message-Digest Algorithm Implementation.
     /// </summary>
     public class MD5
     {
         // Current context
+
+        /* Constants for MD5Transform routine. */
+        private const int S11 = 7;
+        private const int S12 = 12;
+        private const int S13 = 17;
+        private const int S14 = 22;
+        private const int S21 = 5;
+        private const int S22 = 9;
+        private const int S23 = 14;
+        private const int S24 = 20;
+        private const int S31 = 4;
+        private const int S32 = 11;
+        private const int S33 = 16;
+        private const int S34 = 23;
+        private const int S41 = 6;
+        private const int S42 = 10;
+        private const int S43 = 15;
+        private const int S44 = 21;
+
+        private static readonly byte[] PADDING;
         private readonly MD5_CTX _context = new MD5_CTX();
         // Last hash result
         private readonly byte[] _digest = new byte[16];
@@ -47,12 +67,59 @@ namespace ECRU.Utilities.HelpFunction
         // True if HashFinal has been called
         private bool _hashFinalCalled;
 
+        static MD5()
+        {
+            PADDING = new byte[64];
+            PADDING[0] = 0x80;
+        }
+
         /// <summary>
         ///     Initializes a new instance.
         /// </summary>
         public MD5()
         {
             InitializeVariables();
+        }
+
+        /// <summary>
+        ///     Returns the hash as an array of bytes.
+        /// </summary>
+        public byte[] Hash
+        {
+            get
+            {
+                if (!_hashCoreCalled)
+                {
+                    throw new NullReferenceException();
+                }
+                if (!_hashFinalCalled)
+                {
+                    // Note: Not CryptographicUnexpectedOperationException because that can't be instantiated on Silverlight 4
+                    throw new Exception("Hash must be finalized before the hash value is retrieved.");
+                }
+
+                return _digest;
+            }
+        }
+
+
+        public long HashAsLong
+        {
+            get
+            {
+                long l = 0;
+                for (int i = 0; i < Hash.Length; i++)
+                {
+                    l += Hash[i] << (8*i);
+                }
+                return l;
+            }
+        }
+
+        // Return size of hash in bits.
+        public int HashSize
+        {
+            get { return _digest.Length*8; }
         }
 
         /// <summary>
@@ -123,100 +190,6 @@ namespace ECRU.Utilities.HelpFunction
             _hashFinalCalled = true;
             MD5Final(_digest, _context);
             return Hash;
-        }
-
-        /// <summary>
-        ///     Returns the hash as an array of bytes.
-        /// </summary>
-        public byte[] Hash
-        {
-            get
-            {
-                if (!_hashCoreCalled)
-                {
-                    throw new NullReferenceException();
-                }
-                if (!_hashFinalCalled)
-                {
-                    // Note: Not CryptographicUnexpectedOperationException because that can't be instantiated on Silverlight 4
-                    throw new Exception("Hash must be finalized before the hash value is retrieved.");
-                }
-
-                return _digest;
-            }
-        }
-
-
-        public long HashAsLong
-        {
-            get
-            {
-                long l = 0; 
-                for(int i = 0; i<Hash.Length; i++)
-                {
-                    l += Hash[i] << (8 * i); 
-                }
-                return l; 
-            }
-        }
-
-        // Return size of hash in bits.
-        public int HashSize
-        {
-            get { return _digest.Length*8; }
-        }
-
-        ///////////////////////////////////////////////
-        // MD5 reference implementation begins here. //
-        ///////////////////////////////////////////////
-
-        /* MD5 context. */
-
-        private class MD5_CTX
-        {
-            public readonly uint[] state; /* state (ABCD) */
-            public readonly uint[] count; /* number of bits, modulo 2^64 (lsb first) */
-            public readonly byte[] buffer; /* input buffer */
-
-            public MD5_CTX()
-            {
-                state = new uint[4];
-                count = new uint[2];
-                buffer = new byte[64];
-            }
-
-            public void Clear()
-            {
-                Array.Clear(state, 0, state.Length);
-                Array.Clear(count, 0, count.Length);
-                Array.Clear(buffer, 0, buffer.Length);
-            }
-        }
-
-        /* Constants for MD5Transform routine. */
-        private const int S11 = 7;
-        private const int S12 = 12;
-        private const int S13 = 17;
-        private const int S14 = 22;
-        private const int S21 = 5;
-        private const int S22 = 9;
-        private const int S23 = 14;
-        private const int S24 = 20;
-        private const int S31 = 4;
-        private const int S32 = 11;
-        private const int S33 = 16;
-        private const int S34 = 23;
-        private const int S41 = 6;
-        private const int S42 = 10;
-        private const int S43 = 15;
-        private const int S44 = 21;
-
-        private static readonly byte[] PADDING;
-
-        static MD5()
-        {
-            PADDING = new byte[64];
-            PADDING[0] = 0x80;
         }
 
         /// <summary>
@@ -485,6 +458,27 @@ namespace ECRU.Utilities.HelpFunction
                             (((uint) input[inputIndex + j + 1]) << 8) |
                             (((uint) input[inputIndex + j + 2]) << 16) |
                             (((uint) input[inputIndex + j + 3]) << 24);
+            }
+        }
+
+        private class MD5_CTX
+        {
+            public readonly byte[] buffer; /* input buffer */
+            public readonly uint[] count; /* number of bits, modulo 2^64 (lsb first) */
+            public readonly uint[] state; /* state (ABCD) */
+
+            public MD5_CTX()
+            {
+                state = new uint[4];
+                count = new uint[2];
+                buffer = new byte[64];
+            }
+
+            public void Clear()
+            {
+                Array.Clear(state, 0, state.Length);
+                Array.Clear(count, 0, count.Length);
+                Array.Clear(buffer, 0, buffer.Length);
             }
         }
     }

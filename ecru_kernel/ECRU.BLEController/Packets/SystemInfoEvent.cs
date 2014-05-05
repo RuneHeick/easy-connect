@@ -1,21 +1,18 @@
-﻿using System;
-using Microsoft.SPOT;
+﻿using ECRU.Utilities;
 using ECRU.Utilities.HelpFunction;
-using ECRU.Utilities;
 
 namespace ECRU.BLEController.Packets
 {
-    class SystemInfoEvent:IPacket
+    internal class SystemInfoEvent : IPacket
     {
-
-        private byte[] payload = new byte[SystemInfo.SYSID_LENGTH+1]; 
+        private byte[] payload = new byte[SystemInfo.SYSID_LENGTH + 1];
 
         public byte[] SystemID
         {
             set
             {
-                if(value.Length == SystemInfo.SYSID_LENGTH)
-                    payload.Set(value, 0); 
+                if (value.Length == SystemInfo.SYSID_LENGTH)
+                    payload.Set(value, 0);
             }
         }
 
@@ -23,7 +20,7 @@ namespace ECRU.BLEController.Packets
         {
             set
             {
-                if(value == true)
+                if (value)
                 {
                     payload[SystemInfo.SYSID_LENGTH] = 0x00;
                 }
@@ -36,22 +33,13 @@ namespace ECRU.BLEController.Packets
 
         public byte[] Payload
         {
-            get
-            {
-                return payload;
-            }
-            set
-            {
-                payload = value; 
-            }
+            get { return payload; }
+            set { payload = value; }
         }
 
         public CommandType Command
         {
-            get
-            {
-                return CommandType.SystemInfo;
-            }
+            get { return CommandType.SystemInfo; }
         }
     }
 }

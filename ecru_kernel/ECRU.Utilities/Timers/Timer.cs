@@ -1,16 +1,16 @@
-using System.Threading; 
+using System.Threading;
 
 namespace ECRU.Utilities.Timers
 {
-   
     public class ECTimer
     {
-        Timer timer;
-        int startTime, period;
-        TimerCallback callback;
-        object state;
+        private readonly TimerCallback callback;
+        private readonly int period;
+        private readonly int startTime;
+        private readonly object state;
 
-        bool isrunning = false; 
+        private bool isrunning;
+        private Timer timer;
 
         public ECTimer(TimerCallback callback, object state, int startTime, int period)
         {
@@ -25,8 +25,8 @@ namespace ECRU.Utilities.Timers
             if (isrunning)
                 Stop();
 
-            isrunning = true; 
-            timer = new Timer(TimeCall, state, startTime, period); 
+            isrunning = true;
+            timer = new Timer(TimeCall, state, startTime, period);
         }
 
         public void Stop()
@@ -35,15 +35,14 @@ namespace ECRU.Utilities.Timers
             if (timer != null)
             {
                 timer.Dispose();
-                timer = null; 
+                timer = null;
             }
         }
 
         private void TimeCall(object obj)
         {
             if (isrunning)
-                callback(obj); 
+                callback(obj);
         }
-
     }
 }

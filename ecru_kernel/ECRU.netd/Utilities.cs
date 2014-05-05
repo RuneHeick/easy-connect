@@ -1,7 +1,6 @@
 using System;
 using System.Collections;
 using System.Net;
-using System.Text;
 
 namespace ECRU.netd
 {
@@ -32,7 +31,7 @@ namespace ECRU.netd
             var broadcastAddress = new byte[ipAdressBytes.Length];
             for (int i = 0; i < broadcastAddress.Length; i++)
             {
-                broadcastAddress[i] = (byte)(ipAdressBytes[i] | (subnetMaskBytes[i] ^ 255));
+                broadcastAddress[i] = (byte) (ipAdressBytes[i] | (subnetMaskBytes[i] ^ 255));
             }
             return new IPAddress(broadcastAddress).ToString();
         }
@@ -42,7 +41,12 @@ namespace ECRU.netd
             private ArrayList _devices = new ArrayList();
             public string mac { get; set; }
             public string Name { get; set; }
-            public ArrayList Devices { get { return _devices; } set { _devices = value; } }
+
+            public ArrayList Devices
+            {
+                get { return _devices; }
+                set { _devices = value; }
+            }
         }
     }
 }

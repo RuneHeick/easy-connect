@@ -1,6 +1,6 @@
 using System.Net.Sockets;
 
-namespace ECRU.Utilities.EventBus.Events
+namespace ECRU.Utilities
 {
     public delegate void NewNetworkConnectionCallback(Socket s, byte[] Receiver);
 

@@ -1,6 +1,6 @@
 using System.Collections;
 
-namespace ECRU.Utilities.SD
+namespace ECRU.Utilities
 {
     public interface IConfigMessage
     {

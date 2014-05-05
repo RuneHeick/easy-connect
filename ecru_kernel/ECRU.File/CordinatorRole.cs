@@ -1,17 +1,14 @@
 ﻿using System;
-using Microsoft.SPOT;
 using System.Collections;
+using ECRU.Utilities;
 using ECRU.Utilities.HelpFunction;
-using ECRU.Utilities.EventBus.Events;
-using ECRU.Utilities.EventBus;
 using System.Net.Sockets;
-using ECRU.File.Files;
 using System.IO;
 using System.Threading;
 
-namespace ECRU.File
+namespace ECRU.Utilities
 {
-    class CordinatorRole:IDisposable
+    public class CordinatorRole:IDisposable
     {
         const int MUTEX_MAX_LOCKTIME = 300000;  // 5 min
         const string CordinatorType = "CordinatorRq";
@@ -42,7 +39,7 @@ namespace ECRU.File
             this.NetFileManager = NetFileManager;
             
             EventBus.Subscribe(typeof(ConnectionRequestMessage), ConnectionHandel);
-            Users = Utilities.SystemInfo.ConnectionOverview.GetSortedMasters();
+            Users = SystemInfo.ConnectionOverview.GetSortedMasters();
             if (Users.Length != 1)
             {
                 GetFileStates();

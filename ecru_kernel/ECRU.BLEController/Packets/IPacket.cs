@@ -1,18 +1,9 @@
-﻿using System;
-using Microsoft.SPOT;
-
-namespace ECRU.BLEController
+﻿namespace ECRU.BLEController
 {
     public interface IPacket
     {
-        byte[] Payload {get; set;}
+        byte[] Payload { get; set; }
 
-        CommandType Command { get;}
-
+        CommandType Command { get; }
     }
-
-
-
-
-
 }

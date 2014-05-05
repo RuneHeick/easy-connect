@@ -1,22 +1,21 @@
 using System;
 using System.Collections;
 using System.Net;
-using System.Net.Sockets;
 using System.Threading;
 using ECRU.Utilities;
-using ECRU.Utilities.EventBus;
-using ECRU.Utilities.EventBus.Events;
 using ECRU.Utilities.HelpFunction;
 using Microsoft.SPOT;
 
 namespace ECRU.netd
 {
-    class NetworkDiscovery
+    internal class NetworkDiscovery
     {
-
         private static ArrayList _listenerThreadsArrayList = new ArrayList();
 
         private static Thread _broadcastThread;
+        private static readonly byte[] _broadcastMessage = new byte[38];
+
+        private static bool _broadcastrunning = true;
 
         public static int UDPPort { get; set; }
         public static string LocalIP { get; set; }
@@ -25,15 +24,11 @@ namespace ECRU.netd
         public static bool EnableBroadcast { get; set; }
         public static bool EnableListener { get; set; }
 
-        private static byte[] _broadcastMessage = new byte[38];
-
-        private static bool _broadcastrunning = true; 
-
         public static void Stop()
         {
             if (_broadcastThread != null && _broadcastThread.IsAlive)
             {
-                _broadcastrunning = false; 
+                _broadcastrunning = false;
             }
 
             NetworkTable.NetstateChanged -= UpdateBroadcastMessage;
@@ -49,14 +44,14 @@ namespace ECRU.netd
 
             //first time broadcastMessage
             Array.Copy(SystemInfo.SystemMAC, _broadcastMessage, SystemInfo.SystemMAC.Length);
-            Array.Copy("00000000000000000000000000000000".StringToBytes(), 0, _broadcastMessage, 6, "00000000000000000000000000000000".StringToBytes().Length);
+            Array.Copy("00000000000000000000000000000000".StringToBytes(), 0, _broadcastMessage, 6,
+                "00000000000000000000000000000000".StringToBytes().Length);
 
-            _broadcastrunning = true; 
+            _broadcastrunning = true;
             _broadcastThread = new Thread(Broadcast);
             _broadcastThread.Start();
             Thread.Sleep(200); // allow first Broadcast
-            EventBus.Subscribe(typeof(RecivedBroadcastMessage), ReceivedBroadcast);
-
+            EventBus.Subscribe(typeof (RecivedBroadcastMessage), ReceivedBroadcast);
         }
 
         private static void ReceivedBroadcast(object message)
@@ -69,9 +64,9 @@ namespace ECRU.netd
                 {
                     try
                     {
-                        var mac = msg.Message.GetPart(0, 6);
-                        var netstate = msg.Message.GetPart(6, 32);
-                        var senderip = msg.SenderIPAddress;
+                        byte[] mac = msg.Message.GetPart(0, 6);
+                        byte[] netstate = msg.Message.GetPart(6, 32);
+                        IPAddress senderip = msg.SenderIPAddress;
 
                         //routing table update here!
                         NetworkTable.UpdateNetworkTableEntry(senderip, mac.ToHex(), netstate.GetString());
@@ -97,14 +92,13 @@ namespace ECRU.netd
                         BroadcastType = new byte[] {1},
                         Message = _broadcastMessage
                     });
-
                 }
                 catch (Exception exception)
                 {
                     Debug.Print("Broadcast failed: " + exception);
                 }
 
-                Thread.Sleep(BroadcastIntrevalSeconds * 1000);
+                Thread.Sleep(BroadcastIntrevalSeconds*1000);
             }
         }
 

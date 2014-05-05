@@ -1,9 +1,8 @@
 ﻿using System;
 using System.Collections;
 using System.IO;
-using ECRU.Utilities.SD.Exceptions;
 
-namespace ECRU.Utilities.SD
+namespace ECRU.Utilities
 {
     public static class SD
     {
@@ -17,7 +16,8 @@ namespace ECRU.Utilities.SD
                 {
                     if (DoesFileExist(filePath))
                     {
-                        var fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.None);
+                        var fileStream = new FileStream(filePath, FileMode.Open, System.IO.FileAccess.Read,
+                            FileShare.None);
                         var streamReader = new StreamReader(fileStream);
 
                         result = streamReader.ReadToEnd();
@@ -43,7 +43,8 @@ namespace ECRU.Utilities.SD
                 {
                     if (DoesFileExist(filePath))
                     {
-                        var fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.None);
+                        var fileStream = new FileStream(filePath, FileMode.Open, System.IO.FileAccess.Read,
+                            FileShare.None);
                         var streamWriter = new StreamWriter(fileStream);
 
                         streamWriter.WriteLine(jsonString);
@@ -68,7 +69,8 @@ namespace ECRU.Utilities.SD
                 {
                     if (DoesFileExist(filePath))
                     {
-                        var fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.None);
+                        var fileStream = new FileStream(filePath, FileMode.Open, System.IO.FileAccess.Read,
+                            FileShare.None);
                         var streamWriter = new StreamWriter(fileStream);
 
                         foreach (object key in configuration.Keys)
@@ -99,7 +101,8 @@ namespace ECRU.Utilities.SD
                 {
                     if (DoesFileExist(filePath))
                     {
-                        var fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.None);
+                        var fileStream = new FileStream(filePath, FileMode.Open, System.IO.FileAccess.Read,
+                            FileShare.None);
                         var streamreader = new StreamReader(fileStream);
 
                         string line = streamreader.ReadLine();

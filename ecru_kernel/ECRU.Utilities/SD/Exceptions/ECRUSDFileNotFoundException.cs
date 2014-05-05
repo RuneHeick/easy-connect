@@ -1,6 +1,6 @@
 using System;
 
-namespace ECRU.Utilities.SD.Exceptions
+namespace ECRU.Utilities
 {
     internal class ECRUSDFileNotFoundException : Exception
     {

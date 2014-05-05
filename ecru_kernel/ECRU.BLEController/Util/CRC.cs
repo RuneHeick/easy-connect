@@ -1,18 +1,14 @@
-﻿using System;
-using Microsoft.SPOT;
-
-namespace ECRU.BLEController
+﻿namespace ECRU.BLEController
 {
-    static class CRC
+    internal static class CRC
     {
-
-        static ushort UpdateCrc(ushort crc, byte b)
+        private static ushort UpdateCrc(ushort crc, byte b)
         {
-            crc ^= (ushort)(b << 8);
+            crc ^= (ushort) (b << 8);
             for (int i = 0; i < 8; i++)
             {
                 if ((crc & 0x8000) > 0)
-                    crc = (ushort)((crc << 1) ^ 0x1021);
+                    crc = (ushort) ((crc << 1) ^ 0x1021);
                 else
                     crc <<= 1;
             }
@@ -26,6 +22,5 @@ namespace ECRU.BLEController
                 crc = UpdateCrc(crc, data[i]);
             return crc;
         }
-
     }
 }

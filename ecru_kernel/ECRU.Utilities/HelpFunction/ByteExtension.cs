@@ -22,12 +22,12 @@ namespace ECRU.Utilities.HelpFunction
 
         public static byte[] ToBytes(this int intValue)
         {
-            byte[] bytes = new byte[4];
+            var bytes = new byte[4];
 
-            bytes[0] = (byte)(intValue >> 24);
-            bytes[1] = (byte)(intValue >> 16);
-            bytes[2] = (byte)(intValue >> 8);
-            bytes[3] = (byte)intValue;
+            bytes[0] = (byte) (intValue >> 24);
+            bytes[1] = (byte) (intValue >> 16);
+            bytes[2] = (byte) (intValue >> 8);
+            bytes[3] = (byte) intValue;
 
             return bytes;
         }
@@ -129,30 +129,28 @@ namespace ECRU.Utilities.HelpFunction
 
         public static long ToLong(this byte[] item, int index)
         {
-            if(item.Length-index < 8) throw new IndexOutOfRangeException(); 
+            if (item.Length - index < 8) throw new IndexOutOfRangeException();
 
-            long data = 0; 
-            for(int i = 0; i<8; i++)
-            {
-                data += item[i] << (8*7 - (i * 8)); 
-            }
-
-            return data; 
-        }
-
-
-        public static byte[] ToByte(this long item)
-        {
-            byte[] data =  new byte[8]; 
-
+            long data = 0;
             for (int i = 0; i < 8; i++)
             {
-                data[i] = (byte)(item >> (8 * 7 - (i * 8)));
+                data += item[i] << (8*7 - (i*8));
             }
 
             return data;
         }
 
 
+        public static byte[] ToByte(this long item)
+        {
+            var data = new byte[8];
+
+            for (int i = 0; i < 8; i++)
+            {
+                data[i] = (byte) (item >> (8*7 - (i*8)));
+            }
+
+            return data;
+        }
     }
 }

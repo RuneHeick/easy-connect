@@ -31,12 +31,6 @@
   <Import Project="$(NetMfTargetsBaseDir)$(TargetFrameworkVersion)\CSharp.Targets" />
   <ItemGroup>
     <Compile Include="CordinatorRole.cs" />
-    <Compile Include="FIleSystem.cs" />
-    <Compile Include="Files\FileBase.cs" />
-    <Compile Include="Files\ConfigFile.cs" />
-    <Compile Include="Files\InfoFile.cs" />
-    <Compile Include="LocalManager.cs" />
-    <Compile Include="NetworkManager.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

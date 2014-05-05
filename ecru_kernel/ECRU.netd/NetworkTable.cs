@@ -3,21 +3,16 @@ using System.Collections;
 using System.Net;
 using System.Net.Sockets;
 using ECRU.Utilities;
-using ECRU.Utilities.EventBus.Events;
 using ECRU.Utilities.HelpFunction;
 using Json.NETMF;
 using Microsoft.SPOT;
-using ECRU.Utilities.EventBus;
 
 namespace ECRU.netd
 {
-
     public delegate void NetworkStateChange(String netstate);
 
     public static class NetworkTable
     {
-        public static event NetworkStateChange NetstateChanged;
-
         private static readonly Hashtable Neighbours = new Hashtable();
         private static string[] netstateIPList;
 
@@ -25,20 +20,9 @@ namespace ECRU.netd
         private static String _netstate;
         private static bool _isInSync;
 
-        private static object Lock = new object();
-        private static object _lockNetstate = new object();
+        private static readonly object Lock = new object();
+        private static readonly object _lockNetstate = new object();
 
-        private static event NetworkTableChange AddUnit;
-        private static event NetworkTableChange RemovedUnit;
-        private delegate void NetworkTableChange(Neighbour neighbour);
-
-        public static int MaxLastSeenTimeSeconds
-        {
-            get
-            {
-                return NetworkDiscovery.BroadcastIntrevalSeconds * 5;
-            }
-        }
         static NetworkTable()
         {
             _isInSync = false;
@@ -46,7 +30,15 @@ namespace ECRU.netd
             RemovedUnit += (NeighbourRemoved);
         }
 
+        public static int MaxLastSeenTimeSeconds
+        {
+            get { return NetworkDiscovery.BroadcastIntrevalSeconds*5; }
+        }
+
         public static string SetLocalIP { get; set; }
+        public static event NetworkStateChange NetstateChanged;
+        private static event NetworkTableChange AddUnit;
+        private static event NetworkTableChange RemovedUnit;
 
         public static void ClearNetworkTable()
         {
@@ -60,7 +52,7 @@ namespace ECRU.netd
 
         private static void NeighbourAdded(Neighbour neighbour)
         {
-            Debug.Print("Added neighbour: " + neighbour.IP.ToString());
+            Debug.Print("Added neighbour: " + neighbour.IP);
 
 
             SystemInfo.ConnectionOverview.Add(neighbour.Mac.FromHex());
@@ -68,13 +60,17 @@ namespace ECRU.netd
             networkStatus();
 
             // update request devices from roomunit
-            EventBus.Publish(new NewConnectionMessage { ConnectionCallback = RequestedDevices, ConnectionType = "RequestDevices", Receiver = neighbour.Mac.FromHex() });
-
+            EventBus.Publish(new NewConnectionMessage
+            {
+                ConnectionCallback = RequestedDevices,
+                ConnectionType = "RequestDevices",
+                Receiver = neighbour.Mac.FromHex()
+            });
         }
 
         private static void NeighbourRemoved(Neighbour neighbour)
         {
-            Debug.Print("Removed neighbour: " + neighbour.IP.ToString()+ "                                         Waring");
+            Debug.Print("Removed neighbour: " + neighbour.IP + "                                         Waring");
 
             // update MacHierachy / MacList
             SystemInfo.ConnectionOverview.Remove(neighbour.Mac.FromHex());
@@ -94,8 +90,6 @@ namespace ECRU.netd
                 //Call event
                 if (AddUnit != null)
                     AddUnit(neighbour);
-
-               
             }
             else
             {
@@ -115,13 +109,11 @@ namespace ECRU.netd
 
                     //Update netstate to reflect changes
                     networkStatus();
-                    
                 }
                 else if (neb.Netstate != neighbour.Netstate)
                 {
                     networkStatus();
                 }
-
             }
         }
 
@@ -131,7 +123,7 @@ namespace ECRU.netd
 
             lock (Lock)
             {
-                var tmpNetworkStatus = _isInSync;
+                bool tmpNetworkStatus = _isInSync;
 
 
                 _isInSync = true;
@@ -143,7 +135,7 @@ namespace ECRU.netd
                 if (tmpNetworkStatus != _isInSync || _PublishedNetstate != _netstate)
                 {
                     _PublishedNetstate = _netstate;
-                    EventBus.Publish(new NetworkStatusMessage { isinsync = _isInSync, NetState = _netstate });
+                    EventBus.Publish(new NetworkStatusMessage {isinsync = _isInSync, NetState = _netstate});
                 }
             }
         }
@@ -165,7 +157,7 @@ namespace ECRU.netd
         {
             if (netstateIPList == null)
             {
-                netstateIPList = new[] { SetLocalIP };
+                netstateIPList = new[] {SetLocalIP};
             }
 
             var neighbour = new Neighbour(mac);
@@ -187,17 +179,14 @@ namespace ECRU.netd
             var n = Neighbours[mac] as Neighbour;
             if (n != null)
             {
-                var neighbourIP = n.IP;
+                IPAddress neighbourIP = n.IP;
 
                 //check if address is valid
                 if (ValidAddress(mac))
                 {
                     return neighbourIP;
                 }
-                else
-                {
-                    Remove(n);
-                }
+                Remove(n);
             }
             return null;
         }
@@ -231,11 +220,11 @@ namespace ECRU.netd
 
         public static bool ValidAddress(string mac)
         {
-            var lastSeen = ((Neighbour)Neighbours[mac]).Lastseen;
+            DateTime lastSeen = ((Neighbour) Neighbours[mac]).Lastseen;
 
-            var timeDifference = DateTime.Now - lastSeen;
+            TimeSpan timeDifference = DateTime.Now - lastSeen;
 
-            return timeDifference.Ticks <= (TimeSpan.TicksPerSecond * MaxLastSeenTimeSeconds);
+            return timeDifference.Ticks <= (TimeSpan.TicksPerSecond*MaxLastSeenTimeSeconds);
         }
 
 
@@ -246,12 +235,12 @@ namespace ECRU.netd
                 string data = null;
                 netstateIPList = netstateIPList.Quicksort(0, (netstateIPList.Length - 1));
 
-                foreach (var s in netstateIPList)
+                foreach (string s in netstateIPList)
                 {
                     data += s;
                 }
 
-                var buffer = data.StringToBytes();
+                byte[] buffer = data.StringToBytes();
 
                 var md5State = new MD5();
 
@@ -278,7 +267,7 @@ namespace ECRU.netd
                         if (connectioninfo != null)
                             Debug.Print("Connected to: " + connectioninfo.Address + ":" + connectioninfo.Port);
 
-                        var waitingForData = true;
+                        bool waitingForData = true;
 
                         while (waitingForData)
                         {
@@ -286,11 +275,11 @@ namespace ECRU.netd
 
                             if (s.Available <= 0) continue;
 
-                            var availableBytes = s.Available;
+                            int availableBytes = s.Available;
 
                             var buffer = new byte[availableBytes];
 
-                            var bytesReceived = s.Receive(buffer);
+                            int bytesReceived = s.Receive(buffer);
 
                             if (bytesReceived != availableBytes) continue;
 
@@ -312,7 +301,6 @@ namespace ECRU.netd
                             {
                                 SystemInfo.ConnectionOverview.Add(nMac.FromHex(), nDevice.FromHex());
                             }
-
                         }
                     }
                     catch (Exception exception)
@@ -328,13 +316,10 @@ namespace ECRU.netd
                     }
                 }
             }
-
-
-
         }
+
+        private delegate void NetworkTableChange(Neighbour neighbour);
     }
-
-
 
 
     public class IPAddressNotValidException : Exception
@@ -344,21 +329,20 @@ namespace ECRU.netd
 
     internal class Neighbour
     {
+        private readonly string _mac;
+        public DateTime Lastseen;
+        public String Netstate;
+
         public Neighbour(string Mac)
         {
             _mac = Mac;
         }
 
-        public string Mac { get { return _mac; } }
-
-        public DateTime Lastseen;
-        public String Netstate;
-
-        private string _mac;
+        public string Mac
+        {
+            get { return _mac; }
+        }
 
         public IPAddress IP { get; set; }
-
     }
-
-
 }
