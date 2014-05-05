@@ -48,6 +48,16 @@ namespace ECRU.netd
 
         public static string SetLocalIP { get; set; }
 
+        public static void ClearNetworkTable()
+        {
+            foreach (Neighbour neighbour in Neighbours)
+            {
+                SystemInfo.ConnectionOverview.Remove(neighbour.Mac.FromHex());
+            }
+
+            Neighbours.Clear();
+        }
+
         private static void NeighbourAdded(Neighbour neighbour)
         {
             Debug.Print("Added neighbour: " + neighbour.IP.ToString());
@@ -59,8 +69,6 @@ namespace ECRU.netd
 
             // update request devices from roomunit
             EventBus.Publish(new NewConnectionMessage { ConnectionCallback = RequestedDevices, ConnectionType = "RequestDevices", Receiver = neighbour.Mac.FromHex() });
-
-
 
         }
 

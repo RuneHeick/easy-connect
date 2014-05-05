@@ -12,6 +12,7 @@ using ECRU.Utilities.EventBus.Events;
 using ECRU.Utilities.HelpFunction;
 using Microsoft.SPOT;
 using Microsoft.SPOT.Net.NetworkInformation;
+using ECRU.SystemInfo;
 
 namespace ECRU
 {
@@ -23,76 +24,104 @@ namespace ECRU
 
         private static Netd _netDaemon = new Netd();
         private static BLEModule _bleModule = null;
-        
-        
+
+        private static event SystemInfoChanged systemInfoChanged;
+        private static Thread mainThread;
+
+        private static int state = 0;
 
         /// <summary>
         ///     Main Launches the ECRU kernel
         /// </summary>
         public static void Main()
         {
-            Debug.EnableGCMessages(true);
+            //Debug.EnableGCMessages(true);
 
             // write your code here
-            Thread.Sleep(5000);
+            //Thread.Sleep(5000);
 
             
             //State 1 Load SystemInfo configuration
             //GetSystemInfoConfig();
+
+            
+            systemInfoChanged += (StateSwitch);
+
+            mainThread = Thread.CurrentThread;
+
+            while (true)
+            {
+                switch (state)
+                {
+                    case 1: //Load System Information state
+                        SystemInfo.SystemInfo.LoadConfig("SysInfoConfig.cfg");
+                        SystemInfo.SystemInfo.Start();
+                        break;
+
+                    case 2: //System Configuration state
+                        _bleModule.LoadConfig("");
+                        _bleModule.Start();
+                        break;
+
+                    case 3: //Normal state
+                        _bleModule.Reset();
+                        _netDaemon.LoadConfig("");
+                        _netDaemon.Start();
+                        break;
+                }
+
+                Thread.Sleep(Timeout.Infinite);
+            }
             
 
-            try
-            {
-                _netDaemon.LoadConfig("");
+            //try
+            //{
+            //    _netDaemon.LoadConfig("");
 
-                var tmp = IPAddress.GetDefaultLocalAddress().ToString().Split('.');
-                var n = "ECEC";
-                foreach (string s in tmp)
-                {
-                    n += s;
-                }
-                n = n.Substring(n.Length - 12, 12);
-                SystemInfo.SystemMAC = n.FromHex();
+            //    var tmp = IPAddress.GetDefaultLocalAddress().ToString().Split('.');
+            //    var n = "ECEC";
+            //    foreach (string s in tmp)
+            //    {
+            //        n += s;
+            //    }
+            //    n = n.Substring(n.Length - 12, 12);
+            //    SystemInfo.SystemInfo.SystemMAC = n.FromHex();
 
-                //SystemInfo.SystemMAC = "B3E795111C11".FromHex();
+            //    //SystemInfo.SystemMAC = "B3E795111C11".FromHex();
 
-                //SystemInfo.ConnectedDevices.Add();
-                //
+            //    //SystemInfo.ConnectedDevices.Add();
+            //    //
 
-                Debug.Print(SystemInfo.SystemMAC.ToHex());
-                _netDaemon.Start();
-            }
-            catch (Exception exception)
-            {
-                _netDaemon.Stop();
-                Debug.Print("Network error: " + exception.Message + " stacktrace: " + exception.StackTrace);
-            }
+            //    Debug.Print(SystemInfo.SystemMAC.ToHex());
+            //    _netDaemon.Start();
+            //}
+            //catch (Exception exception)
+            //{
+            //    _netDaemon.Stop();
+            //    Debug.Print("Network error: " + exception.Message + " stacktrace: " + exception.StackTrace);
+            //}
 
-            (new BLEModule()).Start();
+            //(new BLEModule()).Start();
 
-            SystemInfo.ConnectedDevices.Add("E68170E5C578".FromHex());
-            SystemInfo.ConnectedDevices.Add("F83A228CBA1C".FromHex());
+            //SystemInfo.ConnectedDevices.Add("E68170E5C578".FromHex());
+            //SystemInfo.ConnectedDevices.Add("F83A228CBA1C".FromHex());
 
-            Thread.Sleep(Timeout.Infinite);
+            
         }
 
-        private static void GetSystemInfoConfig()
+        private static void StateSwitch(Byte[] sysMac, string name, string passCode)
         {
-            var SysConfigFileBase = FileSystem.GetFile("SystemInfo.cfg", FileAccess.Read, FileType.Local);
-
-            if (SysConfigFileBase != null)
+            if (sysMac != null && name != null && passCode != null)
             {
-                var sysConfigFile = new ConfigFile(SysConfigFileBase);
-
-                SystemInfo.SystemMAC = sysConfigFile["SystemMac"].FromHex();
-                SystemInfo.Name = sysConfigFile["Name"];
-                SystemInfo.PassCode = sysConfigFile["PassCode"];
-
-                
+                //System configured
+                state = 3;
+            } else if (state == 1)
+            {
+                state = 2;
             }
-            else
+            if (mainThread.ThreadState == ThreadState.WaitSleepJoin)
             {
-                SysConfigFileBase = FileSystem.CreateFile("SystemInfo.cfg", FileType.Local);
+                mainThread.Resume();
             }
             
         }

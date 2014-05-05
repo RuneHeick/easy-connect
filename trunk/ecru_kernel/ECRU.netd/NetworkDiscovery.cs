@@ -37,7 +37,7 @@ namespace ECRU.netd
             }
 
             NetworkTable.NetstateChanged -= UpdateBroadcastMessage;
-
+            NetworkTable.ClearNetworkTable();
         }
 
         public static void Start()

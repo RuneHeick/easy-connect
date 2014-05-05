@@ -23,8 +23,11 @@ namespace ECRU.File.Files
 
         public ConfigFile(FileBase file)
         {
-            if (File == null) return;
             File = file;
+            if (File == null)
+            {
+                return;
+            }
             closeFunc = File.Closefunc;
             File.Closefunc = (f) => Close();
             Init();
