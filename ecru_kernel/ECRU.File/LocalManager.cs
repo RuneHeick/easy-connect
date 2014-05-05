@@ -104,7 +104,7 @@ namespace ECRU.File
                         }
                         else
                         {
-                            return CreateFile(path);
+                            //return CreateFile(path);
                         }
                     }
                     return null;

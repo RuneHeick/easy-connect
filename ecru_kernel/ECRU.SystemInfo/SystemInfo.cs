@@ -8,11 +8,15 @@ using ECRU.Utilities.HelpFunction;
 
 namespace ECRU.SystemInfo
 {
-    public class SystemInfo : IModule
+    public delegate void SystemInfoChanged(byte[] SystemMAC, String Name, String PassCode);
+
+    public static class SystemInfo
     {
+        public static event SystemInfoChanged SysInfoChange;
+
         public const int SYSID_LENGTH = 8;
         private static byte[] sysId = new byte[SYSID_LENGTH];
-        private static byte[] sysMac;
+        private static byte[] _sysMac;
         private static string _systemConfigFilePath;
 
         private static object writeLock = new object();
@@ -24,27 +28,61 @@ namespace ECRU.SystemInfo
 
         public static byte[] SystemID
         {
-            get { return PassCode.FromHex(); }
+            get
+            {
+                return doHash(PassCode); 
+            }
         }
 
         public static string PassCode
         {
-            get { return ReadConfigValueFromFile("PassCode"); }
+            get
+            {
+                return ReadConfigValueFromFile("PassCode"); 
+                
+            }
             set
             {
-                WriteConfigValueToFile("PassCode", doHash(value).ToHex());
+                WriteConfigValueToFile("PassCode", value);
+                if (SysInfoChange != null)
+                {
+                    SysInfoChange(SystemMAC, Name, value);
+                }
             }
         }
 
-        public static string Name { get { return ReadConfigValueFromFile("Name"); } set{WriteConfigValueToFile("Name", value);} }
+        public static string Name
+        {
+            get
+            {
+                return ReadConfigValueFromFile("Name");
+                
+            }
+            set
+            {
+                WriteConfigValueToFile("Name", value);
+                if (SysInfoChange != null)
+                {
+                    SysInfoChange(SystemMAC, value, PassCode);
+                }
+            }
+        }
 
         public static byte[] SystemMAC
         {
-            get { return sysMac; }
+            get
+            {
+                return _sysMac ?? (_sysMac = ReadConfigValueFromFile("SystemMAC").FromHex()); 
+            }
             set
             {
-                sysMac = value;
+                _sysMac = value;
                 WriteConfigValueToFile("SystemMAC", value.ToHex());
+                Start();
+                if (SysInfoChange != null)
+                {
+                    SysInfoChange(value, Name, PassCode);
+                }
             }
         }
 
@@ -60,7 +98,7 @@ namespace ECRU.SystemInfo
             return hash;
         }
 
-        public void LoadConfig(string configFilePath)
+        public static void LoadConfig(string configFilePath)
         {
 
             _systemConfigFilePath = configFilePath;
@@ -74,13 +112,15 @@ namespace ECRU.SystemInfo
                     if (systemConfigFile.File != null)
                     {
 
-                        SystemMAC = systemConfigFile.Contains("SystemMAC") ? systemConfigFile["SystemMAC"].FromHex() : null;
+                        _sysMac = systemConfigFile.Contains("SystemMAC") ? systemConfigFile["SystemMAC"].FromHex() : null;
 
                     }
                     else
                     {
                         systemConfigFile = new ConfigFile(FileSystem.CreateFile(configFilePath, FileType.Local));
                         systemConfigFile["SystemMAC"] = null;
+                        systemConfigFile["Name"] = null;
+                        systemConfigFile["PassCode"] = null;
                     }
                 }
                 finally
@@ -91,7 +131,7 @@ namespace ECRU.SystemInfo
             
         }
 
-        public void Start()
+        public static void Start()
         {
             if (SystemMAC != null)
             {
@@ -100,17 +140,6 @@ namespace ECRU.SystemInfo
                 ConnectedDevices = ConnectionOverview.GetDecices(SystemMAC);
             }
         }
-
-        public void Stop()
-        {
-            throw new NotImplementedException();
-        }
-
-        public void Reset()
-        {
-            throw new NotImplementedException();
-        }
-
 
         private static void WriteConfigValueToFile(String property, String value)
         {

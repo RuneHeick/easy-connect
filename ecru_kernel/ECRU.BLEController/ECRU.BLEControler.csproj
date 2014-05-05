@@ -75,6 +75,10 @@
       <Project>{21395F92-A680-483C-AC16-F2EF644FF640}</Project>
       <Name>ECRU.File</Name>
     </ProjectReference>
+    <ProjectReference Include="..\ECRU.SystemInfo\ECRU.SystemInfo.csproj">
+      <Project>{E0D4DFFB-423A-4CE4-8719-E6A518B51CA5}</Project>
+      <Name>ECRU.SystemInfo</Name>
+    </ProjectReference>
     <ProjectReference Include="..\ECRU.Utilities\ECRU.Utilities.csproj">
       <Project>{5B778498-CDC7-4CE6-8CD3-FD20D04EBF93}</Project>
       <Name>ECRU.Utilities</Name>
