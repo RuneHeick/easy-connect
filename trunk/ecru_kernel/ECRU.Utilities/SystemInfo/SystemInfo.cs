@@ -118,12 +118,9 @@ namespace ECRU.Utilities
                 ConnectionOverview = new MacHierarchy();
                 ConnectionOverview.Add(SystemMAC);
                 ConnectedDevices = ConnectionOverview.GetDecices(SystemMAC);
-                if (SysInfoChange != null)
-                {
-                    SysInfoChange(SystemMAC, Name, PassCode);
-                }
+                
             }
-            else
+            if (SysInfoChange != null)
             {
                 SysInfoChange(SystemMAC, Name, PassCode);
             }
