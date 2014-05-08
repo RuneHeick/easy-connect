@@ -15,6 +15,7 @@ namespace ECRU.BLEController
         private readonly SerialController serial = new SerialController();
         private DeviceInfoFactory Infofactory;
         private DataManager data;
+        bool started = false; 
 
         public BLEModule()
         {
@@ -39,45 +40,53 @@ namespace ECRU.BLEController
 
         public void Start()
         {
-            //Datamanager
-            data = new DataManager(packetmanager);
+            if (started == false)
+            {
+                //Datamanager
+                data = new DataManager(packetmanager);
 
-            //rest
-            LoadConfig(null);
-            serial.Start();
+                //rest
+                LoadConfig(null);
+                serial.Start();
 
-            //Discover Devices 
-            packetmanager.Subscrib(CommandType.DeviceEvent, FoundDevices);
-            packetmanager.Subscrib(CommandType.DisconnectEvent, RecivedDisconnectEvnet);
+                //Discover Devices 
+                packetmanager.Subscrib(CommandType.DeviceEvent, FoundDevices);
+                packetmanager.Subscrib(CommandType.DisconnectEvent, RecivedDisconnectEvnet);
 
-            //Setup Information 
-            packetmanager.Subscrib(CommandType.Info, DeviceInfoRecived);
-            packetmanager.Subscrib(CommandType.AddrEvent, AddrsEventRecived);
-            packetmanager.Subscrib(CommandType.Reset, BLEControllerReset);
+                //Setup Information 
+                packetmanager.Subscrib(CommandType.Info, DeviceInfoRecived);
+                packetmanager.Subscrib(CommandType.AddrEvent, AddrsEventRecived);
+                packetmanager.Subscrib(CommandType.Reset, BLEControllerReset);
 
-            //Data Update 
-            packetmanager.Subscrib(CommandType.DataEvent, RecivedDataEvnet);
+                //Data Update 
+                packetmanager.Subscrib(CommandType.DataEvent, RecivedDataEvnet);
 
-            SendReset();
+                SendReset();
+            }
+            started = true; 
         }
 
 
         public void Stop()
         {
-            //Discover Devices 
-            packetmanager.Unsubscrib(CommandType.DeviceEvent, FoundDevices);
-            packetmanager.Unsubscrib(CommandType.DisconnectEvent, RecivedDisconnectEvnet);
+            if (started)
+            {
+                //Discover Devices 
+                packetmanager.Unsubscrib(CommandType.DeviceEvent, FoundDevices);
+                packetmanager.Unsubscrib(CommandType.DisconnectEvent, RecivedDisconnectEvnet);
 
-            //Setup Information 
-            packetmanager.Unsubscrib(CommandType.Info, DeviceInfoRecived);
-            packetmanager.Unsubscrib(CommandType.AddrEvent, AddrsEventRecived);
-            packetmanager.Unsubscrib(CommandType.Reset, BLEControllerReset);
+                //Setup Information 
+                packetmanager.Unsubscrib(CommandType.Info, DeviceInfoRecived);
+                packetmanager.Unsubscrib(CommandType.AddrEvent, AddrsEventRecived);
+                packetmanager.Unsubscrib(CommandType.Reset, BLEControllerReset);
 
-            //Data Update 
-            packetmanager.Unsubscrib(CommandType.DataEvent, RecivedDataEvnet);
+                //Data Update 
+                packetmanager.Unsubscrib(CommandType.DataEvent, RecivedDataEvnet);
 
-            data.Dispose();
-            SendReset();
+                data.Dispose();
+                SendReset();
+            }
+            started = false; 
         }
 
         public void Reset()
