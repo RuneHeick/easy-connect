@@ -121,9 +121,11 @@ namespace ECRU.BLEController
             // info File 
             int trycount = 0;
 
+            FileBase file = null;
+
             while (trycount < 3)
             {
-                FileBase file = null;
+                
                 if (FileSystem.Exists(item.Address.ToHex() + ".BLE", FileType.Shared))
                 {
                     file = FileSystem.GetFile(item.Address.ToHex() + ".BLE", FileAccess.ReadWrite, FileType.Shared);
@@ -199,9 +201,9 @@ namespace ECRU.BLEController
                         waitingForData = false;
 
 
-                        if (FileSystem.Exists(buffer.ToHex() + ".BLE", FileType.Local))
+                        if (FileSystem.Exists(buffer.ToHex() + ".BLE", FileType.Shared))
                         {
-                            file = FileSystem.GetFile(buffer.ToHex() + ".BLE", FileAccess.Read, FileType.Local);
+                            file = FileSystem.GetFile(buffer.ToHex() + ".BLE", FileAccess.Read, FileType.Shared);
                         }
 
                         if (file == null) continue;
