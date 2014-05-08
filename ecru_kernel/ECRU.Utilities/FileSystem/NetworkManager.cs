@@ -1,26 +1,28 @@
 ﻿using System;
-using System.Collections;
-using System.IO;
-using System.Net.Sockets;
-using ECRU.Utilities.HelpFunction;
 using Microsoft.SPOT;
+using ECRU.Utilities.HelpFunction;
+using System.IO;
+using ECRU.Utilities;
+using System.Net.Sockets;
+using System.Collections;
 
 namespace ECRU.Utilities
 {
-    public class NetworkManager : IDisposable
+    class NetworkManager : IDisposable
     {
         public const string connectionRQType = "filemanagerRq";
+        CordinatorRole cordinator;
+        byte[] cordinatorAddrs;
+        readonly object ChangeLock = new object();
+        readonly object BusyLock = new object(); 
+        public bool isOnline { get; set; }
 
-        private const string InfoFolderName = "Info";
-        private const string FileFolderName = "Files";
-        private readonly object BusyLock = new object();
-        private readonly object ChangeLock = new object();
+        const string InfoFolderName = "Info";
 
-        private readonly LocalManager InfoManager;
-        private readonly Hashtable MutexCollection = new Hashtable();
-        private readonly LocalManager NetFileManager;
-        private CordinatorRole cordinator;
-        private byte[] cordinatorAddrs;
+        LocalManager InfoManager;
+        LocalManager NetFileManager;
+
+        const string FileFolderName = "Files";
 
         public NetworkManager(string path)
         {
@@ -30,32 +32,34 @@ namespace ECRU.Utilities
             NetFileManager = new LocalManager(path + "\\" + FileFolderName);
 
 
-            EventBus.Subscribe(typeof (NetworkStatusMessage), netStateChanged);
-            EventBus.Subscribe(typeof (ConnectionRequestMessage), connectionEstablishedEvent);
+            EventBus.Subscribe(typeof(NetworkStatusMessage), netStateChanged);
+            EventBus.Subscribe(typeof(ConnectionRequestMessage), connectionEstablishedEvent);
         }
+
+
 
         #region NetStateChanged
 
         private void StartNetShare()
         {
-            if (SystemInfo.SystemMAC != null)
+            if (ECRU.Utilities.SystemInfo.SystemMAC != null)
             {
                 // Get device with lowest Mac
-                cordinatorAddrs = SystemInfo.ConnectionOverview.GetSortedMasters()[0].FromHex();
+                cordinatorAddrs = ECRU.Utilities.SystemInfo.ConnectionOverview.GetSortedMasters()[0].FromHex();
                 Debug.Print("CORDINATOR LOAD : " + cordinatorAddrs.ToHex());
-                if (cordinatorAddrs.ByteArrayCompare(SystemInfo.SystemMAC))
+                if (cordinatorAddrs.ByteArrayCompare(ECRU.Utilities.SystemInfo.SystemMAC))
                 {
                     //I am cordinator 
-                    cordinator = new CordinatorRole(InfoManager, NetFileManager);
+                    cordinator = new CordinatorRole(InfoManager,NetFileManager);
                 }
             }
-            isOnline = true;
+            isOnline = true; 
         }
 
         private void StopNetShare()
         {
             isOnline = false;
-            MutexClear();
+            MutexClear(); 
             if (cordinator != null)
             {
                 cordinator.Dispose();
@@ -67,21 +71,21 @@ namespace ECRU.Utilities
         {
             lock (ChangeLock)
             {
-                var changed = msg as NetworkStatusMessage;
+                NetworkStatusMessage changed = msg as NetworkStatusMessage;
                 if (changed != null)
                 {
-                    Debug.Print("is in Sync: " + changed.isinsync);
-                    Debug.Print("NetStage: " + changed.NetState);
-                    if (isOnline && changed.isinsync == false)
+                    Debug.Print("is in Sync: " + changed.isinsync.ToString());
+                    Debug.Print("NetStage: " + changed.NetState.ToString()); 
+                    if (isOnline == true && changed.isinsync == false)
                     {
                         StopNetShare();
                     }
-                    if (isOnline && changed.isinsync)
+                    if (isOnline == true && changed.isinsync == true)
                     {
                         StopNetShare();
                         StartNetShare();
                     }
-                    if (changed.isinsync && isOnline == false)
+                    if (changed.isinsync == true && isOnline == false)
                     {
                         StartNetShare();
                     }
@@ -91,38 +95,32 @@ namespace ECRU.Utilities
 
         #endregion
 
-        public bool isOnline { get; set; }
-
-        public void Dispose()
-        {
-            throw new NotImplementedException();
-        }
-
         //–--------------events ------------------―
-
+        
 
         private void connectionEstablishedEvent(object msg)
-        {
-            var con = msg as ConnectionRequestMessage;
+        { 
+           var con = msg as ConnectionRequestMessage;
 
-            if (con != null)
-            {
-                if (con.connectionType == connectionRQType)
-                {
-                    Socket connection = con.GetSocket();
-                    if (connection != null)
-                    {
-                        HandleNewConnection(connection);
-                    }
-                }
-            }
+           if (con != null)
+           {
+               if (con.connectionType == connectionRQType)
+               {
+                   Socket connection = con.GetSocket(); 
+                   if(connection != null)
+                   {
+                       HandleNewConnection(connection);
+                   }
+               }
+           }
+            
         }
 
         private void HandleNewConnection(Socket socket)
         {
             try
             {
-                bool waitingForData = true;
+                var waitingForData = true;
 
                 while (waitingForData)
                 {
@@ -130,69 +128,74 @@ namespace ECRU.Utilities
 
                     if (socket.Available > 0)
                     {
-                        var data = new byte[socket.Available];
+                        byte[] data = new byte[socket.Available];
                         socket.Receive(data);
 
                         byte cmd = data[0];
-                        byte[] pack = data.GetPart(1, data.Length - 1);
+                        byte[] pack = data.GetPart(1, data.Length - 1); 
 
-                        switch (cmd)
+                        switch(cmd)
                         {
                             case 0x03: //Update File
-                                UpdateFileCommand(pack);
+                                    UpdateFileCommand(pack);
                                 break;
 
                             case 0x05: //Get File
-                            {
-                                string file = pack.GetString();
-
-                                FileBase b = NetFileManager.GetReadOnlyFile(file);
-                                string infoname = Path.GetFileNameWithoutExtension(file) + ".info";
-                                FileBase i = InfoManager.GetReadOnlyFile(infoname);
-
-                                if (i != null && b != null)
                                 {
-                                    var filelength = new byte[2];
-                                    filelength[0] = (byte) (b.Data.Length >> 8);
-                                    filelength[1] = (byte) (b.Data.Length);
-                                    var infolength = new byte[2];
-                                    infolength[0] = (byte) (i.Data.Length >> 8);
-                                    infolength[1] = (byte) (i.Data.Length);
+                                    string file = pack.GetString();
 
-                                    socket.Send(filelength.Add(b.Data).Add(infolength).Add(i.Data));
+                                    FileBase b = NetFileManager.GetReadOnlyFile(file);
+                                    string infoname = Path.GetFileNameWithoutExtension(file) + ".info";
+                                    FileBase i = InfoManager.GetReadOnlyFile(infoname);
+
+                                    if(i != null && b != null)
+                                    {
+                                        byte[] filelength = new byte[2];
+                                        filelength[0] = (byte)(b.Data.Length >> 8);
+                                        filelength[1] = (byte)(b.Data.Length);
+                                        byte[] infolength = new byte[2];
+                                        infolength[0] = (byte)(i.Data.Length >> 8);
+                                        infolength[1] = (byte)(i.Data.Length);
+
+                                        socket.Send(filelength.Add(b.Data).Add(infolength).Add(i.Data)); 
+                                    }
+
                                 }
-                            }
                                 break;
 
                             case 0x07: //File States
-                            {
-                                lock (BusyLock)
                                 {
-                                    FileInfo[] files = NetFileManager.GetFiles();
-
-                                    foreach (FileInfo f in files)
+                                    lock(BusyLock)
                                     {
-                                        string infoname = Path.GetFileNameWithoutExtension(f.Name) + ".info";
-                                        string filename = f.Name;
+                                        FileInfo[] files = NetFileManager.GetFiles(); 
 
-                                        FileBase b = InfoManager.GetReadOnlyFile(infoname);
-                                        if (b != null)
+                                        foreach(FileInfo f in files)
                                         {
-                                            var infof = new InfoFile(b);
+                                            string infoname = Path.GetFileNameWithoutExtension(f.Name)+".info";
+                                            string filename = f.Name;
 
-                                            byte[] packet = infof.Version.ToByte();
-                                            packet = packet.Add(filename.StringToBytes());
-                                            socket.Send(packet);
+                                            FileBase b = InfoManager.GetReadOnlyFile(infoname);
+                                            if (b != null)
+                                            {
+                                                InfoFile infof = new InfoFile(b);
+
+                                                byte[] packet = infof.Version.ToByte();
+                                                packet = packet.Add(filename.StringToBytes());
+                                                socket.Send(packet);
+
+                                            }
                                         }
-                                    }
 
-                                    socket.Close();
+                                        socket.Close();
+                                    }
                                 }
-                            }
                                 break;
+
                         }
+
                     }
                 }
+
             }
             finally
             {
@@ -205,14 +208,15 @@ namespace ECRU.Utilities
 
         private void UpdateFileCommand(byte[] pack)
         {
+
             int pathLength = (pack[0] << 8) + pack[1];
             byte[] filePath = pack.GetPart(2, pathLength);
-            string path = filePath.GetString();
+            string path = filePath.GetString(); 
 
             int fileLength = (pack[2 + pathLength] << 8) + pack[3 + pathLength];
             byte[] file = pack.GetPart(3 + pathLength + 1, fileLength);
 
-            int infoLength = (pack[3 + pathLength + 1 + fileLength] << 8) + pack[3 + pathLength + 2 + fileLength];
+            int infoLength = (pack[3 + pathLength + 1 + fileLength] << 8) + pack[3 + pathLength + 2+ fileLength];
             byte[] info = pack.GetPart(3 + pathLength + 3 + fileLength, infoLength);
 
             lock (BusyLock)
@@ -242,6 +246,7 @@ namespace ECRU.Utilities
                 {
                     File_file.Data = file;
                     File_info.Data = info;
+
                 }
 
                 if (File_info != null)
@@ -253,9 +258,12 @@ namespace ECRU.Utilities
 
         private void ConnectionRq(object msg)
         {
+
         }
 
         //--------------------------------------------------------------------
+
+        Hashtable MutexCollection = new Hashtable(); 
 
         private bool isMutexFree(string path)
         {
@@ -263,18 +271,21 @@ namespace ECRU.Utilities
             {
                 if (MutexCollection.Contains(path))
                 {
-                    var s = MutexCollection[path] as Socket;
+                    Socket s = MutexCollection[path] as Socket;
                     if (SocketConnected(s))
                         return false;
-                    freeMutex(path, s);
-                    return true;
+                    else
+                    {
+                        freeMutex(path,s);
+                        return true;
+                    }
                 }
             }
 
-            return true;
+            return true; 
         }
 
-        private static bool SocketConnected(Socket socket)
+        static bool SocketConnected(Socket socket)
         {
             if (socket != null)
             {
@@ -313,7 +324,7 @@ namespace ECRU.Utilities
             {
                 if (!isMutexFree(path))
                 {
-                    var s = MutexCollection[path] as Socket;
+                    Socket s = MutexCollection[path] as Socket;
                     if (s == socket)
                     {
                         if (s != null)
@@ -329,16 +340,16 @@ namespace ECRU.Utilities
 
         private void MutexClear()
         {
-            while (MutexCollection.Count > 0)
+            while(MutexCollection.Count>0)
             {
-                IEnumerator keys = MutexCollection.Keys.GetEnumerator();
-                var path = keys.Current as string;
-                var s = MutexCollection[path] as Socket;
+                var keys = MutexCollection.Keys.GetEnumerator();
+                string path = keys.Current as string;
+                Socket s = MutexCollection[path] as Socket;
 
                 if (s != null)
                     s.Close();
 
-                MutexCollection.Remove(path);
+                MutexCollection.Remove(path); 
             }
         }
 
@@ -354,11 +365,12 @@ namespace ECRU.Utilities
         {
             if (isMutexFree(path) && isOnline)
             {
+
                 //GetMutex 
                 //Create Close Method; 
                 // return file; 
             }
-            return null;
+            return null; 
         }
 
         public FileBase GetReadOnlyFile(string path)
@@ -373,6 +385,7 @@ namespace ECRU.Utilities
                 //Get Mutex 
                 //Send Deleat File Command 
                 //Close connection
+                
             }
             return false;
         }
@@ -390,5 +403,11 @@ namespace ECRU.Utilities
         */
 
         //--------------------------------------------------------------------
+
+
+        public void Dispose()
+        {
+            throw new NotImplementedException();
+        }
     }
 }

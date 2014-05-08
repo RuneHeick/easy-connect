@@ -12,13 +12,13 @@ namespace ECRU
     public class Program
     {
         private static readonly Netd _netDaemon = new Netd();
-        private static readonly BLEModule _bleModule = null;
+        private static readonly BLEModule _bleModule = new BLEModule();
+        private static readonly object _stateLock = new object(); 
 
         private static Thread mainThread;
 
-        private static int state = 1;
-        private static event SystemInfoChanged systemInfoChanged;
-
+        private static int currentState = 0;
+        private static int newState = 1;
         /// <summary>
         ///     Main Launches the ECRU kernel
         /// </summary>
@@ -34,33 +34,47 @@ namespace ECRU
             //GetSystemInfoConfig();
 
 
-            systemInfoChanged += (StateSwitch);
+            SystemInfo.SysInfoChange += (StateSwitch);
 
             mainThread = Thread.CurrentThread;
 
             while (true)
             {
-                switch (state)
+                if (currentState != newState)
                 {
-                    case 1: //Load System Information state
-                        SystemInfo.LoadConfig("SysInfoConfig.cfg");
-                        SystemInfo.Start();
-                        break;
+                    lock (_stateLock)
+                    {
+                        currentState = newState;
+                    }
 
-                    case 2: //System Configuration state
-                        _bleModule.LoadConfig("");
-                        _bleModule.Start();
-                        break;
+                    switch (currentState)
+                    {
+                        case 1: //Load System Information state
+                            SystemInfo.LoadConfig("SysInfoConfig.cfg");
+                            SystemInfo.Start();
+                            _bleModule.LoadConfig("");
+                            _bleModule.Start();
+                            break;
 
-                    case 3: //Normal state
-                        _bleModule.Reset();
-                        _netDaemon.LoadConfig("");
-                        _netDaemon.Start();
-                        break;
+                        case 2: //System Configuration state
+                            _bleModule.LoadConfig("");
+                            _bleModule.Start();
+                            break;
+
+                        case 3: //Normal state
+                            _bleModule.Reset();
+                            _netDaemon.LoadConfig("");
+                            _netDaemon.Start();
+                            break;
+                    }
+                }
+                else
+                {
+                    mainThread.Suspend();
                 }
 
-                Thread.Sleep(Timeout.Infinite);
             }
+
 
 
             //try
@@ -98,18 +112,31 @@ namespace ECRU
 
         private static void StateSwitch(Byte[] sysMac, string name, string passCode)
         {
-            if (sysMac != null && name != null && passCode != null)
+            bool swichstate = false; 
+            if (sysMac != null && name != null && passCode != null && currentState != 3)
             {
-                //System configured
-                state = 3;
+                    //System configured
+                lock (_stateLock)
+                {
+                    newState = 3;
+                }
+                    swichstate = true; 
             }
-            else if (state == 1)
+            else if (currentState == 1 && currentState != 2)
             {
-                state = 2;
+                lock (_stateLock)
+                {
+                    newState = 2;
+                }
+                    swichstate = true; 
             }
-            if (mainThread.ThreadState == ThreadState.WaitSleepJoin)
+
+            if (swichstate == true)
             {
-                mainThread.Resume();
+                    if ((mainThread.ThreadState & ThreadState.Suspended) == ThreadState.Suspended)
+                    {
+                        mainThread.Resume();
+                    }
             }
         }
     }

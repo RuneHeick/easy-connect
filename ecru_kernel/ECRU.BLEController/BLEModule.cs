@@ -43,8 +43,6 @@ namespace ECRU.BLEController
             data = new DataManager(packetmanager);
 
             //rest
-            SystemInfo.PassCode = "Rune Heick";
-            SystemInfo.Name = "Test2";
             LoadConfig(null);
             serial.Start();
 

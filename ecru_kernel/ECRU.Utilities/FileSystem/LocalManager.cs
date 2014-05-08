@@ -1,25 +1,26 @@
 ﻿using System;
+using System.Threading;
+using ECRU.Utilities.HelpFunction;
+using Microsoft.SPOT;
 using System.Collections;
 using System.IO;
-using System.Threading;
-using Microsoft.SPOT;
 
 namespace ECRU.Utilities
 {
-    public class LocalManager
+    class LocalManager
     {
-        private readonly string MasterPath;
-        private readonly ArrayList Mutexs = new ArrayList();
-        private readonly object SDLOCK = new object();
+        ArrayList Mutexs = new ArrayList();
+        string MasterPath; 
+        readonly  object SDLOCK = new object();
 
         public LocalManager(string path)
         {
-            var files = new DirectoryInfo(path);
+            DirectoryInfo files = new DirectoryInfo(path);
             if (!files.Exists)
             {
                 files.Create();
             }
-            MasterPath = path;
+            MasterPath = path; 
         }
 
         public FileBase CreateFile(string path)
@@ -30,79 +31,87 @@ namespace ECRU.Utilities
                 {
                     if (!IsOpen(path))
                     {
-                        var file = new FileInfo(MasterPath + @"\" + path);
+                        FileInfo file = new FileInfo(MasterPath + @"\" + path);
                         if (file.Exists)
                             return null;
 
                         file.Directory.Create();
                         lock (Mutexs)
                             Mutexs.Add(path);
-                        var localfile = new FileBase();
+                        FileBase localfile = new FileBase();
                         localfile.Path = path;
                         localfile.Closefunc = CloseFile;
-                        return localfile;
+                        return localfile; 
                     }
                     return null;
                 }
             }
             catch
             {
-                return null;
+                return null; 
             }
+            
         }
 
         public bool FileExists(string path)
         {
-            var file = new FileInfo(MasterPath + @"\" + path);
-            return file.Exists;
+            FileInfo file = new FileInfo(MasterPath + @"\" + path);
+            return file.Exists; 
         }
 
         public FileBase GetFile(string path)
         {
             try
             {
-                if (!IsOpen(path))
-                {
-                    var file = new FileInfo(MasterPath + @"\" + path);
-                    if (file.Exists)
+                
+                    if (!IsOpen(path))
                     {
-                        lock (Mutexs)
-                            Mutexs.Add(path);
-                        lock (SDLOCK)
+                        FileInfo file = new FileInfo(MasterPath + @"\" + path);
+                        if (file.Exists)
                         {
-                            using (var r = new FileStream(file.FullName, FileMode.Open))
+                            lock (Mutexs)
+                                Mutexs.Add(path);
+                            lock (SDLOCK)
                             {
-                                var localfile = new FileBase();
-
-                                try
+                                using (FileStream r = new FileStream(file.FullName, FileMode.Open))
                                 {
-                                    var data = new byte[r.Length];
-                                    r.Read(data, 0, data.Length);
-                                    localfile.Data = data;
-                                    localfile.Closefunc = CloseFile;
-                                    localfile.Path = path;
-                                }
-                                catch
-                                {
-                                    return null;
-                                }
-                                finally
-                                {
-                                    r.Close();
-                                    r.Dispose();
-                                }
+                                    FileBase localfile = new FileBase();
+
+                                    try
+                                    {
+                                        byte[] data = new byte[r.Length];
+                                        r.Read(data, 0, data.Length);
+                                        localfile.Data = data;
+                                        localfile.Closefunc = CloseFile;
+                                        localfile.Path = path;
+                                    }
+                                    catch
+                                    {
+                                        return null;
+                                    }
+                                    finally
+                                    {
+                                        r.Close();
+                                        r.Dispose();
+                                    }
 
 
-                                return localfile;
+                                    return localfile;
+
+                                }
                             }
                         }
+                        else
+                        {
+                            return CreateFile(path);
+                        }
                     }
-                }
-                return null;
+                    return null;
+                
             }
             catch
             {
-                return null;
+                return null; 
             }
         }
 
@@ -113,22 +122,22 @@ namespace ECRU.Utilities
             {
                 lock (SDLOCK)
                 {
-                    var file = new FileInfo(MasterPath + @"\" + path);
+                    FileInfo file = new FileInfo(MasterPath + @"\" + path);
                     if (file.Exists)
                     {
-                        using (var r = new FileStream(file.FullName, FileMode.Open))
+                        using (FileStream r = new FileStream(file.FullName, FileMode.Open))
                         {
-                            var data = new byte[r.Length];
+                            byte[] data = new byte[r.Length];
                             r.Read(data, 0, data.Length);
                             r.Close();
-                            var localfile = new FileBase();
+                            FileBase localfile = new FileBase();
                             localfile.Data = data;
                             localfile.Closefunc = CloseReadOnlyFile;
                             localfile.Path = path;
                             return localfile;
                         }
                     }
-                    return null;
+                    return null; 
                 }
             }
             catch
@@ -139,22 +148,23 @@ namespace ECRU.Utilities
 
         private void CloseReadOnlyFile(FileBase file)
         {
+
         }
 
         public bool DeleteFile(string path)
         {
-            if (!IsOpen(path))
+            if(!IsOpen(path))
             {
                 lock (SDLOCK)
                 {
-                    var file = new FileInfo(MasterPath + @"\" + path);
+                    FileInfo file = new FileInfo(MasterPath + @"\" + path);
                     if (file.Exists)
                         file.Delete();
                 }
                 Thread.Sleep(1000);
-                return true;
+                return true; 
             }
-            return false;
+            return false; 
         }
 
         public void CloseFile(FileBase localfile)
@@ -173,6 +183,7 @@ namespace ECRU.Utilities
                                 var fs = new FileStream(MasterPath + @"\" + localfile.Path, FileMode.Create,
                                     System.IO.FileAccess.ReadWrite, FileShare.None))
                             {
+
                                 try
                                 {
                                     fs.Write(localfile.Data, 0, localfile.Data.Length);
@@ -211,9 +222,9 @@ namespace ECRU.Utilities
         {
             lock (Mutexs)
             {
-                foreach (object s in Mutexs)
+                foreach (var s in Mutexs)
                 {
-                    var m = (string) s;
+                    string m = (string)s;
                     if (m == Path)
                         return true;
                 }
@@ -223,8 +234,10 @@ namespace ECRU.Utilities
 
         public FileInfo[] GetFiles()
         {
-            var files = new DirectoryInfo(MasterPath);
+            DirectoryInfo files = new DirectoryInfo(MasterPath);
             return files.GetFiles();
         }
+
+
     }
 }
