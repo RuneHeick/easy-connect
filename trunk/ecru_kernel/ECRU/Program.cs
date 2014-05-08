@@ -45,8 +45,6 @@ namespace ECRU
                     case 1: //Load System Information state
                         SystemInfo.LoadConfig("SysInfoConfig.cfg");
                         SystemInfo.Start();
-                        _bleModule.LoadConfig("");
-                        _bleModule.Start();
                         break;
 
                     case 2: //System Configuration state
