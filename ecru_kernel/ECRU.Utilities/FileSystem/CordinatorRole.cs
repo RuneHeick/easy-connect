@@ -661,7 +661,7 @@ namespace ECRU.Utilities
         private static FileState_t GetBestFileState(Hashtable Filestates)
         {
             string bestMac = null;
-            long bestVersion = 0; 
+            long bestVersion = -1; 
 
             foreach (object key in Filestates.Keys)
             {
