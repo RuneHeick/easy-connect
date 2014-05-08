@@ -52,7 +52,10 @@ namespace ECRU.Utilities
 
         public static byte[] SystemMAC
         {
-            get { return _sysMac ?? (_sysMac = ReadConfigValueFromFile("SystemMAC").FromHex()); }
+            get 
+            { 
+                return _sysMac; 
+            }
             set
             {
                 _sysMac = value;
@@ -93,9 +96,13 @@ namespace ECRU.Utilities
 
                     if (systemConfigFile != null)
                     {
-                        _sysMac = systemConfigFile.Contains("SystemMAC")
-                            ? systemConfigFile["SystemMAC"].FromHex()
+                        if (systemConfigFile.Contains("SystemMAC"))
+                        {
+                            var mac = systemConfigFile["SystemMAC"];
+
+                            _sysMac = mac != "" ? mac.FromHex()
                             : null;
+                        }
                     }
                     else
                     {
