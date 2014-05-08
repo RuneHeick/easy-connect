@@ -87,10 +87,11 @@ namespace ECRU.Utilities
             {
                 try
                 {
-                    systemConfigFile =
-                        new ConfigFile(FileSystem.GetFile(configFilePath, FileAccess.Read, FileType.Local));
+                    FileBase file = FileSystem.GetFile(configFilePath, FileAccess.Read, FileType.Local); 
+                    if(file != null)
+                        systemConfigFile = new ConfigFile(file);
 
-                    if (systemConfigFile.File != null)
+                    if (systemConfigFile != null)
                     {
                         _sysMac = systemConfigFile.Contains("SystemMAC")
                             ? systemConfigFile["SystemMAC"].FromHex()
@@ -136,7 +137,7 @@ namespace ECRU.Utilities
                     systemConfigFile =
                         new ConfigFile(FileSystem.GetFile(_systemConfigFilePath, FileAccess.ReadWrite, FileType.Local));
 
-                    if (systemConfigFile.File == null) return;
+                    if (systemConfigFile == null) return;
 
                     if (systemConfigFile.Contains(property))
                     {
@@ -163,11 +164,13 @@ namespace ECRU.Utilities
                 systemConfigFile =
                     new ConfigFile(FileSystem.GetFile(_systemConfigFilePath, FileAccess.Read, FileType.Local));
 
-                if (systemConfigFile.File != null)
+                if (systemConfigFile != null)
                 {
                     if (systemConfigFile.Contains(property))
                     {
                         returnValue = systemConfigFile[property];
+                        if (returnValue == "")
+                            returnValue = null; 
                     }
                 }
             }

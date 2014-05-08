@@ -1,22 +1,25 @@
-﻿using System.IO;
+﻿using System;
+using Microsoft.SPOT;
+using System.IO;
+using ECRU.Utilities.HelpFunction;
 
 namespace ECRU.Utilities
 {
     public static class FileSystem
     {
-        private const string LocalPath = @"\SD\Local";
-        private const string NetworkPath = @"\SD\Shared";
+        const string LocalPath = @"\SD\Local";
+        const string NetworkPath = @"\SD\Shared";
 
-        private static readonly NetworkManager networkManager;
-        private static readonly LocalManager localManager;
+        static NetworkManager networkManager;
+        static LocalManager localManager;
 
         static FileSystem()
         {
-            var rootDirectory = new DirectoryInfo(@"\SD\");
+            DirectoryInfo rootDirectory = new DirectoryInfo(@"\SD\");
             if (rootDirectory.Exists)
             {
-                var local = new DirectoryInfo(LocalPath);
-                var network = new DirectoryInfo(NetworkPath);
+                DirectoryInfo local = new DirectoryInfo(LocalPath);
+                DirectoryInfo network = new DirectoryInfo(NetworkPath);
                 if (!local.Exists)
                 {
                     local.Create();
@@ -28,7 +31,12 @@ namespace ECRU.Utilities
                 networkManager = new NetworkManager(NetworkPath);
                 localManager = new LocalManager(LocalPath);
             }
+            else
+            {
+                // NO SD
+            }
         }
+
 
 
         public static FileBase GetFile(string path, FileAccess access, FileType type)
@@ -39,13 +47,22 @@ namespace ECRU.Utilities
                 {
                     return localManager.GetReadOnlyFile(path);
                 }
-                return localManager.GetFile(path);
+                else
+                {
+                    return localManager.GetFile(path);
+                }
             }
-            if (access == FileAccess.Read)
+            else
             {
-                return networkManager.GetReadOnlyFile(path);
+                if (access == FileAccess.Read)
+                {
+                    return networkManager.GetReadOnlyFile(path);
+                }
+                else
+                {
+                    return networkManager.GetFile(path);
+                }
             }
-            return networkManager.GetFile(path);
 
             return null;
         }
@@ -56,7 +73,10 @@ namespace ECRU.Utilities
             {
                 return localManager.CreateFile(path);
             }
-            return networkManager.GetFile(path);
+            else
+            {
+                return networkManager.GetFile(path);
+            }
 
 
             return null;
@@ -68,7 +88,10 @@ namespace ECRU.Utilities
             {
                 return localManager.FileExists(path);
             }
-            return networkManager.FileExists(path);
+            else
+            {
+                return networkManager.FileExists(path);
+            }
 
             return false;
         }
@@ -84,6 +107,8 @@ namespace ECRU.Utilities
                 networkManager.DeleteFile(path);
             }
         }
+
+
     }
 
 
@@ -98,4 +123,5 @@ namespace ECRU.Utilities
         Local,
         Shared
     }
+
 }

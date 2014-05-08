@@ -10,6 +10,10 @@
     <ProjectGuid>{5B778498-CDC7-4CE6-8CD3-FD20D04EBF93}</ProjectGuid>
     <TargetFrameworkVersion>v4.3</TargetFrameworkVersion>
     <NetMfTargetsBaseDir Condition="'$(NetMfTargetsBaseDir)'==''">$(MSBuildExtensionsPath32)\Microsoft\.NET Micro Framework\</NetMfTargetsBaseDir>
+    <SccProjectName>Svn</SccProjectName>
+    <SccLocalPath>Svn</SccLocalPath>
+    <SccAuxPath>Svn</SccAuxPath>
+    <SccProvider>SubversionScc</SccProvider>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -40,10 +44,10 @@
     <Compile Include="Factories\ModuleFactory\IModule.cs" />
     <Compile Include="Factories\ModuleFactory\ModuleFactory.cs" />
     <Compile Include="FileSystem\CordinatorRole.cs" />
-    <Compile Include="FileSystem\FIleSystem.cs" />
-    <Compile Include="FileSystem\Files\ConfigFile.cs" />
-    <Compile Include="FileSystem\Files\FileBase.cs" />
-    <Compile Include="FileSystem\Files\InfoFile.cs" />
+    <Compile Include="FileSystem\FileSystem.cs" />
+    <Compile Include="FileSystem\File\ConfigFile.cs" />
+    <Compile Include="FileSystem\File\FileBase.cs" />
+    <Compile Include="FileSystem\File\InfoFile.cs" />
     <Compile Include="FileSystem\LocalManager.cs" />
     <Compile Include="FileSystem\NetworkManager.cs" />
     <Compile Include="HelpFunction\ByteExtension.cs" />
