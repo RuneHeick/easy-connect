@@ -5,6 +5,7 @@ using ECRU.Utilities.HelpFunction;
 using System.Net.Sockets;
 using System.IO;
 using System.Threading;
+using Microsoft.SPOT;
 
 namespace ECRU.Utilities
 {
@@ -12,7 +13,7 @@ namespace ECRU.Utilities
     {
         public const int MUTEX_MAX_LOCKTIME = 60;  // in sec
         public const string CordinatorType = "CordinatorRq";
-        const int ConnectionTimeOut = 10000; 
+        const int ConnectionTimeOut = 60000; 
 
         ArrayList Mutexs = new ArrayList();
         readonly object Lock = new object();
@@ -842,7 +843,8 @@ namespace ECRU.Utilities
 
         private void StartCordinator()
         {
-            state = CordinatorState.Running; 
+            state = CordinatorState.Running;
+            Debug.Print("CordinatorState.Running");
         }
 
 
