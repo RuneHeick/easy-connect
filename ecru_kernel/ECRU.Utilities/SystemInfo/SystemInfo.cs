@@ -123,6 +123,10 @@ namespace ECRU.Utilities
                     SysInfoChange(SystemMAC, Name, PassCode);
                 }
             }
+            else
+            {
+                SysInfoChange(SystemMAC, Name, PassCode);
+            }
         }
 
         private static void WriteConfigValueToFile(String property, String value)
