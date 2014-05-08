@@ -49,24 +49,22 @@ namespace ECRU
 
                     switch (currentState)
                     {
-                        case 1: //Load System Information state
-                            SystemInfo.LoadConfig("SysInfoConfig.cfg");
-                            SystemInfo.Start();
-                            _bleModule.LoadConfig("");
-                            _bleModule.Start();
-                            break;
+                    case 1: //Load System Information state
+                        SystemInfo.LoadConfig("SysInfoConfig.cfg");
+                        SystemInfo.Start();
+                        break;
 
-                        case 2: //System Configuration state
-                            _bleModule.LoadConfig("");
-                            _bleModule.Start();
-                            break;
+                    case 2: //System Configuration state
+                        _bleModule.LoadConfig("");
+                        _bleModule.Start();
+                        break;
 
-                        case 3: //Normal state
-                            _bleModule.Reset();
-                            _netDaemon.LoadConfig("");
-                            _netDaemon.Start();
-                            break;
-                    }
+                    case 3: //Normal state
+                        _bleModule.Reset();
+                        _netDaemon.LoadConfig("");
+                        _netDaemon.Start();
+                        break;
+                }
                 }
                 else
                 {
@@ -115,7 +113,7 @@ namespace ECRU
             bool swichstate = false; 
             if (sysMac != null && name != null && passCode != null && currentState != 3)
             {
-                    //System configured
+                //System configured
                 lock (_stateLock)
                 {
                     newState = 3;
@@ -125,7 +123,7 @@ namespace ECRU
             else if (currentState == 1 && currentState != 2)
             {
                 lock (_stateLock)
-                {
+            {
                     newState = 2;
                 }
                     swichstate = true; 
@@ -134,10 +132,10 @@ namespace ECRU
             if (swichstate == true)
             {
                     if ((mainThread.ThreadState & ThreadState.Suspended) == ThreadState.Suspended)
-                    {
-                        mainThread.Resume();
-                    }
+            {
+                mainThread.Resume();
             }
         }
     }
+}
 }
