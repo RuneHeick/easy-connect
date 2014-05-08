@@ -2,9 +2,10 @@
 using Microsoft.SPOT;
 using ECRU.Utilities.HelpFunction;
 using System.IO;
-using ECRU.Utilities;
 using System.Net.Sockets;
 using System.Collections;
+using System.Threading;
+using ECRU.Utilities.Timers;
 
 namespace ECRU.Utilities
 {
@@ -16,8 +17,11 @@ namespace ECRU.Utilities
         readonly object ChangeLock = new object();
         readonly object BusyLock = new object(); 
         public bool isOnline { get; set; }
+        private bool SingleMode { get; set;  }
 
         const string InfoFolderName = "Info";
+        ECTimer StartTimer;
+
 
         LocalManager InfoManager;
         LocalManager NetFileManager;
@@ -26,7 +30,9 @@ namespace ECRU.Utilities
 
         public NetworkManager(string path)
         {
+            StartTimer = new ECTimer((o) => startCordinator(), null, 10000, Timeout.Infinite);
             isOnline = false;
+            SingleMode = true; 
 
             InfoManager = new LocalManager(path + "\\" + InfoFolderName);
             NetFileManager = new LocalManager(path + "\\" + FileFolderName);
@@ -45,19 +51,33 @@ namespace ECRU.Utilities
             if (ECRU.Utilities.SystemInfo.SystemMAC != null)
             {
                 // Get device with lowest Mac
-                cordinatorAddrs = ECRU.Utilities.SystemInfo.ConnectionOverview.GetSortedMasters()[0].FromHex();
+                string[] Macs = ECRU.Utilities.SystemInfo.ConnectionOverview.GetSortedMasters();
+
+                cordinatorAddrs = Macs[0].FromHex();
+                SingleMode = Macs.Length == 1 ? true : false;
+
                 Debug.Print("CORDINATOR LOAD : " + cordinatorAddrs.ToHex());
-                if (cordinatorAddrs.ByteArrayCompare(ECRU.Utilities.SystemInfo.SystemMAC))
+                if (cordinatorAddrs.ByteArrayCompare(ECRU.Utilities.SystemInfo.SystemMAC) && SingleMode == false)
                 {
                     //I am cordinator 
-                    cordinator = new CordinatorRole(InfoManager,NetFileManager);
+                    StartTimer.Start(); 
                 }
             }
             isOnline = true; 
         }
 
+        private void startCordinator()
+        {
+            if(isOnline)
+            {
+                cordinator = new CordinatorRole(InfoManager,NetFileManager);
+            }
+            StartTimer.Stop(); 
+        }
+
         private void StopNetShare()
         {
+            StartTimer.Stop(); 
             isOnline = false;
             MutexClear(); 
             if (cordinator != null)
@@ -186,7 +206,7 @@ namespace ECRU.Utilities
                                             }
                                         }
 
-                                        socket.Close();
+                                        CloseSocket(socket);
                                     }
                                 }
                                 break;
@@ -201,7 +221,7 @@ namespace ECRU.Utilities
             {
                 if (socket != null)
                 {
-                    socket.Close();
+                    CloseSocket(socket);
                 }
             }
         }
@@ -219,10 +239,19 @@ namespace ECRU.Utilities
             int infoLength = (pack[3 + pathLength + 1 + fileLength] << 8) + pack[3 + pathLength + 2+ fileLength];
             byte[] info = pack.GetPart(3 + pathLength + 3 + fileLength, infoLength);
 
+            freeMutex(path);
+
             lock (BusyLock)
             {
                 FileBase File_file = null;
                 FileBase File_info = null;
+
+                if (fileLength == 0 && infoLength ==0) // Del file. 
+                {
+                    InfoManager.DeleteFile(Path.GetFileNameWithoutExtension(path) + ".info");
+                    NetFileManager.DeleteFile(path);
+                    return; 
+                }
 
                 if (NetFileManager.FileExists(path))
                 {
@@ -256,27 +285,34 @@ namespace ECRU.Utilities
             }
         }
 
-        private void ConnectionRq(object msg)
+        //--------------------------------------------------------------------
+
+        #region Mutex
+
+        Hashtable MutexCollection = new Hashtable(); 
+
+        class Mutex_t
         {
+            public Socket socket { get; set; }
+
+            public DateTime Locktime { get; set; }
 
         }
 
-        //--------------------------------------------------------------------
-
-        Hashtable MutexCollection = new Hashtable(); 
 
         private bool isMutexFree(string path)
         {
             lock (MutexCollection)
             {
+                UpdateTimeLockMutex(path); 
                 if (MutexCollection.Contains(path))
                 {
-                    Socket s = MutexCollection[path] as Socket;
-                    if (SocketConnected(s))
+                    Mutex_t m = MutexCollection[path] as Mutex_t;
+                    if (m.socket != null && SocketConnected(m.socket))
                         return false;
                     else
                     {
-                        freeMutex(path,s);
+                        freeMutex(path,m.socket);
                         return true;
                     }
                 }
@@ -285,20 +321,55 @@ namespace ECRU.Utilities
             return true; 
         }
 
+        private void UpdateTimeLockMutex(string path)
+        {
+            lock (MutexCollection)
+            {
+                if (MutexCollection.Contains(path))
+                {
+                    Mutex_t m = MutexCollection[path] as Mutex_t;
+                    if ((DateTime.Now - m.Locktime).Ticks > TimeSpan.TicksPerSecond * CordinatorRole.MUTEX_MAX_LOCKTIME)
+                        MutexCollection.Remove(m);
+                }
+            }
+        }
+
+        private void CloseSocket(Socket s)
+        {
+            if (s != null)
+            {
+                s.Close();
+                lock (MutexCollection)
+                {
+                    foreach (object key in MutexCollection.Keys)
+                    {
+                        Mutex_t m = MutexCollection[key] as Mutex_t;
+                        if (m.socket != null && s == m.socket)
+                            m.socket = null;  
+                    }
+                }
+            }
+        }
+
+        private bool HasMutex(string path)
+        {
+            return !isMutexFree(path); 
+        }
+
         static bool SocketConnected(Socket socket)
         {
             if (socket != null)
             {
-                bool ret = !socket.Poll(1, SelectMode.SelectRead) && !socket.Poll(1, SelectMode.SelectError);
+                bool ret = false; 
                 try
                 {
+                    ret = !socket.Poll(1, SelectMode.SelectRead) && !socket.Poll(1, SelectMode.SelectError);
+               
                     ret = socket.Available == 0 ? ret : ret;
                 }
                 catch
                 {
                     ret = false;
-                    if (socket != null)
-                        socket.Close();
                 }
                 return ret;
             }
@@ -311,7 +382,8 @@ namespace ECRU.Utilities
             {
                 if (isMutexFree(path))
                 {
-                    MutexCollection.Add(path, s);
+                    Mutex_t m = new Mutex_t { socket = s, Locktime = DateTime.Now };
+                    MutexCollection.Add(path, m);
                     return true;
                 }
                 return false;
@@ -322,13 +394,13 @@ namespace ECRU.Utilities
         {
             lock (MutexCollection)
             {
-                if (!isMutexFree(path))
+                if (MutexCollection.Contains(path))
                 {
-                    Socket s = MutexCollection[path] as Socket;
-                    if (s == socket)
+                    Mutex_t m = MutexCollection[path] as Mutex_t;
+                    if (m.socket == socket || m.socket == null)
                     {
-                        if (s != null)
-                            s.Close();
+                        if (m.socket != null)
+                            CloseSocket(m.socket);
 
                         MutexCollection.Remove(path);
                         return true;
@@ -338,23 +410,46 @@ namespace ECRU.Utilities
             }
         }
 
-        private void MutexClear()
+        private bool freeMutex(string path)
         {
-            while(MutexCollection.Count>0)
+            lock (MutexCollection)
             {
-                var keys = MutexCollection.Keys.GetEnumerator();
-                string path = keys.Current as string;
-                Socket s = MutexCollection[path] as Socket;
+                if (MutexCollection.Contains(path))
+                {
+                    Mutex_t m = MutexCollection[path] as Mutex_t;
+                    if (m.socket != null)
+                        CloseSocket(m.socket);
 
-                if (s != null)
-                    s.Close();
-
-                MutexCollection.Remove(path); 
+                    MutexCollection.Remove(path);
+                    return true;
+                }
+                return false;
             }
         }
 
+        private void MutexClear()
+        {
+            lock (MutexCollection)
+            {
+                while (MutexCollection.Count > 0)
+                {
+                    var keys = MutexCollection.Keys.GetEnumerator();
+                    string path = keys.Current as string;
+                    Mutex_t m = MutexCollection[path] as Mutex_t;
+
+                    if (m.socket != null)
+                        CloseSocket(m.socket);
+
+                    MutexCollection.Remove(path);
+                }
+            }
+        }
+
+        #endregion
 
         //--------------------------------------------------------------------
+
+        #region FileHandles
 
         public bool FileExists(string path)
         {
@@ -363,12 +458,64 @@ namespace ECRU.Utilities
 
         public FileBase GetFile(string path)
         {
-            if (isMutexFree(path) && isOnline)
+            if (SingleMode)
             {
+                FileBase file = null;
+                if (NetFileManager.FileExists(path))
+                    file = NetFileManager.GetFile(path);
+                else
+                {
+                    file = NetFileManager.CreateFile(path);
+                }
 
-                //GetMutex 
-                //Create Close Method; 
-                // return file; 
+                if (!InfoManager.FileExists(Path.GetFileNameWithoutExtension(path) + ".info"))
+                {
+                    FileBase b = InfoManager.CreateFile(Path.GetFileNameWithoutExtension(path) + ".info");
+                    InfoFile i = new InfoFile(b);
+                    i.Version = 0;
+                    i.Close();
+                }
+
+                if (file != null)
+                {
+                    var oldClose = file.Closefunc;
+                    file.Closefunc = (f) =>
+                    {
+                        SingleModeClose(f);
+                        if (oldClose != null)
+                            oldClose(f);
+                    };
+                }
+                return file;
+            }
+            else
+            {
+                if (isMutexFree(path) && isOnline)
+                {
+                    Thread Ask = new Thread(() => AskCordinatorForMutex(path));
+                    Ask.Start();
+                    Ask.Join();
+
+                    if (HasMutex(path))
+                    {
+                        FileBase file = null;
+                        if (FileExists(path))
+                        {
+                            file = NetFileManager.GetReadOnlyFile(path);
+                        }
+                        else
+                        {
+                            file = NetFileManager.CreateFile(path);
+                        }
+
+                        if (file != null)
+                        {
+                            file.Closefunc = CloseFile;
+                        }
+                        return file;
+                    }
+
+                }
             }
             return null; 
         }
@@ -380,29 +527,200 @@ namespace ECRU.Utilities
 
         public bool DeleteFile(string path)
         {
-            if (isOnline)
+            if (SingleMode)
             {
-                //Get Mutex 
-                //Send Deleat File Command 
-                //Close connection
-                
+                NetFileManager.DeleteFile(path);
+                InfoManager.DeleteFile(Path.GetFileNameWithoutExtension(path) + ".info");
+            }
+            else
+            {
+                if (isMutexFree(path) && isOnline)
+                {
+                    Thread Ask = new Thread(() => AskCordinatorForMutex(path));
+                    Ask.Start();
+                    Ask.Join();
+
+                    if (HasMutex(path))
+                    {
+                        SendDelCommand(path);
+                        return true;
+                    }
+
+
+                }
             }
             return false;
         }
-
-
-        /*
-        public void CloseFile(FileBase localfile)
+        
+        private void CloseFile(FileBase localfile)
         {
-            if (isOnline)
+            if (MutexCollection.Contains(localfile.Path) && isOnline)
             {
-                //Send Update.
-                //Close Connection 
+                Mutex_t mutexConnection = MutexCollection[localfile.Path] as Mutex_t;
+                if (mutexConnection != null)
+                {
+                    byte[] fileData = localfile.Data;
+                    if (fileData != null && fileData.Length > 0)
+                    {
+                        try
+                        {
+                            byte[] packet = new byte[] { 0x03 };
+                            packet = packet.Add(localfile.Data);
+                            mutexConnection.socket.Send(packet);
+                        }
+                        finally
+                        {
+                            CloseSocket(mutexConnection.socket);
+                        }
+                    }
+                    else
+                    {
+                        SendDelCommand(localfile.Path);
+                    }
+                }
+
+                freeMutex(localfile.Path, mutexConnection.socket);
             }
         }
-        */
 
-        //--------------------------------------------------------------------
+        private void SingleModeClose(FileBase localfile)
+        {
+            FileBase info = InfoManager.GetFile(Path.GetFileNameWithoutExtension(localfile.Path) + ".info");
+            if(info != null)
+            {
+                InfoFile fileinfo = new InfoFile(info);
+                fileinfo.Version++;
+                if (localfile.Data != null && localfile.Data.Length > 0)
+                {
+                    var md5State = new MD5();
+                    md5State.HashCore(localfile.Data, 0, localfile.Data.Length);
+                    fileinfo.Hash = md5State.HashAsLong;
+                }
+                fileinfo.Close(); 
+            }
+        }
+
+        #endregion
+
+        //----------------------Net ------------------------------------
+
+        public class WorkerStat
+        {
+            private readonly object Lock = new object();
+            private bool isDone = false;
+            private Thread current;
+
+            public WorkerStat(Thread current)
+            {
+                this.current = current;
+            } 
+            public bool IsDone
+            {
+                get
+                {
+                    lock (Lock)
+                    {
+                        return isDone; 
+                    }
+                }
+                set
+                {
+                    lock (Lock)
+                    {
+                        isDone= value;
+                        if (isDone == true && (current.ThreadState & ThreadState.Suspended) == ThreadState.Suspended)
+                            current.Resume(); 
+                    }
+                }
+            }
+
+            public void WaitOnDone()
+            {
+                while (IsDone == false)
+                    current.Suspend(); 
+            }
+
+        }
+
+        private void AskCordinatorForMutex(string path)
+        {
+            Thread current = Thread.CurrentThread; 
+            WorkerStat  state = new WorkerStat(current);
+
+            NewConnectionMessage rq = new NewConnectionMessage() { Receiver = cordinatorAddrs, ConnectionType = CordinatorRole.CordinatorType, ConnectionCallback = (s, r) => AskCordinatorForMutexConnection(s, r, state, path) };
+            EventBus.Publish(rq);
+
+            state.WaitOnDone(); 
+
+        }
+
+        private void AskCordinatorForMutexConnection(Socket con, byte[] reciver, WorkerStat AskingThread, string path)
+        {
+            try
+            {
+                if (con != null)
+                {
+
+                    byte[] request = new byte[1+path.Length];
+                    request[0] = 0x01; 
+                    request.Set(path.StringToBytes(),1); 
+                    con.Send(request);
+                    var waitingforData = true;
+                    while (waitingforData)
+                    {
+                        if (( !con.Poll(10, SelectMode.SelectRead) && !con.Poll(10, SelectMode.SelectError)) == false)
+                            waitingforData = false; 
+
+                        if (con.Available > 0)
+                        {
+                            byte[] buffer = new byte[con.Available];
+                            con.Receive(buffer);
+                            if(buffer[0]==0x01)
+                            {
+                                getMutex(path,con); 
+                                return; 
+                            }
+                            else
+                                break; 
+                        }
+                    }
+
+                    CloseSocket(con);
+
+                }
+
+            }
+            catch
+            {
+                if (con != null)
+                    CloseSocket(con); 
+            }
+            finally
+            {
+                AskingThread.IsDone = true;
+            }
+        }
+
+        private void SendDelCommand(string path)
+        {
+            Mutex_t mutexConnection = MutexCollection[path] as Mutex_t;
+            if (mutexConnection != null)
+            {
+                try
+                {
+                    byte[] packet = new byte[] { 0x06 };
+                    mutexConnection.socket.Send(packet);
+                }
+                finally
+                {
+                    CloseSocket(mutexConnection.socket);
+                }
+            }
+
+            freeMutex(path, mutexConnection.socket);
+        }
+
+        //------------------------------------------------
 
 
         public void Dispose()

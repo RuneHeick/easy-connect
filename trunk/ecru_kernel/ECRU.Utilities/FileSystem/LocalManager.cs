@@ -101,10 +101,6 @@ namespace ECRU.Utilities
                                 }
                             }
                         }
-                        else
-                        {
-                            return CreateFile(path);
-                        }
                     }
                     return null;
                 
@@ -161,7 +157,6 @@ namespace ECRU.Utilities
                     if (file.Exists)
                         file.Delete();
                 }
-                Thread.Sleep(1000);
                 return true; 
             }
             return false; 
@@ -201,18 +196,6 @@ namespace ECRU.Utilities
                                 }
                             }
                         }
-                        //using (FileStream file = new FileStream(MasterPath + @"\" + localfile.Path, FileMode.Create, System.IO.FileAccess.Write))
-                        //{
-                        //    try
-                        //    {
-                        //        file.Write(localfile.Data, 0, localfile.Data.Length);
-                        //        file.Flush();
-                        //    }
-                        //    finally
-                        //    {
-                        //        file.Close();
-                        //    }
-                        //}
                     }
                 }
             }
