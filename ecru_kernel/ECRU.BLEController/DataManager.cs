@@ -5,6 +5,7 @@ using ECRU.BLEController.Util;
 using ECRU.Utilities;
 using ECRU.Utilities.HelpFunction;
 using Microsoft.SPOT;
+using System.Threading;
 
 namespace ECRU.BLEController
 {
@@ -91,14 +92,14 @@ namespace ECRU.BLEController
 
         internal bool hasInfoFile(byte[] addr)
         {
-            return FileSystem.Exists(addr.ToHex() + ".BLE", FileType.Local);
+            return FileSystem.Exists(addr.ToHex() + ".BLE", FileType.Shared);
         }
 
         internal DeviceInfo GetDeviceInfo(byte[] addr)
         {
-            if (FileSystem.Exists(addr.ToHex() + ".BLE", FileType.Local))
+            if (FileSystem.Exists(addr.ToHex() + ".BLE", FileType.Shared))
             {
-                FileBase file = FileSystem.GetFile(addr.ToHex() + ".BLE", FileAccess.Read, FileType.Local);
+                FileBase file = FileSystem.GetFile(addr.ToHex() + ".BLE", FileAccess.Read, FileType.Shared);
                 var defFile = new DeviceInfoDefFile(file);
                 defFile.Close();
                 return defFile.Object;
@@ -109,28 +110,43 @@ namespace ECRU.BLEController
 
         internal void DeleteSystemInfo(byte[] addr)
         {
-            if (FileSystem.Exists(addr.ToHex() + ".BLE", FileType.Local))
+            if (FileSystem.Exists(addr.ToHex() + ".BLE", FileType.Shared))
             {
-                FileSystem.DeleteFile(addr.ToHex() + ".BLE", FileType.Local);
+                FileSystem.DeleteFile(addr.ToHex() + ".BLE", FileType.Shared);
             }
         }
 
         internal void UpdateOrCreateInfoFile(DeviceInfo item)
         {
             // info File 
-            FileBase file = null;
-            if (FileSystem.Exists(item.Address.ToHex() + ".BLE", FileType.Local))
-            {
-                file = FileSystem.GetFile(item.Address.ToHex() + ".BLE", FileAccess.ReadWrite, FileType.Local);
-            }
-            else
-            {
-                file = FileSystem.CreateFile(item.Address.ToHex() + ".BLE", FileType.Local);
-            }
+            int trycount = 0;
 
-            var defFile = new DeviceInfoDefFile(file);
-            defFile.Object = item;
-            defFile.Close();
+            while (trycount < 3)
+            {
+                FileBase file = null;
+                if (FileSystem.Exists(item.Address.ToHex() + ".BLE", FileType.Shared))
+                {
+                    file = FileSystem.GetFile(item.Address.ToHex() + ".BLE", FileAccess.ReadWrite, FileType.Shared);
+                }
+                else
+                {
+                    file = FileSystem.CreateFile(item.Address.ToHex() + ".BLE", FileType.Shared);
+                }
+
+                if (file != null)
+                {
+                    var defFile = new DeviceInfoDefFile(file);
+                    defFile.Object = item;
+                    defFile.Close();
+                    break;
+                }
+                else
+                {
+                    trycount++;
+                    Thread.Sleep(30000);
+                }
+
+            }
 
             // val file 
 
