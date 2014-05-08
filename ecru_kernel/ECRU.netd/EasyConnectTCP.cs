@@ -111,7 +111,7 @@ namespace ECRU.netd
                         if (bytesReceived == availableBytes)
                         {
                             waitingForData = false;
-                            var timer = new ECTimer(ConnectionTimeout, connection, 10000, Timeout.Infinite);
+                            var timer = new ECTimer(ConnectionTimeout, connection, 60000, Timeout.Infinite);
                             timer.Start();
 
 
