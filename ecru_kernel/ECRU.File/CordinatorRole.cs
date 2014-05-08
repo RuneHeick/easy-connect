@@ -10,8 +10,8 @@ namespace ECRU.Utilities
 {
     public class CordinatorRole:IDisposable
     {
-        const int MUTEX_MAX_LOCKTIME = 300000;  // 5 min
-        const string CordinatorType = "CordinatorRq";
+        public const int MUTEX_MAX_LOCKTIME = 60;  // in sec
+        public const string CordinatorType = "CordinatorRq";
         const int ConnectionTimeOut = 10000; 
 
         ArrayList Mutexs = new ArrayList();
@@ -70,14 +70,15 @@ namespace ECRU.Utilities
 
                         DateTime StartTime = DateTime.Now;
 
+                        bool running = true; 
                         bool Handeled = false;
-                        while ((DateTime.Now - StartTime).Milliseconds < ConnectionTimeOut)
+                        while ((DateTime.Now - StartTime).Ticks < TimeSpan.TicksPerMillisecond*ConnectionTimeOut && running == true)
                         {
                             try
                             {
 
                                 if (( !con.Poll(10, SelectMode.SelectRead) && !con.Poll(10, SelectMode.SelectError)) == false)
-                                    break;
+                                    running = false;
 
                                 if (con.Available > 0)
                                 {
@@ -103,77 +104,6 @@ namespace ECRU.Utilities
                                                 }
                                             }
                                             break;
-                                        case 0x02: // Copy 
-                                            {
-                                               byte[] ret = new byte[1];
-                                               string path = buffer.GetPart(1, buffer.Length - 1).GetString();
-                                               FileBase file = NetFileManager.GetFile(path);
-                                               if(file != null)
-                                               {
-                                                   con.Send(file.Data);
-                                                   file.Close(); 
-                                               }
-                                               else
-                                               {
-                                                   ret[0] = 0;
-                                                   con.Send(ret);
-                                               }
-                                            }
-                                            break;
-                                        case 0x04: // Rqu File 
-                                            {
-                                                byte[] ret = new byte[1];
-                                                string path = buffer.GetPart(1, buffer.Length - 1).GetString();
-                                                FileBase file = NetFileManager.GetFile(path);
-                                                FileBase info = InfoManager.GetFile(Path.GetFileNameWithoutExtension(path) + ".info");
-
-                                                if (file != null && info != null)
-                                                {
-                                                    int fileLength = file.Data.Length;
-                                                    int infoLength = info.Data.Length;
-
-                                                    byte[] data = new byte[2 + fileLength + 2 + infoLength];
-                                                    data.Set(file.Data, 2);
-                                                    data.Set(info.Data, 2 + fileLength+2);
-                                                    data[0] = (byte)(fileLength>>8);
-                                                    data[1] = (byte)(fileLength);
-
-                                                    data[2 + fileLength] = (byte)(infoLength >> 8);
-                                                    data[2 + fileLength + 1] = (byte)(infoLength);
-
-                                                    con.Send(data);
-                                                    file.Close();
-                                                    info.Close(); 
-                                                }
-                                                else
-                                                {
-                                                    ret[0] = 0;
-                                                    con.Send(ret);
-                                                }
-                                            }
-                                            break; 
-                                        case 0x06: //Request Info 
-                                            {
-                                                byte[] ret = new byte[1];
-                                                string path = buffer.GetPart(1, buffer.Length - 1).GetString();
-                                                FileBase info = InfoManager.GetFile(Path.GetFileNameWithoutExtension(path) + ".info");
-                                                if (info != null)
-                                                {
-                                                    con.Send(info.Data);
-                                                    info.Close(); 
-                                                }
-                                                else
-                                                {
-                                                    ret[0] = 0;
-                                                    con.Send(ret);
-                                                }
-                                            }
-                                            break;
-
-                                        default:
-
-                                            break;
-
                                     }
 
                                     break;
@@ -199,20 +129,26 @@ namespace ECRU.Utilities
 
         #region Mutex
 
-        private void ReleasMutex(Socket con)
+        private void ReleasMutex(Socket con) // Shall not release if updating 
         {
             lock (Lock)
             {
                 for (int i = 0; i < Mutexs.Count; i++)
                 {
                     FileMutex mutex = Mutexs[i] as FileMutex;
-                    if (mutex != null && mutex.AddrHasLock == con)
+                    if (mutex != null)
                     {
-                        if (mutex.AddrHasLock != null)
+                        if (mutex.Status != FileMutex.Status_t.Updating)
                         {
-                            mutex.AddrHasLock.Close();
+                            if (mutex.AddrHasLock == con)
+                            {
+                                if (mutex.AddrHasLock != null)
+                                {
+                                    mutex.AddrHasLock.Close();
+                                }
+                                Mutexs.RemoveAt(i);
+                            }
                         }
-                        Mutexs.RemoveAt(i);
                     }
                 }
             }
@@ -228,7 +164,7 @@ namespace ECRU.Utilities
                     FileMutex mutex = Mutexs[i] as FileMutex; 
                     if(mutex != null && mutex.path == path)
                     {
-                        if ((DateTime.Now - mutex.LockTime).Milliseconds > MUTEX_MAX_LOCKTIME)
+                        if ((DateTime.Now - mutex.LockTime).Ticks > TimeSpan.TicksPerSecond*MUTEX_MAX_LOCKTIME)
                         {
                             ReleasMutex(mutex.path);
                             break; 
@@ -239,15 +175,16 @@ namespace ECRU.Utilities
                         return false; 
                     }
                 }
-
-                Mutexs.Add(new FileMutex(path, addr));
-                if (MutexHandler.ThreadState == ThreadState.Suspended)
+                FileMutex m = new FileMutex(path, addr);
+                m.Status = FileMutex.Status_t.Locked; 
+                Mutexs.Add(m);
+                if ((MutexHandler.ThreadState & ThreadState.Suspended) == ThreadState.Suspended)
                     MutexHandler.Resume(); 
                 return true; 
             }
         }
 
-        public void ReleasMutex(string path)
+        public void ReleasMutex(string path) // Shall release in any Status
         {
             lock (Lock)
             {
@@ -275,7 +212,7 @@ namespace ECRU.Utilities
                 FileMutex mutex = Mutexs[i] as FileMutex;
                 if (mutex != null && mutex.path == path)
                 {
-                    if ((DateTime.Now - mutex.LockTime).Milliseconds > MUTEX_MAX_LOCKTIME)
+                    if ((DateTime.Now - mutex.LockTime).Ticks > MUTEX_MAX_LOCKTIME * TimeSpan.TicksPerSecond)
                     {
                         ReleasMutex(mutex.path);
                         return false; 
@@ -295,7 +232,7 @@ namespace ECRU.Utilities
                 FileMutex mutex = Mutexs[i] as FileMutex;
                 if (mutex != null && mutex.path == path)
                 {
-                    if ((DateTime.Now - mutex.LockTime).Milliseconds > MUTEX_MAX_LOCKTIME)
+                    if ((DateTime.Now - mutex.LockTime).Ticks > MUTEX_MAX_LOCKTIME*TimeSpan.TicksPerSecond)
                     {
                         ReleasMutex(mutex.path);
                         return false;
@@ -327,10 +264,11 @@ namespace ECRU.Utilities
                                 {
                                     byte[] buffer = new byte[con.Available];
                                     con.Receive(buffer);
-                                    HandelRQ(mutex, buffer);
+                                    if (HasMutex(mutex.path))
+                                        HandelRQ(mutex, buffer);
                                 }
                                 // Remove the item if timeout. 
-                                if ((DateTime.Now - mutex.LockTime).Milliseconds > MUTEX_MAX_LOCKTIME)
+                                if ((DateTime.Now - mutex.LockTime).Ticks > MUTEX_MAX_LOCKTIME*TimeSpan.TicksPerSecond)
                                 {
                                     ReleasMutex(con);
                                 }
@@ -359,7 +297,7 @@ namespace ECRU.Utilities
                 case 0x03: // Update File;
                     {
                         FileBase file;
-                        FileBase info;
+                        FileBase info = null;
                         InfoFile infofile;
 
                         if (NetFileManager.FileExists(mutex.path))
@@ -370,6 +308,11 @@ namespace ECRU.Utilities
                         else
                         {
                             file = NetFileManager.CreateFile(mutex.path);
+                            info = InfoManager.GetFile(Path.GetFileNameWithoutExtension(mutex.path) + ".info");
+                        }
+
+                        if (info == null)
+                        {
                             info = InfoManager.CreateFile(Path.GetFileNameWithoutExtension(mutex.path) + ".info");
                             infofile = new InfoFile(info);
                             infofile.Version = 0;
@@ -384,8 +327,6 @@ namespace ECRU.Utilities
                         md5State.HashCore(file.Data, 0, file.Data.Length);
                         infofile.Hash = md5State.HashAsLong;
 
-                        byte[] ack = new byte[] { 0x01 };
-                        mutex.AddrHasLock.Send(ack);
                         mutex.AddrHasLock.Close();
                         file.Close();
                         info.Close();
@@ -396,27 +337,9 @@ namespace ECRU.Utilities
                     break;
                 case 0x06: //del file 
                     {
-                        if (NetFileManager.FileExists(mutex.path))
-                        {
-
-                            FileBase info = InfoManager.GetFile(Path.GetFileNameWithoutExtension(mutex.path) + ".info");
-                           
-                            NetFileManager.DeleteFile(mutex.path);
-                            byte[] ack = new byte[] { 0x01 };
-                            mutex.AddrHasLock.Send(ack);
-                            mutex.AddrHasLock.Close();
-                            InfoFile infofile = new InfoFile(info);
-                            infofile.Hash = 0;
-                            infofile.Version = 0;
-                            info.Close();
-                            InfoManager.DeleteFile(Path.GetFileNameWithoutExtension(mutex.path) + ".info");
-
-                            UpdateFile(mutex);
-                        }
-                        else
-                        {
-                            ReleasMutex(mutex.path); //Releases Mutex
-                        }
+                        NetFileManager.DeleteFile(mutex.path);
+                        InfoManager.DeleteFile(Path.GetFileNameWithoutExtension(mutex.path) + ".info");
+                        UpdateFile(mutex);
                     }
                     break; 
             }
@@ -424,6 +347,7 @@ namespace ECRU.Utilities
 
         private void UpdateFile(FileMutex mutex)
         {
+            mutex.Status = FileMutex.Status_t.Updating; 
             ArrayList UsersToUpdate = new ArrayList(); 
             foreach(string RU in Users)
             {
@@ -439,7 +363,14 @@ namespace ECRU.Utilities
                     NewConnectionMessage rq = new NewConnectionMessage() { Receiver = RU.FromHex(), ConnectionType = NetworkManager.connectionRQType, ConnectionCallback = (socket, r) => UpdateFileConnection(mutex.path,r, socket, UsersToUpdate, this) };
                     EventBus.Publish(rq);
                 }
-            } 
+            }
+
+            lock (UsersToUpdate)
+            {
+                if (UsersToUpdate.Count == 0)
+                    ReleasMutex(mutex.path);
+            }
+
         }
 
         private static void UpdateFileConnection(string path, byte[] receiver, Socket socket, ArrayList UsersToUpdate, CordinatorRole item)
@@ -483,16 +414,37 @@ namespace ECRU.Utilities
 
                             socket.Send(data);
 
-                            if (UsersToUpdate != null)
-                            {
-                                lock (UsersToUpdate)
-                                {
-                                    UsersToUpdate.Remove(receiver.ToHex());
-                                    if (UsersToUpdate.Count == 0)
-                                        item.ReleasMutex(path);
-                                }
-                            }
+                        }
+                        else
+                        {
+                            int fileLength = 0;
+                            int infoLength = 0;
+                            int pathlen = path.Length;
 
+                            byte[] data = new byte[1 + +2 + pathlen + 2 + fileLength + 2 + infoLength];
+                            data[0] = 0x03;
+
+                            data[1] = (byte)(pathlen >> 8);
+                            data[2] = (byte)(pathlen);
+                            data.Set(path.StringToBytes(), 3);
+
+                            data[1 + pathlen + 2] = (byte)(fileLength >> 8);
+                            data[2 + pathlen + 2] = (byte)(fileLength);
+                            data[fileLength + pathlen + 2 + 3] = (byte)(infoLength >> 8);
+                            data[fileLength + pathlen + 2 + 4] = (byte)(infoLength);
+
+                            socket.Send(data);
+                        }
+
+
+                        if (UsersToUpdate != null)
+                        {
+                            lock (UsersToUpdate)
+                            {
+                                UsersToUpdate.Remove(receiver.ToHex());
+                                if (UsersToUpdate.Count == 0)
+                                    item.ReleasMutex(path);
+                            }
                         }
                 }
                 finally
@@ -586,14 +538,16 @@ namespace ECRU.Utilities
                         if (socket.Available > 8)
                         {
                             byte[] data = new byte[socket.Available];
-                            socket.Receive(data);
-
-                            long version = data.ToLong(0);
-                            string Path = data.GetPart(8, data.Length - 8).GetString();
-
-                            lock (FileState)
+                            if (0 != socket.Receive(data))
                             {
-                                AddINTable(Path, FileState, version, resiver, item);
+
+                                long version = data.ToLong(0);
+                                string Path = data.GetPart(8, data.Length - 8).GetString();
+
+                                lock (FileState)
+                                {
+                                    AddINTable(Path, FileState, version, resiver, item);
+                                }
                             }
 
                         }
@@ -898,12 +852,24 @@ namespace ECRU.Utilities
             public DateTime LockTime { get; set; }
             public Socket AddrHasLock { get; set;  }
 
+            public Status_t Status { get; set; }
+
             public FileMutex(string Path, Socket addr)
             {
                 path = Path;
                 AddrHasLock = addr;
-                LockTime = DateTime.Now; 
+                LockTime = DateTime.Now;
+                Status = Status_t.Free; 
             }
+
+
+            public enum Status_t
+            {
+                Locked,
+                Updating,
+                Free,
+            }
+
         }
 
         class FileState_t

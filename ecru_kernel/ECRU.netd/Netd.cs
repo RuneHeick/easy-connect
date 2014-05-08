@@ -30,17 +30,18 @@ namespace ECRU.netd
         public void LoadConfig(string configFilePath)
         {
             //Network interface configuration
-
-            NetworkInterface networkAdapter = NetworkInterface.GetAllNetworkInterfaces()[0];
-
-            //Setup network configuration (Dynamic DNS/DCHP on ethernet interface)
-            if (networkAdapter == null || networkAdapter.NetworkInterfaceType != NetworkInterfaceType.Ethernet)
-            {
-                Stop();
-            }
-
             try
             {
+
+                NetworkInterface networkAdapter = NetworkInterface.GetAllNetworkInterfaces()[0];
+
+                //Setup network configuration (Dynamic DNS/DCHP on ethernet interface)
+                if (networkAdapter == null || networkAdapter.NetworkInterfaceType != NetworkInterfaceType.Ethernet)
+                {
+                    Stop();
+                }
+
+            
                 var networkConfig = new EthernetConfig {EthernetInterface = networkAdapter, DynamicIP = true};
                 networkConfig.InitNetworkInterface();
                 _ip = networkConfig.EthernetInterface.IPAddress;
@@ -112,6 +113,8 @@ namespace ECRU.netd
                 if (SystemInfo.ConnectedDevices == null) return;
                 SystemInfo.ConnectedDevices.MacAdded -= MacSync.MacSync.GotDevice;
                 SystemInfo.ConnectedDevices.MacRemoved -= MacSync.MacSync.LostDevice;
+
+                EventBus.Publish(new NetworkStatusMessage { isinsync = true, NetState = "000000000000" });
             }
             catch (Exception exception)
             {
