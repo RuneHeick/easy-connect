@@ -16,7 +16,7 @@ namespace ECRU
 
         private static Thread mainThread;
 
-        private static int state;
+        private static int state = 1;
         private static event SystemInfoChanged systemInfoChanged;
 
         /// <summary>
@@ -45,6 +45,8 @@ namespace ECRU
                     case 1: //Load System Information state
                         SystemInfo.LoadConfig("SysInfoConfig.cfg");
                         SystemInfo.Start();
+                        _bleModule.LoadConfig("");
+                        _bleModule.Start();
                         break;
 
                     case 2: //System Configuration state
