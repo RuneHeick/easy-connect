@@ -221,7 +221,7 @@ namespace ECRU.netd
 
         private static void UpdateNetstate()
         {
-            lock (_lockNetstate)
+            lock (_netstateIPListLock)
             {
                 string data = null;
                 netstateIPList = netstateIPList.Quicksort(0, (netstateIPList.Length - 1));
