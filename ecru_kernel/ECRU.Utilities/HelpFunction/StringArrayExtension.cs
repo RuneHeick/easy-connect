@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 
 namespace ECRU.Utilities.HelpFunction
 {
@@ -71,6 +72,31 @@ namespace ECRU.Utilities.HelpFunction
             newElements[elements.Length] = element;
 
             return newElements;
+        }
+
+
+        public static void AddUniqueSort(this ArrayList elements, string element)
+        {
+            if(!elements.Contains(element))
+            {
+               var isAdded = false; 
+               for(int i = 0; i<elements.Count; i++)
+               {
+                   string s = elements[i] as string;
+                   if (0 > String.Compare(s, element))
+                   {
+                       elements.Insert(i, element);
+                       isAdded = true;
+                       break; 
+                   }
+               }
+
+               if(isAdded == false)
+               {
+                   elements.Add(element);
+               }
+            }
+
         }
 
         //Remove element

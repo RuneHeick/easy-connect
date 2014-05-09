@@ -554,6 +554,10 @@ namespace ECRU.Utilities
                         }
                     }
                 }
+                catch
+                {
+                  
+                }
                 finally
                 {
                     if (socket != null)

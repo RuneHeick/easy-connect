@@ -14,7 +14,7 @@ namespace ECRU.netd
     public static class NetworkTable
     {
         private static readonly Hashtable Neighbours = new Hashtable();
-        private static string[] netstateIPList;
+        private static ArrayList netstateIPList = new ArrayList();
 
         private static String _PublishedNetstate = "";
         public static String _netstate { get; private set; }
@@ -58,7 +58,7 @@ namespace ECRU.netd
                     Neighbours[neighbour.Mac] = neighbour;
 
                     //Update netstate ip list
-                    netstateIPList = netstateIPList.Add(neighbour.IP.ToString());
+                    netstateIPList.AddUniqueSort(neighbour.IP.ToString());
 
                     //Call event
                     Debug.Print("Added neighbour: " + neighbour.IP);
@@ -88,8 +88,8 @@ namespace ECRU.netd
                     if (!Equals(neb.IP, neighbour.IP))
                     {
                         //if ip not identical - device ip has to be added to the table
-                        netstateIPList = netstateIPList.Remove(neb.IP.ToString());
-                        netstateIPList = netstateIPList.Add(neighbour.IP.ToString());
+                        netstateIPList.Remove(neb.IP.ToString());
+                        netstateIPList.AddUniqueSort(neighbour.IP.ToString());
 
                         //Update netstate to reflect changes
                         networkStatus();
@@ -133,7 +133,7 @@ namespace ECRU.netd
                 Neighbours.Remove(neighbour.Mac);
 
                 //Update netstate ip list
-                netstateIPList = netstateIPList.Remove(neighbour.IP.ToString());
+                netstateIPList.Remove(neighbour.IP.ToString());
 
                 //Call Event
                 Debug.Print("Removed neighbour: " + neighbour.IP + "                                         Waring");
@@ -146,9 +146,9 @@ namespace ECRU.netd
 
         public static void UpdateNetworkTableEntry(IPAddress ipAddress, string mac, string netstate)
         {
-            if (netstateIPList == null)
+            if (netstateIPList.Count == 0)
             {
-                netstateIPList = new[] {SetLocalIP};
+                netstateIPList.AddUniqueSort(SetLocalIP);
             }
 
             var neighbour = new Neighbour(mac);
@@ -223,8 +223,7 @@ namespace ECRU.netd
         {
             lock (_netstateIPListLock)
             {
-                string data = null;
-                netstateIPList = netstateIPList.Quicksort(0, (netstateIPList.Length - 1));
+                string data = "";
 
                 foreach (string s in netstateIPList)
                 {
