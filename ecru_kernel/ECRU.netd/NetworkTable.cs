@@ -22,6 +22,7 @@ namespace ECRU.netd
 
         private static readonly object Lock = new object();
         private static readonly object _lockNetstate = new object();
+        private static readonly object _netstateIPListLock = new object();
 
         static NetworkTable()
         {
@@ -79,40 +80,44 @@ namespace ECRU.netd
 
         private static void Add(Neighbour neighbour)
         {
-            if (!Neighbours.Contains(neighbour.Mac))
+            lock (_netstateIPListLock)
             {
-                //Add unit
-                Neighbours[neighbour.Mac] = neighbour;
 
-                //Update netstate ip list
-                netstateIPList = netstateIPList.Add(neighbour.IP.ToString());
-
-                //Call event
-                if (AddUnit != null)
-                    AddUnit(neighbour);
-            }
-            else
-            {
-                var neb = Neighbours[neighbour.Mac] as Neighbour;
-
-                if (neb == null) return;
-
-                //overwrite unit
-                Neighbours.Remove(neb.Mac);
-                Neighbours[neighbour.Mac] = neighbour;
-
-                if (!Equals(neb.IP, neighbour.IP))
+                if (!Neighbours.Contains(neighbour.Mac))
                 {
-                    //if ip not identical - device ip has to be added to the table
-                    netstateIPList = netstateIPList.Remove(neb.IP.ToString());
+                    //Add unit
+                    Neighbours[neighbour.Mac] = neighbour;
+
+                    //Update netstate ip list
                     netstateIPList = netstateIPList.Add(neighbour.IP.ToString());
 
-                    //Update netstate to reflect changes
-                    networkStatus();
+                    //Call event
+                    if (AddUnit != null)
+                        AddUnit(neighbour);
                 }
-                else if (neb.Netstate != neighbour.Netstate)
+                else
                 {
-                    networkStatus();
+                    var neb = Neighbours[neighbour.Mac] as Neighbour;
+
+                    if (neb == null) return;
+
+                    //overwrite unit
+                    Neighbours.Remove(neb.Mac);
+                    Neighbours[neighbour.Mac] = neighbour;
+
+                    if (!Equals(neb.IP, neighbour.IP))
+                    {
+                        //if ip not identical - device ip has to be added to the table
+                        netstateIPList = netstateIPList.Remove(neb.IP.ToString());
+                        netstateIPList = netstateIPList.Add(neighbour.IP.ToString());
+
+                        //Update netstate to reflect changes
+                        networkStatus();
+                    }
+                    else if (neb.Netstate != neighbour.Netstate)
+                    {
+                        networkStatus();
+                    }
                 }
             }
         }
@@ -142,15 +147,18 @@ namespace ECRU.netd
 
         private static void Remove(Neighbour neighbour)
         {
-            //Remove unit
-            Neighbours.Remove(neighbour.Mac);
+            lock (_netstateIPListLock)
+            {
+                //Remove unit
+                Neighbours.Remove(neighbour.Mac);
 
-            //Update netstate ip list
-            netstateIPList = netstateIPList.Remove(neighbour.IP.ToString());
+                //Update netstate ip list
+                netstateIPList = netstateIPList.Remove(neighbour.IP.ToString());
 
-            //Call Event
-            if (RemovedUnit != null)
-                RemovedUnit(neighbour);
+                //Call Event
+                if (RemovedUnit != null)
+                    RemovedUnit(neighbour);
+            }
         }
 
         public static void UpdateNetworkTableEntry(IPAddress ipAddress, string mac, string netstate)
