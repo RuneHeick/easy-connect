@@ -12,7 +12,7 @@ namespace ECRU.Utilities.HelpFunction
 
 
             int i = left, j = right;
-            IComparable pivot = sortedElements[(left + right)/2];
+            string pivot = sortedElements[(left + right)/2];
 
             while (i <= j)
             {
