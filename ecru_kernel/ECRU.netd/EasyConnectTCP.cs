@@ -112,7 +112,7 @@ namespace ECRU.netd
                         if (bytesReceived == availableBytes)
                         {
                             waitingForData = false;
-                            var timer = new ECTimer(ConnectionTimeout, connection, 60000, Timeout.Infinite);
+                            var timer = new ECTimer(ConnectionTimeout, connection, 30000, Timeout.Infinite);
                             timer.Start();
 
 
@@ -182,7 +182,7 @@ namespace ECRU.netd
                 }
                 catch (SocketException se)
                 {
-                    Thread.Sleep(100);
+                    Thread.Sleep(500);
                 }
                 
 
@@ -272,6 +272,10 @@ namespace ECRU.netd
                 try
                 {
                     con.Send("Not Accepted".StringToBytes());
+                }
+                catch
+                {
+                    
                 }
                 finally
                 {
