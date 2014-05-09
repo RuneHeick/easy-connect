@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Net;
 using System.Net.Sockets;
+using System.Reflection;
 using System.Threading;
 using ECRU.Utilities;
 using ECRU.Utilities.HelpFunction;
@@ -171,15 +172,38 @@ namespace ECRU.netd
                 send = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
 
                 var destination = new IPEndPoint(ip, Port);
+                Type sType = Type.GetType("System.Net.Sockets.Socket");
+                FieldInfo blockingInfo = sType.GetField("m_fBlocking", BindingFlags.NonPublic | BindingFlags.Instance);
+                blockingInfo.SetValue(send, false);
 
-                send.Connect(destination);
+                try
+                {
+                    send.Connect(destination);
+                }
+                catch (SocketException se)
+                {
+                    Thread.Sleep(100);
+                }
+                
+
 
                 Debug.Print("Socket information: remote-" + send.RemoteEndPoint + " local-" + send.LocalEndPoint +
                             " timeout-" + send.ReceiveTimeout);
 
                 int length = msg.ConnectionType.StringToBytes().Length;
 
-                int bytesSent = send.Send(msg.ConnectionType.StringToBytes());
+                int bytesSent = 0;
+                
+                try
+                {
+                    bytesSent = send.Send(msg.ConnectionType.StringToBytes());
+                }
+                catch (Exception se)
+                {
+                    new Thread(() => msg.ConnectionCallback(null, msg.Receiver)).Start();
+                    return;
+                }
+                
 
                 if (bytesSent == length)
                 {
