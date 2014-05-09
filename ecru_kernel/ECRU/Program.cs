@@ -3,6 +3,7 @@ using System.Threading;
 using ECRU.BLEController;
 using ECRU.netd;
 using ECRU.Utilities;
+using ECRU.Utilities.HelpFunction;
 
 namespace ECRU
 {
@@ -52,6 +53,8 @@ namespace ECRU
                     case 1: //Load System Information state
                         SystemInfo.LoadConfig("SysInfoConfig.cfg");
                         SystemInfo.Start();
+                        SystemInfo.ConnectedDevices.Add("E68170E5C578".FromHex());
+                        SystemInfo.ConnectedDevices.Add("F83A228CBA1C".FromHex());
                         break;
 
                     case 2: //System Configuration state
@@ -69,8 +72,8 @@ namespace ECRU
                 else if(currentState == 3) // test
                 {
                     Thread.Sleep(60000);
-                    FileBase file = null; 
-                    if(FileSystem.Exists("Rune.txt",FileType.Shared))
+                    FileBase file = null;
+                    if (FileSystem.Exists("Rune.txt", FileType.Shared))
                     {
                         file = FileSystem.GetFile("Rune.txt", FileAccess.ReadWrite, FileType.Shared);
                     }
@@ -124,8 +127,7 @@ namespace ECRU
 
             //(new BLEModule()).Start();
 
-            //SystemInfo.ConnectedDevices.Add("E68170E5C578".FromHex());
-            //SystemInfo.ConnectedDevices.Add("F83A228CBA1C".FromHex());
+           
         }
 
         private static void StateSwitch(Byte[] sysMac, string name, string passCode)
