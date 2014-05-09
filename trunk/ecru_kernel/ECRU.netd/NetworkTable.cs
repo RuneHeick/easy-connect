@@ -218,7 +218,7 @@ namespace ECRU.netd
             return timeDifference.Ticks <= (TimeSpan.TicksPerSecond*MaxLastSeenTimeSeconds);
         }
 
-
+        
         private static void UpdateNetstate()
         {
             lock (_netstateIPListLock)
