@@ -189,7 +189,7 @@ namespace ECRU.netd
 
                 Debug.Print("Socket information: remote-" + send.RemoteEndPoint + " local-" + send.LocalEndPoint +
                             " timeout-" + send.ReceiveTimeout);
-                send.SendTimeout = 2000;
+                send.SendTimeout = 20000;
 
                 int length = msg.ConnectionType.StringToBytes().Length;
 
