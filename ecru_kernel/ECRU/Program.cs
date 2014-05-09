@@ -27,7 +27,7 @@ namespace ECRU
             //Debug.EnableGCMessages(true);
 
             // write your code here
-            //Thread.Sleep(5000);
+            Thread.Sleep(5000);
 
 
             //State 1 Load SystemInfo configuration
