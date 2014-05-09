@@ -32,7 +32,7 @@ namespace ECRU.netd
 
         public static int MaxLastSeenTimeSeconds
         {
-            get { return NetworkDiscovery.BroadcastIntrevalSeconds*5; }
+            get { return NetworkDiscovery.BroadcastIntrevalSeconds*3; }
         }
 
         public static string SetLocalIP { get; set; }

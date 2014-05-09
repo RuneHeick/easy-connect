@@ -37,7 +37,7 @@ namespace ECRU.netd
 
         public static void Start()
         {
-            BroadcastIntrevalSeconds = 5;
+            BroadcastIntrevalSeconds = 30;
 
             //Subscribe to network state changes
             NetworkTable.NetstateChanged += UpdateBroadcastMessage;
