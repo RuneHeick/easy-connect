@@ -85,6 +85,11 @@ namespace ECRU.netd
             {
                 NetworkTable.CheckTable();
 
+                if (NetworkTable._netstate != null)
+                {
+                    Array.Copy(NetworkTable._netstate.StringToBytes(), 0, _broadcastMessage, 6, NetworkTable._netstate.StringToBytes().Length);
+                }
+
                 try
                 {
                     EventBus.Publish(new SendBroadcastMessage
@@ -106,7 +111,7 @@ namespace ECRU.netd
         private static void UpdateBroadcastMessage(string netstate)
         {
             Array.Copy(SystemInfo.SystemMAC, _broadcastMessage, SystemInfo.SystemMAC.Length);
-            Array.Copy(netstate.StringToBytes(), 0, _broadcastMessage, 6, netstate.StringToBytes().Length);
+            Array.Copy(NetworkTable._netstate.StringToBytes(), 0, _broadcastMessage, 6, NetworkTable._netstate.StringToBytes().Length);
             Debug.Print("Broadcast Message Updated: " + _broadcastMessage);
         }
     }

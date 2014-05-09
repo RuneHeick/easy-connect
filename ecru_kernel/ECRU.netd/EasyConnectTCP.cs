@@ -189,6 +189,7 @@ namespace ECRU.netd
 
                 Debug.Print("Socket information: remote-" + send.RemoteEndPoint + " local-" + send.LocalEndPoint +
                             " timeout-" + send.ReceiveTimeout);
+                send.SendTimeout = 2000;
 
                 int length = msg.ConnectionType.StringToBytes().Length;
 
@@ -237,6 +238,10 @@ namespace ECRU.netd
                             waitingForData = false;
                         }
                     }
+                }
+                else
+                {
+                    new Thread(() => msg.ConnectionCallback(null, msg.Receiver)).Start();
                 }
             }
             catch (TimeOutException exception)
