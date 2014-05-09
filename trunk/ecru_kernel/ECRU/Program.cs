@@ -66,6 +66,26 @@ namespace ECRU
                         break;
                 }
                 }
+                else if(currentState == 3) // test
+                {
+                    Thread.Sleep(60000);
+                    FileBase file = null; 
+                    if(FileSystem.Exists("Rune.txt",FileType.Shared))
+                    {
+                        file = FileSystem.GetFile("Rune.txt", FileAccess.ReadWrite, FileType.Shared);
+                    }
+                    else
+                    {
+                        file = FileSystem.CreateFile("Rune.txt", FileType.Shared);
+                    }
+
+                    if (file != null)
+                    {
+                        file.Data = new byte[] { (byte)'A' };
+                        file.Close();
+                    }
+
+                }
                 else
                 {
                     mainThread.Suspend();
