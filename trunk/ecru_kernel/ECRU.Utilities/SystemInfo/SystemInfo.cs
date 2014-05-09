@@ -107,9 +107,9 @@ namespace ECRU.Utilities
                     else
                     {
                         systemConfigFile = new ConfigFile(FileSystem.CreateFile(configFilePath, FileType.Local));
-                        systemConfigFile["SystemMAC"] = null;
-                        systemConfigFile["Name"] = null;
-                        systemConfigFile["PassCode"] = null;
+                        systemConfigFile["SystemMAC"] = "";
+                        systemConfigFile["Name"] = "";
+                        systemConfigFile["PassCode"] = "";
                     }
                 }
                 finally
