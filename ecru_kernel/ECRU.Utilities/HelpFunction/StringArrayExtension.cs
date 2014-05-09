@@ -16,12 +16,12 @@ namespace ECRU.Utilities.HelpFunction
 
             while (i <= j)
             {
-                while (sortedElements[i].CompareTo(pivot) < 0)
+                while (string.Compare(sortedElements[i], pivot) < 0)
                 {
                     i++;
                 }
 
-                while (sortedElements[j].CompareTo(pivot) > 0)
+                while (string.Compare(sortedElements[j], pivot) > 0)
                 {
                     j--;
                 }
