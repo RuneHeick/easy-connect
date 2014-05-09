@@ -3,7 +3,9 @@ package iha.bachelor.smo.aba.rah.easyconnect_v3;
 import iha.bachelor.smo.aba.rah.easyconnect_v3.adapter.ExpandableListModuleAdapter;
 import iha.bachelor.smo.aba.rah.easyconnect_v3.adapter.ModuleInfoParser;
 import iha.bachelor.smo.aba.rah.easyconnect_v3.contentprovider.FileHandler;
+import iha.bachelor.smo.aba.rah.easyconnect_v3.model.Characteristic;
 import iha.bachelor.smo.aba.rah.easyconnect_v3.model.ModuleInfo;
+import iha.bachelor.smo.aba.rah.easyconnect_v3.model.Service;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -20,8 +22,8 @@ import android.widget.ExpandableListView;
 
 public class ModuleFragment extends Fragment {
 	private final String LOG_TAG = "ModuleFragment";
-	List<String> ServiceNameList;
-	Map<String, List<String>> CharacteristicsCollection;
+	List<Service> ServiceNameList;
+    Map<Service, List<Characteristic>> CharacteristicsCollection;
 	ExpandableListView expListView;
 
 	
@@ -30,14 +32,12 @@ public class ModuleFragment extends Fragment {
 		View rootView = inflater.inflate(R.layout.fragment_module, container, false);
 		
 		Log.i(LOG_TAG, "OnCreateView called");
-		/**************************/
 		Bundle extras = getArguments();
 		if (extras != null) {
 	    	String temp = extras.getString("module");
 	    	createREALCollection(temp);
 	    }
 		
-		/**************************/
 		
 		expListView = (ExpandableListView) rootView.findViewById(R.id.service_list);
 		final ExpandableListModuleAdapter expListAdapter = new ExpandableListModuleAdapter(getActivity(), ServiceNameList, CharacteristicsCollection);
@@ -47,22 +47,19 @@ public class ModuleFragment extends Fragment {
 	}
 	
 	private void createREALCollection(String fileName){
-		ModuleInfo testMI = ModuleInfoParser.ByteToInfo(ReadFileFromSDCard("EC_CONNECT",FileHandler.NET_DIR, fileName+".BLE"));
+		ModuleInfo testMI = ModuleInfoParser.ByteToInfo(ReadFileFromSDCard("EC_CONNECT",FileHandler.MODULE_DIR, fileName+".BLE"));
 		Log.i(LOG_TAG, testMI.toString());
-		ServiceNameList = new ArrayList<String>();
-		CharacteristicsCollection = new LinkedHashMap<String, List<String>>();
+		ServiceNameList = new ArrayList<Service>();
+		CharacteristicsCollection = new LinkedHashMap<Service, List<Characteristic>>();
 		
-		for (String s : testMI.getServiceNames()){
+		for (Service s : testMI.ServiceList){
 			ServiceNameList.add(s);
-			CharacteristicsCollection.put(s, testMI.getCharacteristicNames(s));
-		
-			
+			CharacteristicsCollection.put(s, s._characteristicList);
         }
 	}
 	
 	public byte[] ReadFileFromSDCard(String ProfileName, String fileType, String FileName){
-		FileHandler fh = new FileHandler();
-		byte[] s = fh.ReadBytesFromFile(getActivity(), ProfileName, fileType, FileName);
+		byte[] s = FileHandler.ReadBytesFromFile(getActivity(), ProfileName, fileType, FileName);
 		return s;
 	}
 	
