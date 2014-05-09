@@ -2,19 +2,13 @@ package iha.bachelor.smo.aba.rah.easyconnect_v3;
 
 import iha.bachelor.smo.aba.rah.easyconnect_v3.adapter.NavDrawerListAdapter;
 import iha.bachelor.smo.aba.rah.easyconnect_v3.model.NavDrawerItem;
-import iha.bachelor.smo.aba.rah.easyconnect_v3.service.NetworkService;
-import iha.bachelor.smo.aba.rah.easyconnect_v3.service.NetworkService.ServiceBinder;
-
 import java.util.ArrayList;
 
 import android.os.Bundle;
-import android.os.IBinder;
 import android.app.Activity;
 import android.app.Fragment;
 import android.app.FragmentManager;
-import android.content.ComponentName;
 import android.content.Intent;
-import android.content.ServiceConnection;
 import android.content.res.Configuration;
 import android.content.res.TypedArray;
 import android.support.v4.app.ActionBarDrawerToggle;
@@ -47,11 +41,8 @@ public class MainActivity extends Activity {
 	
 	private ArrayList<NavDrawerItem> navDrawerItems;
 	private NavDrawerListAdapter adapter;
-	
-	//NetworkServiceConnection
-	private boolean networkConnected;
-	private static NetworkService networkAccess;
-	private FunctionListThread funcListThread;
+
+
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -138,46 +129,7 @@ public class MainActivity extends Activity {
 			// displayView(0);
 		}
 		mDrawerList.setOnItemClickListener(new SlideMenuClickListener());
-		
-		funcListThread = new FunctionListThread();
-		funcListThread.start();
 	}
-
-	@Override
-	public void onStart(){
-		super.onStart();
-		Intent serviceIntent = new Intent(this, NetworkService.class);
-		bindService(serviceIntent, NetworkConnection, 0);
-	}
-	
-	@Override
-	public void onStop(){
-		super.onStop();
-		if (networkConnected){
-			unbindService(NetworkConnection);
-		}
-	}
-
-	ServiceConnection NetworkConnection = new ServiceConnection(){
-
-		@Override
-		public void onServiceConnected(ComponentName arg0, IBinder arg1) {
-			// TODO Auto-generated method stub
-			Log.i(LOG_TAG, "bound to networkService");
-			ServiceBinder tempBinder = (ServiceBinder) arg1;
-			networkAccess = tempBinder.getService();
-			networkConnected = true;
-		}
-
-		@Override
-		public void onServiceDisconnected(ComponentName arg0) {
-			// TODO Auto-generated method stub
-			Log.i(LOG_TAG, "Connection to NetworkService terminated");
-			networkAccess = null;
-			networkConnected = false;
-		}
-		
-	};
 	
 	/**
 	 * Slide menu item click listener
@@ -323,35 +275,6 @@ public class MainActivity extends Activity {
 		Intent done = new Intent(this, MainActivity.class);
 		done.putExtra("TargetFragment", LoaderActivity.PROFILE_LIST);
 	    startActivity(done);
-	}
-	
-	private static class FunctionListThread extends Thread {
-		private boolean threadRunning;
-
-		@Override
-		public void run() {
-			threadRunning = true;
-			while (threadRunning){
-				try {
-					Thread.sleep(5000);
-					threadRunning = false;
-				} catch (InterruptedException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-			}
-		}
-		
-		public void close(){
-			threadRunning = false;
-		}
-	}
-
-	@Override
-	protected void onDestroy() {
-		// TODO Auto-generated method stub
-		super.onDestroy();
-		funcListThread.close();
 	}
 	
 }

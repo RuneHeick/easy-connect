@@ -9,8 +9,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.google.gson.Gson;
-
 import android.app.Fragment;
 import android.os.Bundle;
 import android.util.Log;
@@ -69,36 +67,29 @@ public class ModuleListFragment extends Fragment{
 		ECRU ru = new ECRU("A4B627FE2F7A");
 		ru.insertModuleMac("E68170E5C578");
 		ru.insertModuleMac("F83A228CBA1C");
+		ru.insertModuleMac("ECEC10100101");
 		fl.addECRU(ru);
-		writeFileToSDCard("EC_CONNECT", FileHandler.NET_DIR, "FunctionList.txt", EncodeGSoN(fl));
+		FileHandler.writeToFile(
+				getActivity(),
+				"EC_CONNECT",
+				FileHandler.NET_DIR,
+				"FunctionList.txt",
+				FileHandler.EncodeGSoN(fl));
+		
 		return null;
 	}
 
-	public String EncodeGSoN(Object m){
-		Gson gson = new Gson();
-		return gson.toJson(m);
-	}
-	
-	public FunctionList DecodeGSoNFunctionList(String s){
-		Gson gson = new Gson();
-		return gson.fromJson(s, FunctionList.class);
-	}
-	
-
 	public void writeFileToSDCard(String ProfileName, String fileType, String fileName, String GSoNString){
-		FileHandler fh = new FileHandler();
-		fh.writeToFile(getActivity(), ProfileName, fileType, fileName, GSoNString);
-	}
-	
-	public String ReadFileFromSDCard(String ProfileName, String fileType, String FileName){
-		FileHandler fh = new FileHandler();
-		String s = fh.ReadStringFromFile(getActivity(), ProfileName, fileType, FileName);
-		return s;
+		FileHandler.writeToFile(getActivity(), ProfileName, fileType, fileName, GSoNString);
 	}
 
 	private void createREALCollection(){
-        FunctionList testFL = DecodeGSoNFunctionList(
-        		ReadFileFromSDCard("EC_CONNECT",FileHandler.NET_DIR,"FunctionList.txt"));
+        FunctionList testFL = FileHandler.DecodeGSoNFunctionList(
+        		FileHandler.ReadStringFromFile(
+        				getActivity(),
+        				"EC_CONNECT",
+        				FileHandler.NET_DIR,
+        				"FunctionList.txt"));
         groupList = new ArrayList<String>();
         roomUnitCollection = new LinkedHashMap<String, List<String>>();
 

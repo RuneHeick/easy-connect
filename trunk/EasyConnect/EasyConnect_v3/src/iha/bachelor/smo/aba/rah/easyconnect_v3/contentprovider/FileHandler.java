@@ -1,5 +1,8 @@
 package iha.bachelor.smo.aba.rah.easyconnect_v3.contentprovider;
 
+import iha.bachelor.smo.aba.rah.easyconnect_v3.model.ECRU;
+import iha.bachelor.smo.aba.rah.easyconnect_v3.model.FunctionList;
+
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.File;
@@ -9,6 +12,8 @@ import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintWriter;
+
+import com.google.gson.Gson;
 
 import android.content.Context;
 import android.os.Environment;
@@ -42,7 +47,7 @@ public class FileHandler {
 		}
 	}
 	
-	public void writeToFile(Context context,String CurrentProfile, String DirType, String FileName, byte[] bytes){
+	public static void writeToFile(Context context,String CurrentProfile, String DirType, String FileName, byte[] bytes){
 		File StorageDir = getStorageDir(context, CurrentProfile, DirType);
 		File myFile = new File(StorageDir, FileName);
 		
@@ -60,7 +65,7 @@ public class FileHandler {
 	    }
 	}
 	
-	public void writeToFile(Context context,String CurrentProfile, String DirType, String FileName, String Text){
+	public static void writeToFile(Context context,String CurrentProfile, String DirType, String FileName, String Text){
 		File StorageDir = getStorageDir(context, CurrentProfile, DirType);
 		File myFile = new File(StorageDir, FileName);
 		
@@ -77,7 +82,7 @@ public class FileHandler {
 	    }
 	}
 	
-	public String ReadStringFromFile(Context context,String CurrentProfile, String DirType, String FileName){
+	public static String ReadStringFromFile(Context context,String CurrentProfile, String DirType, String FileName){
 		File StorageDir = getStorageDir(context, CurrentProfile, DirType);
 		File myFile = new File(StorageDir, FileName);
 		
@@ -101,7 +106,7 @@ public class FileHandler {
 		return text.toString();
 	}
 	
-	public byte[] ReadBytesFromFile(Context context,String CurrentProfile, String DirType, String FileName){
+	public static byte[] ReadBytesFromFile(Context context,String CurrentProfile, String DirType, String FileName){
 		File StorageDir = getStorageDir(context, CurrentProfile, DirType);
 		File file = new File(StorageDir, FileName);
 	    int size = (int) file.length();
@@ -123,7 +128,7 @@ public class FileHandler {
 		return bytes;
 	}
 	
-	public File getStorageDir(Context context,String CurrentProfile, String dir) {
+	public static File getStorageDir(Context context,String CurrentProfile, String dir) {
 	    // Get the directory for the app's private pictures directory. 
 		if (isExternalStorageWritable()  && isExternalStorageReadable()){
 			File file = new File(context.getExternalFilesDir(CurrentProfile), dir);
@@ -139,7 +144,7 @@ public class FileHandler {
 	}
 	
 	/* Checks if external storage is available for read and write */
-	public boolean isExternalStorageWritable() {
+	public static boolean isExternalStorageWritable() {
 	    String state = Environment.getExternalStorageState();
 	    if (Environment.MEDIA_MOUNTED.equals(state)) {
 	    	Log.i(LOG_TAG + ": isExternalStorageWritable", "External storage is writeable");
@@ -150,7 +155,7 @@ public class FileHandler {
 	}
 
 	/* Checks if external storage is available to at least read */
-	public boolean isExternalStorageReadable() {
+	public static boolean isExternalStorageReadable() {
 	    String state = Environment.getExternalStorageState();
 	    if (Environment.MEDIA_MOUNTED.equals(state) ||
 	        Environment.MEDIA_MOUNTED_READ_ONLY.equals(state)) {
@@ -161,4 +166,18 @@ public class FileHandler {
 	    return false;
 	}
 	
+	public static String EncodeGSoN(Object m){
+		Gson gson = new Gson();
+		return gson.toJson(m);
+	}
+	
+	public static FunctionList DecodeGSoNFunctionList(String s){
+		Gson gson = new Gson();
+		return gson.fromJson(s, FunctionList.class);
+	}
+	
+	public static ECRU DecodeGsonEcru(String s){
+		Gson gson = new Gson();
+		return gson.fromJson(s, ECRU.class);
+	}
 }

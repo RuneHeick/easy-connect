@@ -8,6 +8,7 @@
 	<string name="add_module">Add Module Fragment</string>
 	<string name="module_list">Module List Fragment</string>
 	<string name="setup_room_unit">Setup Room Unit Fragment</string>
+	<string name="characteristic_value_hint">Characteristic value</string>
 	
     <!-- Nav Drawer Menu Items -->
     <string-array name="nav_drawer_items">
