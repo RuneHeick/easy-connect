@@ -20,7 +20,7 @@ public class FunctionList {
 		return roomUnitMacAddress;
 	}
 	
-	public ArrayList<String> getECRUNames(){
+	public ArrayList<String> getECRUMacs(){
 		ArrayList<String> temp = new ArrayList<String>();
 		for (ECRU e : ECRUList){
 			temp.add(e.mac);

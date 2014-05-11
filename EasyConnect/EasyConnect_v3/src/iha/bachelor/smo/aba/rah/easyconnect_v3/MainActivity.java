@@ -22,7 +22,7 @@ import android.widget.ListView;
 
 public class MainActivity extends Activity {
 	private static final String LOG_TAG = "MainActivity"; 
-
+	public static String CurrentProfileName;
 	private Fragment fragment;
 	
 	private DrawerLayout mDrawerLayout;
@@ -49,7 +49,7 @@ public class MainActivity extends Activity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
 		Log.i(LOG_TAG, "made it to OnCreate()");
-		
+
 		// code to select current fragment
 		Bundle extras = getIntent().getExtras();
 		if (extras != null) {
@@ -62,9 +62,11 @@ public class MainActivity extends Activity {
 					fragment = new CreateProfileFragment();
 					break;
 				case LoaderActivity.MODULE_LIST:
+					CurrentProfileName = (String) extras.get("CurrentProfile");
 					fragment = new ModuleListFragment();
 					break;
 				case LoaderActivity.PROFILE_LIST:
+					CurrentProfileName = (String) extras.get("CurrentProfile");
 					fragment = new ProfileListFragment();
 					break;
 				default:

@@ -2,6 +2,7 @@ package iha.bachelor.smo.aba.rah.easyconnect_v3.contentprovider;
 
 import iha.bachelor.smo.aba.rah.easyconnect_v3.model.ECRU;
 import iha.bachelor.smo.aba.rah.easyconnect_v3.model.FunctionList;
+import iha.bachelor.smo.aba.rah.easyconnect_v3.model.RoutingTable;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
@@ -23,6 +24,8 @@ public class FileHandler {
 	private final static String LOG_TAG = "FileHandler";
 	public final static String MODULE_DIR = "modules";
 	public final static String FUNCTIONS_LIST_DIR = "functionsList";
+	public final static String FUNCTIONS_LIST_FILENAME = "FunctionsList.txt";
+	public final static String ROUTING_TABLE_DIR = "routingTable";
 	public final static String NET_DIR = "net";
 	
 	public FileHandler(){
@@ -179,5 +182,10 @@ public class FileHandler {
 	public static ECRU DecodeGsonEcru(String s){
 		Gson gson = new Gson();
 		return gson.fromJson(s, ECRU.class);
+	}
+	
+	public static RoutingTable DecodeGsonRoutingTable(String s){
+		Gson gson = new Gson();
+		return gson.fromJson(s, RoutingTable.class);
 	}
 }
