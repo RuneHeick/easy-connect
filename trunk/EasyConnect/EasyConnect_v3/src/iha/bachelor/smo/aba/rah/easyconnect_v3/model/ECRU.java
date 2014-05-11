@@ -10,10 +10,11 @@ import android.util.Log;
 public class ECRU {
 	private static final String LOG_TAG = "ECRU class";
 	public String mac;
+	public String Name;
 	public List<String> Devices = new ArrayList<String>();
 	
-	public ECRU(String name){
-		mac = name;
+	public ECRU(String Mac){
+		mac = Mac;
 		Log.i(LOG_TAG,"ConstructerCalled");
 	}
 	

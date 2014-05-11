@@ -15,6 +15,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseExpandableListAdapter;
+import android.widget.EditText;
 import android.widget.SeekBar;
 import android.widget.TextView;
  
@@ -86,9 +87,6 @@ public class ExpandableListModuleAdapter extends BaseExpandableListAdapter {
 		LayoutInflater inflater = context.getLayoutInflater();
         
 		switch (tempChar._gUIFormat.Value[1]){
-			case 1:
-				//lable needs to be implemented
-				break;
 			case 2:
 				convertView = inflater.inflate(R.drawable.characteristic_textbox, null);
 				break;
@@ -99,24 +97,31 @@ public class ExpandableListModuleAdapter extends BaseExpandableListAdapter {
 					seeker.setMax(tempChar._range.Value[1]);
 				}
 				break;
-			case 4:
-				//List needs to be implemented
-				break;
 			case 5:
 				convertView = inflater.inflate(R.drawable.characteristic_checkbox, null);
 				break;
-			case 6:
-				//Time needs to be implemented
-				break;
-			case 7:
-				//Date needs to be implemented
-				break;
-			case 8:
-				// time/Date needs to be implemented
-				break;
 			default:
 				convertView = inflater.inflate(R.drawable.characteristic_textbox, null);
+				EditText edittext = (EditText) convertView.findViewById(R.id.EditText);
+				edittext.clearFocus();
 				break;
+//			case 1:
+//				//lable needs to be implemented
+//				break;
+//			case 4:
+//				//List needs to be implemented
+//				break;
+//			
+//			case 6:
+//				//Time needs to be implemented
+//				break;
+//			case 7:
+//				//Date needs to be implemented
+//				break;
+//			case 8:
+//				// time/Date needs to be implemented
+//				break;
+			
 		}
         
         TextView item = (TextView) convertView.findViewById(R.id.UserDescription);

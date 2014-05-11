@@ -4,6 +4,9 @@ import iha.bachelor.smo.aba.rah.easyconnect_v3.adapter.ExpandableListAdapter;
 import iha.bachelor.smo.aba.rah.easyconnect_v3.contentprovider.FileHandler;
 import iha.bachelor.smo.aba.rah.easyconnect_v3.model.ECRU;
 import iha.bachelor.smo.aba.rah.easyconnect_v3.model.FunctionList;
+import iha.bachelor.smo.aba.rah.easyconnect_v3.model.RoutingTable;
+import iha.bachelor.smo.aba.rah.easyconnect_v3.model.UnitAdress;
+
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -34,7 +37,7 @@ public class ModuleListFragment extends Fragment{
 		if (savedInstanceState != null){
 			return rootView;
 		}
-		createTestFunctionList();
+		//createTestFunctionList();
 		createREALCollection();
 		
 		expListView = (ExpandableListView) rootView.findViewById(R.id.function_list);
@@ -63,7 +66,7 @@ public class ModuleListFragment extends Fragment{
     }
 
 	public FunctionList createTestFunctionList(){
-		FunctionList fl = new FunctionList("FunctionList");
+		FunctionList fl =  new FunctionList("test");
 		ECRU ru = new ECRU("A4B627FE2F7A");
 		ru.insertModuleMac("E68170E5C578");
 		ru.insertModuleMac("F83A228CBA1C");
@@ -71,9 +74,9 @@ public class ModuleListFragment extends Fragment{
 		fl.addECRU(ru);
 		FileHandler.writeToFile(
 				getActivity(),
-				"EC_CONNECT",
-				FileHandler.NET_DIR,
-				"FunctionList.txt",
+				MainActivity.CurrentProfileName,
+				FileHandler.FUNCTIONS_LIST_DIR,
+				FileHandler.FUNCTIONS_LIST_FILENAME,
 				FileHandler.EncodeGSoN(fl));
 		
 		return null;
@@ -84,18 +87,21 @@ public class ModuleListFragment extends Fragment{
 	}
 
 	private void createREALCollection(){
-        FunctionList testFL = FileHandler.DecodeGSoNFunctionList(
-        		FileHandler.ReadStringFromFile(
-        				getActivity(),
-        				"EC_CONNECT",
-        				FileHandler.NET_DIR,
-        				"FunctionList.txt"));
+		RoutingTable rt =  FileHandler.DecodeGsonRoutingTable(
+				FileHandler.ReadStringFromFile(
+						getActivity(),
+						MainActivity.CurrentProfileName,
+						"routingTable",
+						"routingTable.txt"));
+
         groupList = new ArrayList<String>();
         roomUnitCollection = new LinkedHashMap<String, List<String>>();
 
-        for (String s : testFL.getECRUNames()){
-        	groupList.add(s);
-            roomUnitCollection.put(s, testFL.getModuleNames(s));
-        }
+		for (UnitAdress ua : rt.UnitAdresses ){
+			String serialiseRoomUnit = FileHandler.ReadStringFromFile(getActivity(), MainActivity.CurrentProfileName, FileHandler.FUNCTIONS_LIST_DIR, ua._macAdress+ ".txt");
+			ECRU tempEcru = FileHandler.DecodeGsonEcru(serialiseRoomUnit);
+			groupList.add(tempEcru.Name);
+			roomUnitCollection.put(tempEcru.Name, tempEcru.Devices);
+		}
 	}
 }

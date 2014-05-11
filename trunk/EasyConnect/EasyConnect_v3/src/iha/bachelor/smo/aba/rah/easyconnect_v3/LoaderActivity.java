@@ -19,14 +19,12 @@ public class LoaderActivity extends Activity {
 	public static final int CREATE_PROFILE = 10;
 	public static final int MODULE_LIST = 20;
 	public static final int PROFILE_LIST = 30;
+	private String foundProfile;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_initial);
-		Log.i(LOG_TAG, "Starting Service!");
-		Intent intent = new Intent(this, NetworkService.class);
-		startService(intent);
 		
 		wifiManager = (WifiManager) this.getSystemService(WIFI_SERVICE);
 		CheckConnection();
@@ -51,6 +49,7 @@ public class LoaderActivity extends Activity {
 		
 		if (SeachProfilesForCurrentWifi(wifiInfo.getSSID())){
 			Intent NetworkNotAvailable = new Intent(this, MainActivity.class);
+			NetworkNotAvailable.putExtra("CurrentProfile", foundProfile);
 			
 			Bundle extras = getIntent().getExtras();
 			if (extras == null) {
@@ -84,6 +83,12 @@ public class LoaderActivity extends Activity {
 		Cursor cursor = getContentResolver().query(ProfileContentProvider.CONTENT_URI,	PROJECTION, SELECTION, null, null);
 		if (cursor.getCount() != 0){
 			cursor.moveToFirst();
+			foundProfile = cursor.getString(cursor.getColumnIndexOrThrow(ProfilesTable.COLUMN_ProfileName));
+			
+			Log.i(LOG_TAG, "Starting Service!");
+			Intent networkServiceIntent = new Intent(this, NetworkService.class);
+			networkServiceIntent.putExtra("CurrentProfile", foundProfile);
+			startService(networkServiceIntent);
 			
 			Log.i(LOG_TAG +"InitCheckForProfile", "profile: " + 
 			cursor.getString(cursor.getColumnIndexOrThrow(ProfilesTable.COLUMN_ProfileName)) + 

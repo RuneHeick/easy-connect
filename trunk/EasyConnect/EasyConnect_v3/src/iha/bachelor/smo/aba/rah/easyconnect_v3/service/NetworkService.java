@@ -2,6 +2,7 @@ package iha.bachelor.smo.aba.rah.easyconnect_v3.service;
 
 import iha.bachelor.smo.aba.rah.easyconnect_v3.contentprovider.FileHandler;
 import iha.bachelor.smo.aba.rah.easyconnect_v3.model.ECRU;
+import iha.bachelor.smo.aba.rah.easyconnect_v3.model.FunctionList;
 import iha.bachelor.smo.aba.rah.easyconnect_v3.model.RoutingTable;
 import iha.bachelor.smo.aba.rah.easyconnect_v3.model.UnitAdress;
 
@@ -36,12 +37,15 @@ public class NetworkService extends Service {
 	private boolean UDPrunning;
 	private boolean socketClosed;
 	private RoutingTable routingTable;
+	private FunctionList funcList;
 	private InetAddress currentServerIP;
 	private String MacAddress;
 	private IBinder mBinder = new ServiceBinder();
+	public String CurrentProfileName;
 	
 	@Override
 	public void onCreate() {
+
 		Log.i(LOG_TAG,"onCreate Called");
 		UDPrunning = true;
 		routingTable = new RoutingTable();
@@ -67,7 +71,8 @@ public class NetworkService extends Service {
 	@Override
 	public int onStartCommand(Intent intent, int flags, int startId) {
 		Log.i(LOG_TAG, "onStartCommand Called");
-	    return Service.START_STICKY;
+		CurrentProfileName = (String) intent.getExtras().get("CurrentProfile");
+	    return Service.START_REDELIVER_INTENT;
 	}
 
 	@Override
@@ -106,12 +111,9 @@ public class NetworkService extends Service {
 						
 						if (!routingTable.contains(received)){
 							routingTable.add(received);
-							getDevices(received);
-//////**********************for test
-//							getDeviceInformation(test, "F83A228CBA1C");
-//							getDeviceInformation(test, "E68170E5C578");
-//////******************************							
+							getDevices(received);						
 							Log.i(LOG_TAG, "UnitAddress added");
+							FileHandler.writeToFile(getBaseContext(), CurrentProfileName, FileHandler.ROUTING_TABLE_DIR, "routingTable.txt", FileHandler.EncodeGSoN(routingTable));
 						} else {
 							Log.i(LOG_TAG, "UnitAddress already there!");
 						}
@@ -156,8 +158,16 @@ public class NetworkService extends Service {
 			String inMsg = in.readLine() + System.getProperty("line.separator");
 			inMsg = inMsg.replace("Accepted", "");
 			
+			Log.i(LOG_TAG, "received inMsg: " + inMsg);
 			tempEcru = FileHandler.DecodeGsonEcru(inMsg);
-
+			funcList.addECRU(tempEcru);
+			
+			FileHandler.writeToFile(getBaseContext(),
+					CurrentProfileName,
+					FileHandler.FUNCTIONS_LIST_DIR,
+					FileHandler.FUNCTIONS_LIST_FILENAME,
+					FileHandler.EncodeGSoN(funcList));
+			
 			Log.i(LOG_TAG, "received ECRU: " + tempEcru.toString());
 		} catch (Exception e) {
 			Log.e(LOG_TAG, "Error", e);
@@ -171,7 +181,8 @@ public class NetworkService extends Service {
 				Log.e(LOG_TAG, "Error", e);
 			}
         }
-		FileHandler.writeToFile(this, "EC_CONNECT", FileHandler.FUNCTIONS_LIST_DIR, roomUnit._macAdress, tempEcru.toString());
+		
+		FileHandler.writeToFile(this, CurrentProfileName, FileHandler.FUNCTIONS_LIST_DIR, roomUnit._macAdress + ".txt", tempEcru.toString());
 		for (String s: tempEcru.Devices){
 			getDeviceInformation(roomUnit, s);
 		}
@@ -179,34 +190,36 @@ public class NetworkService extends Service {
 
 	public void getDeviceInformation(UnitAdress roomUnit, String deviceMacAddress){
 		Socket tcpSocket = null;
-		InputStream NewIn = null;
+		InputStream in = null;
 		OutputStream out = null;
 		try {
-			Log.d(LOG_TAG, "Connecting...");
+			Log.d(LOG_TAG, "reqDevInf: Connecting...");
 			tcpSocket = new Socket(roomUnit._currentIp, SERVERPORT);
-			Log.d(LOG_TAG, "Connected...");
+			Log.d(LOG_TAG, "reqDevInf: Connected...");
 			
-			NewIn = tcpSocket.getInputStream();
+			in = tcpSocket.getInputStream();
 			out = tcpSocket.getOutputStream();
 			
-			Log.d(LOG_TAG, "Sending command.");
+			Log.d(LOG_TAG, "reqDevInf: Sending command.");
 			String outMsg;
 	        outMsg = ReqDevInf;
 			out.write(outMsg.getBytes("UTF-8"));	// Sending Request Device Information
-			
+
 			byte[] buf = new byte[1024];
 			int availableBytes = 0;
-			availableBytes = NewIn.read(buf);		// reading if accepted
+			availableBytes = in.read(buf);		// reading if accepted
 			
 			if (availableBytes > 0){
 				availableBytes = 0;
+				Log.d(LOG_TAG, "reqDevInf: Sending macAddres.");
 				byte[] mac = new BigInteger(deviceMacAddress,16).toByteArray();
 				out.write(mac, 1, 6);				// Sending MacAddress of requested device
 
-				availableBytes = NewIn.read(buf);	// Reading the ModuleInformation
+				availableBytes = in.read(buf);	// Reading the ModuleInformation
 				if (availableBytes > 0){
 					byte[] deviceInformation = Arrays.copyOfRange(buf, 0, availableBytes);
-					FileHandler.writeToFile(this, "EC_CONNECT", FileHandler.MODULE_DIR, deviceMacAddress + ".BLE", deviceInformation);
+					Log.i(LOG_TAG, "Writing ECM to sd-card");
+					FileHandler.writeToFile(this, CurrentProfileName, FileHandler.MODULE_DIR, deviceMacAddress + ".BLE", deviceInformation);
 				}
 			}
 		} catch (Exception e) {
