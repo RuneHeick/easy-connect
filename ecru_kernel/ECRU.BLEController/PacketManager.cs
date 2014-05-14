@@ -3,6 +3,7 @@ using ECRU.BLEController.Packets;
 using ECRU.Utilities.HelpFunction;
 using ECRU.Utilities.LeadFollow;
 using ECRU.Utilities.Timers;
+using System.Threading;
 
 namespace ECRU.BLEController
 {
@@ -223,20 +224,17 @@ namespace ECRU.BLEController
             {
                 data.Set(packet.Payload, 3);
                 data[0] = Def.SYNC_WORD;
-                data[1] = (byte) (data.Length - 1);
-                data[2] = (byte) packet.Command;
+                data[1] = (byte)(data.Length - 1);
+                data[2] = (byte)packet.Command;
                 ushort crc = CRC.CalcCrc(data, data.Length - 2);
 
-                data[data.Length - 2] = (byte) (crc >> 8);
-                data[data.Length - 1] = (byte) (crc);
-                if (SendQueue.Count < 10)
+                data[data.Length - 2] = (byte)(crc >> 8);
+                data[data.Length - 1] = (byte)(crc);
+                lock (SendQueue)
                 {
-                    lock (SendQueue)
-                    {
-                        SendQueue.Add(data);
-                    }
-                    doSend();
+                    SendQueue.Add(data);
                 }
+                doSend();
             }
         }
 

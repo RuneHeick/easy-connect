@@ -130,6 +130,7 @@ namespace ECRU.BLEController
                     AddDevice(info);
                 else
                 {
+                    AddDevice(info);
                     Infofactory.DoFullRead(item, DoneRead);
                 }
             }
@@ -143,7 +144,6 @@ namespace ECRU.BLEController
             add.ConnectionTimeHandle = item.TimeHandel;
             add.PassCodeHandle = item.PassCodeHandel;
             packetmanager.Send(add);
-            Thread.Sleep(1000);
         }
 
         private void DiscoverComplete(DeviceInfoFactory.Status_t status, DeviceInfo item)

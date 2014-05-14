@@ -24,6 +24,10 @@ namespace ECRU.BLEController.Util
                 byte[] wr = wrprop.FromHex();
                 Add(handle, data, wr[0]);
             }
+            else
+            {
+                Add(handle, data, Def.READPROP);
+            }
         }
 
         public byte[] GetData(UInt16 handle)

@@ -5,7 +5,7 @@ using ECRU.Utilities.HelpFunction;
 
 namespace ECRU.BLEController.Util
 {
-    internal class DeviceInfoDefFile : FileBase
+    internal class DeviceInfoDefFile
     {
         private readonly FileBase _fileBase;
         private CloseFunction _closeFunction;
@@ -29,7 +29,7 @@ namespace ECRU.BLEController.Util
 
         public void Close()
         {
-            if (Closefunc == null || Object == null) return;
+            if (_closeFunction == null || Object == null) return;
             _fileBase.Data = InfoToByte(Object);
             _closeFunction(_fileBase);
             _closeFunction = null;

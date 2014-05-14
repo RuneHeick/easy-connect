@@ -2,6 +2,7 @@
 using System.Collections;
 using System.IO.Ports;
 using SecretLabs.NETMF.Hardware.NetduinoPlus;
+using ECRU.Utilities.HelpFunction;
 
 namespace ECRU.BLEController
 {
@@ -12,7 +13,7 @@ namespace ECRU.BLEController
         private readonly object uartLock = new object();
         public Status SerialStatus { get; set; }
         public event Recived PacketRecived;
-
+        private byte[] lastPacket { get; set; }
 
         public void Start()
         {
@@ -20,6 +21,7 @@ namespace ECRU.BLEController
             {
                 try
                 {
+                    lastPacket = new byte[1]; 
                     serial.Open();
                     serial.DataReceived += serialport_DataReceived;
                     serial.ErrorReceived += serial_ErrorReceived;
@@ -62,6 +64,7 @@ namespace ECRU.BLEController
                 {
                     try
                     {
+                        lastPacket = new byte[1];
                         serial.Write(data, 0, data.Length);
                         return true;
                     }
@@ -92,8 +95,13 @@ namespace ECRU.BLEController
 
                         if (packet.Count - 1 == (((byte) packet[1]) & 0x7F))
                         {
-                            if (PacketRecived != null)
-                                PacketRecived((byte[]) packet.ToArray(typeof (byte)));
+                            byte[] newPacket = (byte[])packet.ToArray(typeof(byte));
+                            if (!lastPacket.ByteArrayCompare(newPacket))
+                            {
+                                if (PacketRecived != null)
+                                    PacketRecived(newPacket);
+                            }
+                            lastPacket = newPacket;
                             packet.Clear();
                         }
                         if (packet.Count > 128)

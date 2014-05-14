@@ -10,15 +10,16 @@ namespace ECRU.BLEController
 {
     internal class DeviceInfoFactory : IDisposable
     {
+        static readonly object PrimDeviceLock = new object();
         public enum Status_t
         {
-            Done,
-            Error,
-            GotService,
-            GotDescriptior,
-            GotCharacteristic,
-            ReadOut,
-            Init
+            Done = 1,
+            Error = 2,
+            GotService = 4,
+            GotDescriptior = 8,
+            GotCharacteristic = 16,
+            ReadOut = 24,
+            Init = 32
         };
 
         private readonly object Lock = new object();
@@ -52,16 +53,23 @@ namespace ECRU.BLEController
         {
             lock (Lock)
             {
-                if (HasAddrRegistered(addr))
-                    return;
+                if (!HasAddrRegistered(addr))
+                {
 
-                var item = new InfoContainor(TimeOut);
-                item.Info = new DeviceInfo();
-                item.Info.Address = addr;
-                item.Callback = callBack;
-                item.Status = Status_t.Init;
+                    var item = new InfoContainor(TimeOut);
+                    item.Info = new DeviceInfo();
+                    item.Info.Address = addr;
+                    item.Callback = callBack;
+                    item.Status = Status_t.Init;
 
-                ContainorList.Add(item);
+                    ContainorList.Add(item);
+                }
+                else
+                {
+                    var info = GetInfo(addr);
+                    if ((info.Status & Status_t.ReadOut) == Status_t.ReadOut || (info.Status & Status_t.GotService) == Status_t.GotService || (DateTime.Now - info.CommandStarted).Ticks < TimeSpan.TicksPerSecond)
+                        return;
+                }
             }
 
             var disEvent = new DiscoverEvent();
@@ -96,164 +104,189 @@ namespace ECRU.BLEController
 
         private void HandleDescriptiorService(ServiceEvent item)
         {
-            ServiceDirRes[] val = item.Services;
-            InfoContainor obj = GetInfo(item.Address);
-            if (val != null)
+            lock (PrimDeviceLock)
             {
-                foreach (Service s in obj.Info.Services)
+                ServiceDirRes[] val = item.Services;
+                InfoContainor obj = GetInfo(item.Address);
+                if (val != null)
                 {
-                    foreach (ServiceDirRes t in val)
+                    foreach (Service s in obj.Info.Services)
                     {
-                        var pair = t as DescriptorPair;
-                        if (pair.handle >= s.StartHandel && pair.handle <= s.EndHandel)
+                        foreach (ServiceDirRes t in val)
                         {
-                            for (int i = 0; i < s.Characteristics.Length; i++)
+                            var pair = t as DescriptorPair;
+                            if (pair.handle >= s.StartHandel && pair.handle <= s.EndHandel)
                             {
-                                UInt16 start = s.Characteristics[i].Value.handle;
-                                UInt16 end = 0xFFFF;
-                                if (i != s.Characteristics.Length - 1)
-                                    end = s.Characteristics[i + 1].Value.handle;
+                                if (pair.UUID == Def.EC_DESCRIPTION_UUID)
+                                    s.Description.handle = pair.handle;
+                                if (pair.UUID == Def.UPDATE_UUID)
+                                    s.UpdateHandel = pair.handle;
 
-                                if (start <= pair.handle && end >= pair.handle)
+                                for (int i = 0; i < s.Characteristics.Length; i++)
                                 {
-                                    Debug.Print("Dec UUID at " + s.Characteristics[i].Value.handle.ToString() + ": " +
-                                                pair.UUID + " Handle: " + pair.handle);
-                                    if (pair.UUID == Def.DESCRIPTION_UUID)
-                                        s.Characteristics[i].Description.handle = pair.handle;
-                                    if (pair.UUID == Def.FORMAT_UUID)
-                                        s.Characteristics[i].Format.handle = pair.handle;
-                                    if (pair.UUID == Def.GUIFORMAT_UUID)
-                                        s.Characteristics[i].GUIFormat.handle = pair.handle;
-                                    if (pair.UUID == Def.RANGE_UUID)
-                                        s.Characteristics[i].Range.handle = pair.handle;
-                                    if (pair.UUID == Def.SUPSCRIPTIONOPTION_UUID)
-                                        s.Characteristics[i].Subscription.handle = pair.handle;
+                                    UInt16 start = s.Characteristics[i].Value.handle;
+                                    UInt16 end = 0xFFFF;
+                                    if (i != s.Characteristics.Length - 1)
+                                        end = s.Characteristics[i + 1].Value.handle;
+
+                                    if (start <= pair.handle && end >= pair.handle)
+                                    {
+                                        Debug.Print("Dec UUID at " + s.Characteristics[i].Value.handle.ToString() + ": " +
+                                                    pair.UUID + " Handle: " + pair.handle);
+                                        if (pair.UUID == Def.DESCRIPTION_UUID)
+                                            s.Characteristics[i].Description.handle = pair.handle;
+                                        if (pair.UUID == Def.FORMAT_UUID)
+                                            s.Characteristics[i].Format.handle = pair.handle;
+                                        if (pair.UUID == Def.GUIFORMAT_UUID)
+                                            s.Characteristics[i].GUIFormat.handle = pair.handle;
+                                        if (pair.UUID == Def.RANGE_UUID)
+                                            s.Characteristics[i].Range.handle = pair.handle;
+                                        if (pair.UUID == Def.SUPSCRIPTIONOPTION_UUID)
+                                            s.Characteristics[i].Subscription.handle = pair.handle;
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    if (obj.Info.isCompleted() && (obj.Status & Status_t.ReadOut) != Status_t.ReadOut)
+                    {
+                        obj.Status = Status_t.Done;
+                        Remove(obj);
+                        if (obj.Callback != null)
+                            obj.Callback(obj.Status, obj.Info);
+                    }
+                }
+                obj.Status = obj.Status & Status_t.GotService;
+            }
+        }
+
+        private void HandleCharacteristicService(ServiceEvent item)
+        {
+            lock (PrimDeviceLock)
+            {
+                ServiceDirRes[] val = item.Services;
+                InfoContainor obj = GetInfo(item.Address);
+                if (val != null)
+                {
+                    foreach (ServiceDirRes i in val)
+                    {
+                        var p = i as CharacteristicPair;
+                        Debug.Print("UUID: " + p.UUID.ToString() + " handle: " + p.handle);
+                        if (p.UUID == Def.UPDATETIME_CHARA_UUID)
+                            obj.Info.TimeHandel = p.handle;
+                        if (p.UUID == Def.SYSTEMID_CHARA_UUID)
+                            obj.Info.PassCodeHandel = p.handle;
+                        if (p.UUID == Def.PRIMSERVICE_NAME_UUID)
+                            obj.Info.Name.handle = p.handle;
+                        if (p.UUID == Def.MODEL_NUMBER_UUID)
+                            obj.Info.Model.handle = p.handle;
+                        if (p.UUID == Def.SERIAL_NUMBER_UUID)
+                            obj.Info.Serial.handle = p.handle;
+                        if (p.UUID == Def.MANUFACTURER_NAME_UUID)
+                            obj.Info.Manufacture.handle = p.handle;
+                    }
+
+
+                    foreach (Service s in obj.Info.Services)
+                    {
+                        int count = CountHandels(val, Def.GENERIC_VALUE_UUID, s.StartHandel, s.EndHandel);
+                        s.Characteristics = new Characteristic[count];
+
+                        if (count != 0)
+                        {
+                            int index = 0;
+
+                            foreach (ServiceDirRes i in val)
+                            {
+                                var p = i as CharacteristicPair;
+                                if (p.UUID == Def.GENERIC_VALUE_UUID && p.handle >= s.StartHandel && p.handle <= s.EndHandel)
+                                {
+                                    s.Characteristics[index] = new Characteristic();
+                                    s.Characteristics[index].Value.handle = p.handle;
+                                    s.Characteristics[index].Value.ReadWriteProps = p.ReadWriteProp;
+                                    index++;
+                                }
+
+                                if (p.UUID == Def.EC_DESCRIPTION_UUID && p.handle >= s.StartHandel &&
+                                    p.handle <= s.EndHandel)
+                                {
+                                    s.Description.handle = p.handle;
+                                }
+
+                                if (p.UUID == Def.UPDATE_UUID && p.handle >= s.StartHandel && p.handle <= s.EndHandel)
+                                {
+                                    s.UpdateHandel = p.handle;
                                 }
                             }
                         }
                     }
                 }
-
-                if (obj.Info.isCompleted())
+                if (obj.Info.isCompleted() && (obj.Status & Status_t.ReadOut) != Status_t.ReadOut)
                 {
                     obj.Status = Status_t.Done;
                     Remove(obj);
                     if (obj.Callback != null)
                         obj.Callback(obj.Status, obj.Info);
                 }
+                obj.Status = obj.Status & Status_t.GotCharacteristic;
             }
-            obj.Status = Status_t.GotService;
-        }
-
-        private void HandleCharacteristicService(ServiceEvent item)
-        {
-            ServiceDirRes[] val = item.Services;
-            InfoContainor obj = GetInfo(item.Address);
-            if (val != null)
-            {
-                foreach (ServiceDirRes i in val)
-                {
-                    var p = i as CharacteristicPair;
-                    Debug.Print("UUID: " + p.UUID.ToString() + " handle: " + p.handle);
-                    if (p.UUID == Def.UPDATETIME_CHARA_UUID)
-                        obj.Info.TimeHandel = p.handle;
-                    if (p.UUID == Def.SYSTEMID_CHARA_UUID)
-                        obj.Info.PassCodeHandel = p.handle;
-                    if (p.UUID == Def.PRIMSERVICE_NAME_UUID)
-                        obj.Info.Name.handle = p.handle;
-                    if (p.UUID == Def.MODEL_NUMBER_UUID)
-                        obj.Info.Model.handle = p.handle;
-                    if (p.UUID == Def.SERIAL_NUMBER_UUID)
-                        obj.Info.Serial.handle = p.handle;
-                    if (p.UUID == Def.MANUFACTURER_NAME_UUID)
-                        obj.Info.Manufacture.handle = p.handle;
-                }
-
-
-                foreach (Service s in obj.Info.Services)
-                {
-                    int count = CountHandels(val, Def.GENERIC_VALUE_UUID, s.StartHandel, s.EndHandel);
-                    s.Characteristics = new Characteristic[count];
-
-                    if (count != 0)
-                    {
-                        int index = 0;
-
-                        foreach (ServiceDirRes i in val)
-                        {
-                            var p = i as CharacteristicPair;
-                            if (p.UUID == Def.GENERIC_VALUE_UUID && p.handle >= s.StartHandel && p.handle <= s.EndHandel)
-                            {
-                                s.Characteristics[index] = new Characteristic();
-                                s.Characteristics[index].Value.handle = p.handle;
-                                s.Characteristics[index].Value.ReadWriteProps = p.ReadWriteProp;
-                                index++;
-                            }
-
-                            if (p.UUID == Def.EC_DESCRIPTION_UUID && p.handle >= s.StartHandel &&
-                                p.handle <= s.EndHandel)
-                            {
-                                s.Description.handle = p.handle;
-                            }
-
-                            if (p.UUID == Def.UPDATE_UUID && p.handle >= s.StartHandel && p.handle <= s.EndHandel)
-                            {
-                                s.UpdateHandel = p.handle;
-                            }
-                        }
-                    }
-                }
-            }
-            obj.Status = Status_t.GotCharacteristic;
         }
 
         private void HandlePrimaryService(ServiceEvent item)
         {
-            ServiceDirRes[] val = item.Services;
-            InfoContainor obj = GetInfo(item.Address);
-            if (val != null)
+            lock (PrimDeviceLock)
             {
-                int countEvent = CountHandels(val, Def.ECSERVICE_UUID);
-                obj.Info.Services = new Service[countEvent];
-                int index = 0;
-
-                if (countEvent == 0)
+                ServiceDirRes[] val = item.Services;
+                InfoContainor obj = GetInfo(item.Address);
+                if (val != null && Status_t.GotService != (obj.Status & Status_t.GotService))
                 {
-                    Remove(obj);
-                    if (obj.Callback != null)
-                        obj.Callback(obj.Status, obj.Info);
+                    int countEvent = CountHandels(val, Def.ECSERVICE_UUID);
+                    obj.Info.Services = new Service[countEvent];
+                    int index = 0;
 
-                    return;
-                }
-
-                foreach (ServiceDirRes vser in val)
-                {
-                    var ser = (PrimaryServicePair) vser;
-                    if (Def.IsHandleUUID(ser.UUID))
+                    if (countEvent == 0)
                     {
-                        if (ser.UUID == Def.ECSERVICE_UUID)
-                        {
-                            obj.Info.Services[index] = new Service();
-                            obj.Info.Services[index].EndHandel = ser.Endhandle;
-                            obj.Info.Services[index].StartHandel = ser.handle;
-                            index++;
-                        }
+                        Remove(obj);
+                        if (obj.Callback != null)
+                            obj.Callback(obj.Status, obj.Info);
 
-                        var discover = new DiscoverEvent();
-                        discover.Address = obj.Info.Address;
-                        discover.EndHandle = ser.Endhandle;
-                        discover.StartHandle = ser.handle;
-                        discover.Type = DiscoverType.Characteristic;
-                        packetmanager.Send(discover);
-                        if (ser.UUID == Def.ECSERVICE_UUID)
+                        return;
+                    }
+
+                    foreach (ServiceDirRes vser in val)
+                    {
+                        var ser = (PrimaryServicePair)vser;
+
+                        Debug.Print("Primary " + ser.UUID.ToString() + " : " + ser.handle);
+                        if (Def.IsHandleUUID(ser.UUID))
                         {
-                            discover.Type = DiscoverType.Descriptors;
+                            if (ser.UUID == Def.ECSERVICE_UUID)
+                            {
+                                obj.Info.Services[index] = new Service();
+                                obj.Info.Services[index].EndHandel = ser.Endhandle;
+                                obj.Info.Services[index].StartHandel = ser.handle;
+                                index++;
+                            }
+
+                            var discover = new DiscoverEvent();
+                            discover.Address = obj.Info.Address;
+                            discover.EndHandle = ser.Endhandle;
+                            discover.StartHandle = ser.handle;
+                            discover.Type = DiscoverType.Characteristic;
                             packetmanager.Send(discover);
+
+                            if (ser.UUID == Def.ECSERVICE_UUID)
+                            {
+                                discover.Type = DiscoverType.Descriptors;
+                                packetmanager.Send(discover);
+
+                            }
                         }
                     }
                 }
+                obj.Status = obj.Status & Status_t.GotService;
             }
-            obj.Status = Status_t.GotService;
         }
 
         private static int CountHandels(ServiceDirRes[] items, UInt16 UUID, UInt16 startHandle = 0x0001,
@@ -328,13 +361,20 @@ namespace ECRU.BLEController
             file.ReadIndex = 0;
             lock (Lock)
             {
+                var info = GetInfo(infofile.Address);
+                if (info != null)
+                {
+                    Remove(info);
+                }
                 ContainorList.Add(file);
             }
 
             var Read = new ReadEvent();
             Read.Address = infofile.Address;
 
-            Read.handel = FindPair(file.ReadIndex, file.Info).handle;
+            ushort handle = FindPair(file.ReadIndex, file.Info).handle;
+            Read.handel = handle;
+            Debug.Print("Read.handel" + handle.ToString());
             packetmanager.Send(Read);
         }
 
@@ -461,7 +501,7 @@ namespace ECRU.BLEController
             public InfoContainor(TimerCallback timeoutCall)
             {
                 CommandStarted = DateTime.Now;
-                timeout = new Timer(timeoutCall, this, 60000, Timeout.Infinite); // 5 min timeout. 
+                timeout = new Timer(timeoutCall, this, 120000, Timeout.Infinite); // 5 min timeout. 
             }
 
             public Timer timeout { get; private set; }

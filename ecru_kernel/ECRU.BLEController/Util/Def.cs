@@ -9,8 +9,8 @@ namespace ECRU.BLEController
         public const int MAX_PACKETSIZE = 128;
         public const int STARTFIELD_INDEX = 1;
         public const int STARTFIELD_MASK = 0x80;
-        public const int RETRANSMITTIME = 1000;
-        public const int RETRANSMIT_MAXCOUNT = 3;
+        public const int RETRANSMITTIME = 1500;
+        public const int RETRANSMIT_MAXCOUNT = 0;
 
         public const UInt16 MAIN_SERVICE_UUID = 0x1800;
         public const UInt16 PRIMSERVICE_NAME_UUID = 0x2A00;
