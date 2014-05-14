@@ -127,7 +127,7 @@ namespace ECRU.netd
             Stop();
 
             if (resets > 3) return;
-
+            resets++;
             LoadConfig("");
             Start();
         }
