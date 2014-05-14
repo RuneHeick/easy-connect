@@ -44,7 +44,7 @@ static void ECConnectionChanged(ECC_Status_t newState);
 static void hasApplicationUnreadData(bool hasUnreadData, uint16 handle);
 static void WriteFromBLE(bool hasUnreadData, uint16 handle);
 static void GotPasscode();
-static void UpdateGPIO(uint8 gpio);
+static void UpdateGPIO(GenericCharacteristic* chara);
 
 static ECC_Status_t currentState = DISCONNECTED;
 
