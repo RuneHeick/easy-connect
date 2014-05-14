@@ -99,6 +99,14 @@ namespace ECRU.Utilities.HelpFunction
 
         }
 
+        public static void AddUnique(this ArrayList elements, object element)
+        {
+            if (!elements.Contains(element))
+            {
+                    elements.Add(element);
+            }
+        }
+
         //Remove element
         public static string[] Remove(this string[] elements, string element)
         {
