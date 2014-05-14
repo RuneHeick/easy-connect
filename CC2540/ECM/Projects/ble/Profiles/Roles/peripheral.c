@@ -732,7 +732,7 @@ uint16 GAPRole_ProcessEvent( uint8 task_id, uint16 events )
         gapRole_state = GAPROLE_ERROR;
         if ( pGapRoles_AppCGs && pGapRoles_AppCGs->pfnStateChange )
         {
-          pGapRoles_AppCGs->pfnStateChange( gapRole_state );
+          //pGapRoles_AppCGs->pfnStateChange( gapRole_state );
         }
       }
     }
