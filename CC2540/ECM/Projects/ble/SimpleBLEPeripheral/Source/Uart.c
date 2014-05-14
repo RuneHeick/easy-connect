@@ -48,7 +48,7 @@ static unsigned short update_crc(unsigned short crc, char c);
 static unsigned short CalcCrc(uint8* buffer, uint8 count);
 static void Uart_HandelRequest();
 static void Uart_ClearPendingResponse();
-
+static uint8 lastPacket[2];
 
 static CallBackFunction ReplyFunc;
 static bool pendingResponse = false; 
@@ -276,13 +276,15 @@ bool Uart_Send_Response(uint8* buffer, uint8 len)
     bufferTX.buffer[3+len] =  (uint8)(crc>>8); 
     bufferTX.buffer[3+len+1] =(uint8)(crc);
     
-    Uart_TransmitBuffer();
     bufferRX.count = 0; 
     bufferRX.status = Ready;
-    
+    Uart_TransmitBuffer();
+
     return true; 
   }
   
+  bufferRX.count = 0; 
+  bufferRX.status = Ready;
   return false; 
 
 }
@@ -311,7 +313,7 @@ bool Uart_Send(uint8* buffer, uint8 len, uint8 command, CallBackFunction func)
   if(bufferTX.status == Ready)
   {
     unsigned short crc;
-      
+    osal_memset(lastPacket,0xFF,2); 
     bufferTX.status = Transmitting;
     ReplyFunc = func; 
     if(&bufferTX.buffer[3]!=buffer && len>0)
@@ -394,8 +396,12 @@ static void ReadFromUart(uint8 port)
       
       if(bufferRX.count==packetlen)
       {
-        bufferRX.status = Has_Packet; 
-        osal_set_event(Uart_TaskID,UART_PACKET_EVENT);
+        if(osal_memcmp(&bufferRX.buffer[bufferRX.count-2], lastPacket,2)==false)
+        {
+          bufferRX.status = Has_Packet; 
+          osal_set_event(Uart_TaskID,UART_PACKET_EVENT);
+        }
+        osal_memcpy(lastPacket,&bufferRX.buffer[bufferRX.count-2],2); 
       }  
     }
     else if(len>1)
