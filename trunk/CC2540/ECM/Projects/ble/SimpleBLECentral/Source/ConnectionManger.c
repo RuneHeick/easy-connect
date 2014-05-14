@@ -29,8 +29,8 @@
 
 #define QUEUEHALTERROR_EVENT (1<<8)
 
-#define LINKTIMEOUT_TIME 2000
-#define TERMINATEWAIT_TIME 2000
+#define LINKTIMEOUT_TIME 3000
+#define TERMINATEWAIT_TIME 5000
 #define QUEUEHALTERROR_TIME 30000
 
 // What is the advertising interval when device is discoverable (units of 625us, 160=100ms)
@@ -67,9 +67,11 @@ static void peripheralStateNotificationCB( gaprole_States_t newState );
 static uint8 NULLaddr[B_ADDR_LEN] = {0x00, 0x00, 0x00, 0x00, 0x00 , 0x00}; 
 static uint8 ConnectionManger_tarskID;
 static ConnectedDevice_t connectedDevices[MAX_HW_SUPPORTED_DEVICES]; 
+static void RWCompleteError();
+static void Enqueue(ConnectionEvents_t* item);
 
 bool IsCentral = false;
-static bool AllLinkTerminated = true;
+
 typedef enum
 {
   C_READY,
@@ -174,7 +176,7 @@ void ConnectionManger_Init( uint8 task_id)
   uint8 i; 
   ConnectionManger_tarskID = task_id;
   EventQueue = GenericList_create();
-  
+  CurrentEvent.base.action = Disconnect;
   
       //////////////////////////////////////////////////////////////////
 // Broadcaster
@@ -340,24 +342,21 @@ uint16 ConnectionManger_ProcessEvent( uint8 task_id, uint16 events )
       
       if(EventQueue.count>0)
       {
-          //printf("H0");
-        if(TerminateALLLinks())
-        {
           Dequeue(&CurrentEvent);
           if(CurrentEvent.base.action != None) 
           {
-            osal_start_timerEx(ConnectionManger_tarskID,QUEUEHALTERROR_EVENT,QUEUEHALTERROR_TIME);
+            CurrentEvent.base.trycount--; 
+            //osal_start_timerEx(ConnectionManger_tarskID,QUEUEHALTERROR_EVENT,QUEUEHALTERROR_TIME);
             status = C_BUSY; 
             osal_set_event(ConnectionManger_tarskID,PROCESSQUEUEITEM_EVENT);
           }
-        }
       }
       else
       {
         //printf("Dc"); 
         CurrentEvent.base.action = Disconnect;
-        if(TerminateALLLinks())
-          osal_stop_timerEx(ConnectionManger_tarskID,QUEUEHALTERROR_EVENT);
+        TerminateALLLinks();
+        //osal_stop_timerEx(ConnectionManger_tarskID,QUEUEHALTERROR_EVENT);
       }
     }
     
@@ -378,10 +377,6 @@ uint16 ConnectionManger_ProcessEvent( uint8 task_id, uint16 events )
           status = C_READY; 
           osal_set_event(ConnectionManger_tarskID,DEQUEUE_EVENT);
         }
-        else
-        {
-           osal_set_event(ConnectionManger_tarskID,PROCESSQUEUEITEM_EVENT);
-        }
       }
       else
       {
@@ -396,18 +391,28 @@ uint16 ConnectionManger_ProcessEvent( uint8 task_id, uint16 events )
   {
     printf("To");
     cancelLinkEstablishment();
-    if(CurrentEvent.base.action != None && status==C_BUSY && CurrentEvent.base.errorcall != NULL)
+    
+    if(CurrentEvent.base.trycount == 0)
     {
-      CurrentEvent.base.errorcall(&CurrentEvent); 
+      if(CurrentEvent.base.action != None && status==C_BUSY && CurrentEvent.base.errorcall != NULL)
+      {
+        CurrentEvent.base.errorcall(&CurrentEvent); 
+      }
     }
+    else
+    {
+     Enqueue(&CurrentEvent); 
+    }
+    
+    
+    
     status = C_READY;
-    osal_set_event(ConnectionManger_tarskID,DEQUEUE_EVENT);
+    osal_start_timerEx(ConnectionManger_tarskID,DEQUEUE_EVENT,TERMINATEWAIT_TIME);
     return (events ^ LINKTIMEOUT_EVENT);
   }
   
   if ( events & TERMINATEALL_EVENT )
   {
-    osal_stop_timerEx(ConnectionManger_tarskID,QUEUEHALTERROR_EVENT);
     osal_set_event(ConnectionManger_tarskID,DEQUEUE_EVENT);
     status = C_READY;
     
@@ -416,16 +421,7 @@ uint16 ConnectionManger_ProcessEvent( uint8 task_id, uint16 events )
   
   if ( events & QUEUEHALTERROR_EVENT )
   {
-    if(status == C_BUSY)
-    {
-      if(CurrentEvent.base.errorcall)
-        CurrentEvent.base.errorcall(&CurrentEvent);
-     
-      status = C_READY;
-      
-    }
-    osal_set_event(ConnectionManger_tarskID,DEQUEUE_EVENT); 
-    return (events ^ QUEUEHALTERROR_EVENT);
+    ResetManager_Reset(false);
   }
   
   return 0; 
@@ -450,7 +446,6 @@ static void ConnectionManger_handel(ConnectionEvents_t* item)
       break;
     case Scan:
       {
-        stat = GAPCentralRole_CancelDiscovery();
         stat = GAPCentralRole_StartDiscovery( DEFAULT_DISCOVERY_MODE,
                                        DEFAULT_DISCOVERY_ACTIVE_SCAN,
                                        DEFAULT_DISCOVERY_WHITE_LIST );
@@ -478,10 +473,18 @@ static void ConnectionManger_handel(ConnectionEvents_t* item)
   
   if(stat != SUCCESS)
   {
-    if(item->base.errorcall)
-     item->base.errorcall(item);
-    status = C_READY; 
-    osal_set_event(ConnectionManger_tarskID,DEQUEUE_EVENT);
+    if(item->base.trycount == 0)
+    {
+      if(item->base.errorcall)
+       item->base.errorcall(item);
+      status = C_READY; 
+      osal_set_event(ConnectionManger_tarskID,DEQUEUE_EVENT);
+    }
+    else
+    {
+     Enqueue(&CurrentEvent);
+     TerminateALLLinks(); 
+    }
   }
   
 }
@@ -604,7 +607,6 @@ static bool TerminateALLLinks()
         }
       }
       
-      if(stat == false)
       {
             GAPCentralRole_TerminateLink(0xFFFF);
             status = C_BUSY;
@@ -673,15 +675,9 @@ bool searchForAction(ListItem* listitem)
   return item->base.action == searchAction;
 }
 
-bool Queue_Contains(EventType_t action)
-{
-  searchAction = action;
-  GenericList_HasElement(&EventQueue, searchForAction);
-}
-
 uint8 Queue_Count()
 {
-  return EventQueue.count;
+  return CurrentEvent.base.action == Disconnect ? EventQueue.count : EventQueue.count+1;
 }
 
 //***********************************************************
@@ -694,6 +690,7 @@ void Queue_addRead(uint8* addr, uint16 handel, Callback call, Callback ecall)
   ConnectionEvents_t item;
   item.base.action = Read;
   item.base.errorcall = ecall;
+  item.base.trycount = 3;  
   osal_memcpy(item.base.addr,addr,B_ADDR_LEN);
   item.base.callback = call; 
   item.read.item.read.handle = handel;
@@ -709,6 +706,7 @@ void Queue_addWrite(uint8* write, uint8 len, uint8* addr, uint16 handel, Callbac
     ConnectionEvents_t item;
     item.base.action = Write;
     item.base.errorcall = ecall;
+    item.base.trycount = 3; 
     osal_memcpy(item.base.addr,addr,B_ADDR_LEN);
     item.base.callback = call; 
     item.write.item.write.handle = handel;
@@ -733,6 +731,7 @@ void Queue_addServiceDiscovery(uint8* addr, Callback call ,Callback ecall,Discov
   ConnectionEvents_t item;
   item.base.action = ServiceDiscovery;
   item.base.errorcall = ecall;
+  item.base.trycount = 3; 
   osal_memcpy(item.base.addr,addr,B_ADDR_LEN);
   item.base.callback = call; 
   item.serviceDir.type = range; 
@@ -746,6 +745,7 @@ void Queue_Scan(Callback call, Callback ecall)
 {
   ConnectionEvents_t item;
   item.base.action = Scan;
+  item.base.trycount = 1; 
   item.base.errorcall = ecall;
   osal_memcpy(item.base.addr,NULLaddr,B_ADDR_LEN);
   item.base.callback = call; 
@@ -860,6 +860,7 @@ static void BLE_CentralEventCB( gapCentralRoleEvent_t *pEvent )
           }
         }
         status = C_READY;
+        osal_set_event(ConnectionManger_tarskID,DEQUEUE_EVENT);
       }
       break;
       
@@ -976,13 +977,9 @@ static void simpleBLECentralProcessGATTMsg( gattMsgEvent_t *pMsg )
       }
       else //TIMEOUT AND ERRORS 
       {
-        RWComplete(CurrentEvent.base.errorcall);
+         RWCompleteError();
       }
       
-    }
-    else
-    {
-     RWComplete(CurrentEvent.base.errorcall); 
     }
   }
   
@@ -1001,7 +998,7 @@ static void simpleBLECentralProcessGATTMsg( gattMsgEvent_t *pMsg )
     }
     else
     {
-        RWComplete(CurrentEvent.base.errorcall);
+        RWCompleteError();
     }
   }
   
@@ -1009,6 +1006,11 @@ static void simpleBLECentralProcessGATTMsg( gattMsgEvent_t *pMsg )
   else if(CurrentEvent.base.action == ServiceDiscovery)
   {
     BLEGATTDiscoveryEvent( pMsg );
+  }
+  
+  else if(pMsg->hdr.status == bleProcedureComplete)
+  {
+    RWCompleteError();
   }
   
 }
@@ -1105,12 +1107,20 @@ static void discoveryComplete()
 
 static void discoveryCompleteError()
 {
-  EventQueueServiceDirItem_t* item = &CurrentEvent.serviceDir;
-  if(item->base.errorcall != NULL)
-    item->base.errorcall(&CurrentEvent);
-  GenericList_dispose(&item->result);
-  status = C_READY;
-  osal_set_event(ConnectionManger_tarskID,DEQUEUE_EVENT);
+  if(CurrentEvent.base.trycount == 0)
+  {
+    EventQueueServiceDirItem_t* item = &CurrentEvent.serviceDir;
+    if(item->base.errorcall != NULL)
+      item->base.errorcall(&CurrentEvent);
+    GenericList_dispose(&item->result);
+    status = C_READY;
+    osal_set_event(ConnectionManger_tarskID,DEQUEUE_EVENT);
+  }
+  else
+  {
+     Enqueue(&CurrentEvent);
+     TerminateALLLinks();
+  }
 }
 
 static void RWComplete(Callback call)
@@ -1126,6 +1136,26 @@ static void RWComplete(Callback call)
   status = C_READY; 
   osal_set_event(ConnectionManger_tarskID,DEQUEUE_EVENT);
 }
+
+static void RWCompleteError()
+{
+  if(CurrentEvent.base.action == Write || CurrentEvent.base.action == Read)
+  {
+    if(CurrentEvent.base.trycount == 0)
+      RWComplete(CurrentEvent.base.errorcall);
+    else
+    {
+      Enqueue(&CurrentEvent);
+      TerminateALLLinks();
+    }
+  }
+  else
+  {
+    status = C_READY; 
+    osal_set_event(ConnectionManger_tarskID,DEQUEUE_EVENT);
+  }
+}
+
 
 static void disposeScanList(List* list)
 {

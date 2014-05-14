@@ -118,6 +118,8 @@ typedef struct EventQueueItemBase_t
   Callback errorcall; 
   Callback callback;
   
+  uint8 trycount; 
+  
 }EventQueueItemBase_t;
 
 /*********** Items *************/
