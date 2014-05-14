@@ -232,5 +232,9 @@ void SendServicesCommand(EventQueueServiceDirItem_t* item)
     osal_mem_free(data);
     Send(SUCSSES);
   }
+  else
+  {
+    volatile int a = 5;  
+  }
 }
 

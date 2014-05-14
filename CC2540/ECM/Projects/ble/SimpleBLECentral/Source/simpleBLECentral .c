@@ -25,7 +25,7 @@
 #include "ResetManager.h"
 #include "SystemInfo.h"
 
-#define PERIODIC_SCAN_PERIOD 10000 // in ms. Minimum = 5 sec 
+#define PERIODIC_SCAN_PERIOD 5000 // in ms. Minimum = 5 sec 
 
 #define PERIODIC_SCAN_START   (1<<5)
 #define SERVICE_DEVICE (1<<7)
@@ -254,6 +254,7 @@ uint16 SimpleBLECentral_ProcessEvent( uint8 task_id, uint16 events )
     //char string[] = "There have been several claims for the longest sentence in the English language";
     
     //uint8 adress[] = {0xE6,0x81,0x70,0xE5,0xc5,0x78};
+    ConnectionManager_Start(true);
     //service_addUnknownDevice(adress,0x001b,0x0019,0x020);
     
     return ( events ^ START_DEVICE_EVT );
@@ -502,7 +503,7 @@ static void handle_sysInfo(PayloadBuffer* rx)
 
 static void handle_AddDevice(PayloadBuffer* rx)
 {
-  if(rx->count >= B_ADDR_LEN+3*ATT_BT_UUID_SIZE)
+  if(rx->count >= B_ADDR_LEN+2*ATT_BT_UUID_SIZE)
   {
     uint16 PassCodeHandle = (rx->bufferPtr[B_ADDR_LEN]<<8)+ rx->bufferPtr[B_ADDR_LEN+1];
     uint16 TimeHandle = (rx->bufferPtr[B_ADDR_LEN+2]<<8)+ rx->bufferPtr[B_ADDR_LEN+3];
@@ -571,6 +572,7 @@ void UartManager_HandelUartPacket(osal_event_hdr_t * msg)
       break;
     case DiscoverEvent:
       handle_Discover(&RX);
+      printf("Dd");
       break;
   }
 }
