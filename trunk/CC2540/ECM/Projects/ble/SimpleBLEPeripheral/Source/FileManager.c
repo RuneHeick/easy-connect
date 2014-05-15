@@ -60,9 +60,13 @@ static GenericValue BuliderContainor = { .status = NOT_INIT, .pValue = NULL, .si
 //Local Address 
 static uint16 currentAddress = 0;
 
+
+bool FileManager_HasLoadedImage = false; 
+static uint8 PasscodeID = 0; 
+
 static void setFileState(uint8 EndID)
 {
-  uint8 data[4] = {(uint8)EndID%2,EndID,EndID, 0}; 
+  uint8 data[4] = {(uint8)EndID%2,EndID,!EndID, 0}; 
   data[3] = (uint8)(data[0] + data[1] + data[2]); 
   osal_snv_write(START_FALSHID,4,data);
 }
@@ -113,7 +117,7 @@ static uint8 getFileState()
   osal_snv_read(START_FALSHID,4,data);
   uint16 End = data[1];
   uint8 check = data[0]+data[1]+data[2];
-  if(data[0] == End%2 && check == data[3])
+  if(data[0] == End%2 && check == data[3] && !data[1] == data[2])
   {
     return End; 
   }
@@ -198,7 +202,16 @@ void WriteToFlash(uint16 addr, uint8 count, uint8* buffer)
   
 }
 
-
+void FileManager_UpdatePassCode()
+{
+  if(PasscodeID != 0)
+  {
+    uint8 byte[2+SYSID_SIZE] = {PASSCODE_CMD, SYSID_SIZE};
+    uint8* id = GetSetSystemID(); 
+    osal_memcpy(&byte[2],id,SYSID_SIZE);
+    osal_snv_write(PasscodeID,2+SYSID_SIZE,byte);
+  }
+}
 
 
 void FileManager_Save()
@@ -243,6 +256,7 @@ void FileManager_Save()
     byte[1] = SYSID_SIZE;
     FlashBuilder(ID,byte,2);
     currentAddress += 2;
+    PasscodeID = ID; 
     uint8* id = GetSetSystemID(); 
     FlashBuilder(ID,id,SYSID_SIZE);
     currentAddress += SYSID_SIZE;
@@ -448,18 +462,24 @@ void FileManager_Load()
        {
           osal_snv_read(ID,datalen+2,data);
           bool stat = LoadDataObject(command,datalen,&data[2]); 
+          
+          if(command == PASSCODE_CMD)
+          {
+            PasscodeID = ID; 
+          }
+          
           osal_mem_free(data);
           ID ++;
           
        }
     
     }
+    FileManager_HasLoadedImage = true; 
   }
 }
 
 void FileManager_Clear()
 {
-  ClearAllRam();
   setFileState(0);
 }
 

@@ -251,7 +251,7 @@ void InitState_HandelUartPacket(osal_event_hdr_t * msg)
       }
       else if(scanRspData.status == READY)
       {
-        if(scanRspData.size-9-2 == RX.count && 0==memcmp(&scanRspData.pValue[2], RX.bufferPtr,RX.count))
+        if(scanRspData.size-9-2 == RX.count && 0==osal_memcmp(&scanRspData.pValue[2], RX.bufferPtr,RX.count))
         { 
           Uart_Send_Response(ack,sizeof(ack));
         }
@@ -382,7 +382,6 @@ uint16 addChar(uint8* buffer, uint8 count)
 void InitState_Enter(uint8 tarskID)
 { 
   ECConnect_Reset(); // must be before FileManager_Load 
-  
   FileManager_Load(); // has an image in Flash 
   StartDevice(); //Start if Image is Loaded. 
   
@@ -490,7 +489,7 @@ void InitState_Exit()
       // Start Bond Manager
   VOID GAPBondMgr_Register( &simpleBLEPeripheral_BondMgrCBs );
   
-  
-  FileManager_Save(); //Save Image To Flash; 
+  if(FileManager_HasLoadedImage == false)
+    FileManager_Save(); //Save Image To Flash; 
 
 }

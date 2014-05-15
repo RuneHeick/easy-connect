@@ -1,12 +1,16 @@
 #pragma once 
 #include "OSAL.h"
 
-void FileManager_Save(); 
+extern bool FileManager_HasLoadedImage;
 
-void FileManager_Load(); 
+extern void FileManager_Save(); 
 
-void FileManager_Clear(); 
+extern void FileManager_Load(); 
 
-void ReadFromFlash(uint16 addr, uint8 count, uint8* buffer);
+extern void FileManager_Clear(); 
 
-void WriteToFlash(uint16 addr, uint8 count, uint8* buffer);
+extern void ReadFromFlash(uint16 addr, uint8 count, uint8* buffer);
+
+extern void WriteToFlash(uint16 addr, uint8 count, uint8* buffer);
+
+extern void FileManager_UpdatePassCode();
