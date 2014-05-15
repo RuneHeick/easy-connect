@@ -5,6 +5,7 @@
 #include "InitState.h"
 #include "ResetManager.h"
 #include "ECConnect.h"
+#include "osal_snv.h"
 
 #define ENDPAGE 68
 #define MEMORYSIZE 4000
@@ -12,6 +13,9 @@
 #define MEMORYPAGES  2 //(((uint32)MEMORYSIZE)/((uint32)HAL_FLASH_PAGE_SIZE))+1
 #define INFO_ADDRESS (((uint32)ENDPAGE* (uint32)HAL_FLASH_PAGE_SIZE) - MEMORYSIZE)
 #define DATASTART_ADDRESS INFO_ADDRESS+4 //one address is 4 byte. This is the write address
+
+#define START_FALSHID 0x80
+#define END_FALSHID 0xFE
 
 //file Command values 
 enum 
@@ -48,26 +52,70 @@ typedef struct TempCharacteristic
 
 static TempCharacteristic tempChare; 
 
+//to FlashBuilder 
+static uint8 BuilderID = 0;
+static uint8 PrepLen = 0; 
+static GenericValue BuliderContainor = { .status = NOT_INIT, .pValue = NULL, .size = 0  }; 
+
 //Local Address 
 static uint16 currentAddress = 0;
 
-static void setFileState(uint16 len)
+static void setFileState(uint8 EndID)
 {
-  uint8 data[4] = {(uint8)len%2,(uint8)(len>>8),(uint8)len, 0}; 
+  uint8 data[4] = {(uint8)EndID%2,EndID,EndID, 0}; 
   data[3] = (uint8)(data[0] + data[1] + data[2]); 
-  HalFlashWrite(INFO_ADDRESS/4,data,1); 
+  osal_snv_write(START_FALSHID,4,data);
 }
 
-static uint16 getFileState()
+static void InitFlashBuilder()
+{
+  GenericValue_CreateContainer(&BuliderContainor, 255);
+}
+
+static void WriteInFlashWithSNV()
+{
+  if(PrepLen != 0)
+  {
+    osal_snv_write(BuilderID,PrepLen,BuliderContainor.pValue);
+    PrepLen = 0; 
+  }
+}
+
+static void DisposeFlashBuilder()
+{
+    WriteInFlashWithSNV();
+    GenericValue_DeleteValue(&BuliderContainor);
+}
+
+
+
+static void FlashBuilder(uint8 FlashID, uint8* buffer, uint8 len )
+{
+  if(BuilderID != FlashID && BuilderID != 0)
+  {
+    WriteInFlashWithSNV(); 
+  }
+  
+    
+  BuilderID = FlashID; 
+  if(BuliderContainor.status == READY && PrepLen+len < BuliderContainor.size)
+  {
+    osal_memcpy(&BuliderContainor.pValue[PrepLen],buffer,len);
+    PrepLen += len;
+  }
+  
+}
+
+
+static uint8 getFileState()
 {
   uint8 data[4];
-  uint16 offset = (INFO_ADDRESS%HAL_FLASH_PAGE_SIZE);
-  HalFlashRead((INFO_ADDRESS/HAL_FLASH_PAGE_SIZE),offset,data,4);
-  uint16 len = (data[1]<<8)+data[2];
+  osal_snv_read(START_FALSHID,4,data);
+  uint16 End = data[1];
   uint8 check = data[0]+data[1]+data[2];
-  if(data[0] == len%2 && check == data[3])
+  if(data[0] == End%2 && check == data[3])
   {
-    return len; 
+    return End; 
   }
   
   return 0; 
@@ -155,8 +203,8 @@ void WriteToFlash(uint16 addr, uint8 count, uint8* buffer)
 
 void FileManager_Save()
 {
-  ClearAllRam();
-    
+  uint8 ID = START_FALSHID+1;
+   
   GenericValue serial;
   GenericValue model;
   GenericValue mani;
@@ -165,34 +213,40 @@ void FileManager_Save()
   DevInfo_GetParameter(DEVINFO_MODEL_NUMBER, &model );
   DevInfo_GetParameter(DEVINFO_MANUFACTURER_NAME, &mani);
   
+  InitFlashBuilder();
+  
   uint8 byte[2];
   if(mani.status == READY)
   {
     byte[0] = MAINI_CMD;
     byte[1] = mani.size;
-    WriteToFlash(currentAddress,2,byte);
+    FlashBuilder(ID,byte,2);
     currentAddress += 2; 
-    WriteToFlash(currentAddress,mani.size,mani.pValue);
+    FlashBuilder(ID,mani.pValue,mani.size);
     currentAddress += mani.size;
+    ID++;
   }
+  
   
   if(model.status == READY)
   {
     byte[0] = MODEL_CMD;
     byte[1] = model.size;
-    WriteToFlash(currentAddress,2,byte);
+    FlashBuilder(ID,byte,2);
     currentAddress += 2; 
-    WriteToFlash(currentAddress,model.size,model.pValue);
+    FlashBuilder(ID,model.pValue,model.size);
     currentAddress += model.size;
+    ID++;
   }
 
     byte[0] = PASSCODE_CMD;
     byte[1] = SYSID_SIZE;
-    WriteToFlash(currentAddress,2,byte);
+    FlashBuilder(ID,byte,2);
     currentAddress += 2;
     uint8* id = GetSetSystemID(); 
-    WriteToFlash(currentAddress,SYSID_SIZE,id);
+    FlashBuilder(ID,id,SYSID_SIZE);
     currentAddress += SYSID_SIZE;
+    ID++;
 
   
   pBuffer_t nameBuf =  GAPManget_GetName();
@@ -200,20 +254,22 @@ void FileManager_Save()
   {
     byte[0] = DEVICENAME_CMD;
     byte[1] = nameBuf.count;
-    WriteToFlash(currentAddress,2,byte);
+    FlashBuilder(ID,byte,2);
     currentAddress += 2; 
-    WriteToFlash(currentAddress,nameBuf.count,nameBuf.pValue);
+    FlashBuilder(ID,nameBuf.pValue,nameBuf.count);
     currentAddress += nameBuf.count;
+    ID++;
   }
   
   if(serial.status == READY)
   {
     byte[0] = SERIAL_CMD;
     byte[1] = serial.size;
-    WriteToFlash(currentAddress,2,byte);
+    FlashBuilder(ID,byte,2);
     currentAddress += 2; 
-    WriteToFlash(currentAddress,serial.size,serial.pValue);
+    FlashBuilder(ID,serial.pValue,serial.size);
     currentAddress += serial.size;
+    ID++;
   }
   
   
@@ -224,15 +280,17 @@ void FileManager_Save()
     
     byte[0] = SERVICE_CMD;
     byte[1] = 0;
-    WriteToFlash(currentAddress,2,byte);
+    FlashBuilder(ID,byte,2);
     currentAddress += 2;
+    ID++;
     
     byte[0] = SERVICEDEC_CMD;
     byte[1] = service->description.size;
-    WriteToFlash(currentAddress,2,byte);
+    FlashBuilder(ID,byte,2);
     currentAddress += 2;
-    WriteToFlash(currentAddress,service->description.size,service->description.pValue);
+    FlashBuilder(ID,service->description.pValue,service->description.size);
     currentAddress += service->description.size;
+    ID++;
     
     GenericCharacteristic* temp = service->first;
     
@@ -240,57 +298,64 @@ void FileManager_Save()
     {
       byte[0] = CHAREVAL_CMD;
       byte[1] = 3;
-      WriteToFlash(currentAddress,2,byte);
+      FlashBuilder(ID,byte,2);
       currentAddress += 2;
       uint8 value[3] = { temp->value.size, temp->premission, temp->gpio };
-      WriteToFlash(currentAddress,3,value);
+      FlashBuilder(ID,value,3);
       currentAddress += 3;
+      ID++;
       
       byte[0] = CHAREDEC_CMD;
       byte[1] = temp->userDescription.size;
-      WriteToFlash(currentAddress,2,byte);
+      FlashBuilder(ID,byte,2);
       currentAddress += 2;
-      WriteToFlash(currentAddress,temp->userDescription.size,temp->userDescription.pValue);
+      FlashBuilder(ID,temp->userDescription.pValue,temp->userDescription.size);
       currentAddress += temp->userDescription.size;
+      ID++;
       
       byte[0] = CHAREFOR_CMD;
       byte[1] = sizeof(temp->typePresentationFormat);
-      WriteToFlash(currentAddress,2,byte);
+      FlashBuilder(ID,byte,2);
       currentAddress += 2;
-      WriteToFlash(currentAddress,sizeof(temp->typePresentationFormat),(uint8*)&temp->typePresentationFormat);
+      FlashBuilder(ID,(uint8*)&temp->typePresentationFormat,sizeof(temp->typePresentationFormat));
       currentAddress += sizeof(temp->typePresentationFormat);
+      ID++;
       
       byte[0] = CHAREGUI_CMD;
       byte[1] = sizeof(temp->guiPresentationFormat);
-      WriteToFlash(currentAddress,2,byte);
+      FlashBuilder(ID,byte,2);
       currentAddress += 2;
-      WriteToFlash(currentAddress,sizeof(temp->guiPresentationFormat),(uint8*)&temp->guiPresentationFormat);
+      FlashBuilder(ID,(uint8*)&temp->guiPresentationFormat,sizeof(temp->guiPresentationFormat));
       currentAddress += sizeof(temp->guiPresentationFormat);
+      ID++;
       
       if(temp->range.status == READY)
       {
         byte[0] = CHARERANGE_CMD;
         byte[1] = temp->range.size;
-        WriteToFlash(currentAddress,2,byte);
+        FlashBuilder(ID,byte,2);
         currentAddress += 2;
-        WriteToFlash(currentAddress, temp->range.size , temp->range.pValue  );
+        FlashBuilder(ID, temp->range.pValue ,temp->range.size );
         currentAddress += temp->range.size;
+        ID++;
       }
       
 
         byte[0] = CHARESUB_CMD;
         byte[1] = sizeof(temp->subscribtion);
-        WriteToFlash(currentAddress,2,byte);
+        FlashBuilder(ID,byte,2);
         currentAddress += 2;
-        WriteToFlash(currentAddress, sizeof(temp->subscribtion) , (uint8*)&temp->subscribtion  );
+        FlashBuilder(ID, (uint8*)&temp->subscribtion ,sizeof(temp->subscribtion) );
         currentAddress += sizeof(temp->subscribtion);
+        ID++;
       
       temp = temp->nextitem;
     }
     
   }
-  
-  setFileState(currentAddress);
+  DisposeFlashBuilder();
+  ID--;
+  setFileState(ID);
   
 }
 
@@ -301,7 +366,7 @@ static bool LoadDataObject(uint8 command, uint8 len,uint8* data)
     case PASSCODE_CMD: 
     {
       uint8* id = GetSetSystemID(); 
-      osal_memcmp(id, data, len); 
+      osal_memcpy(id, data, len); 
     }
       break;
     case DEVICENAME_CMD:
@@ -364,28 +429,27 @@ static bool LoadDataObject(uint8 command, uint8 len,uint8* data)
 
 void FileManager_Load()
 {
-  uint16 len = getFileState();
-  if(len != 0)
+  uint16 EndID = getFileState();
+  if(EndID != 0)
   {
-    uint16 addr = 0; 
+    uint16 ID = START_FALSHID+1; 
     
-    while(addr<len)
+    while(EndID >= ID)
     {
       uint8 commandData[2]; 
-      ReadFromFlash(addr,2,commandData);
+      osal_snv_read(ID,2,commandData);
       
       uint8 command = commandData[0]; 
       uint8 datalen = commandData[1]; 
       
-      addr+= 2; 
       
-       uint8* data = osal_mem_alloc(datalen); 
+       uint8* data = osal_mem_alloc(datalen+2); 
        if(data)
        {
-          ReadFromFlash(addr,datalen, data);
-          bool stat = LoadDataObject(command,datalen,data); 
+          osal_snv_read(ID,datalen+2,data);
+          bool stat = LoadDataObject(command,datalen,&data[2]); 
           osal_mem_free(data);
-          addr += datalen;
+          ID ++;
           
        }
     
