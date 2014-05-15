@@ -536,7 +536,7 @@ void ECConnect_RegistrePassCodeCallback(ECConnect_GotPassCode handler)
 
 uint8* GetSetSystemID()
 {
-    return InitialSysID;
+    return SysID;
 }
 
 void ECConnect_ClearPassCode()

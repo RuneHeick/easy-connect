@@ -158,7 +158,7 @@ static void WriteFromBLE(bool hasUnreadData, uint16 uarthandle)
 
 static void GotPasscode()
 {
-  FileManager_Save();
+  FileManager_UpdatePassCode();
 }
 
 static void UpdateGPIO(GenericCharacteristic* chara)
