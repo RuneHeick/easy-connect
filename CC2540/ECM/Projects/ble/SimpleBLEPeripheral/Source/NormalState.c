@@ -164,5 +164,4 @@ static void GotPasscode()
 static void UpdateGPIO(GenericCharacteristic* chara)
 {
   
-  
 }

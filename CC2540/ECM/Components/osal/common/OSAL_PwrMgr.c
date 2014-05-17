@@ -117,7 +117,9 @@ void osal_pwrmgr_init( void )
  */
 void osal_pwrmgr_device( uint8 pwrmgr_device )
 {
-  pwrmgr_attribute.pwrmgr_device = pwrmgr_device;
+  #if defined( POWER_SAVING )
+    pwrmgr_attribute.pwrmgr_device = pwrmgr_device;
+  #endif
 }
 
 /*********************************************************************
@@ -171,14 +173,15 @@ void osal_pwrmgr_powerconserve( void )
   if ( pwrmgr_attribute.pwrmgr_device != PWRMGR_ALWAYS_ON )
   {
     // Are all tasks in agreement to conserve
-    if ( pwrmgr_attribute.pwrmgr_task_state == 0 )
+   if ( pwrmgr_attribute.pwrmgr_task_state == 0 )
     {
       // Hold off interrupts.
       HAL_ENTER_CRITICAL_SECTION( intState );
 
       // Get next time-out
       next = osal_next_timeout();
-
+      if(next == 0)
+        next = 500; 
       // Re-enable interrupts.
       HAL_EXIT_CRITICAL_SECTION( intState );
 

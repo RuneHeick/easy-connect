@@ -381,6 +381,7 @@ uint16 addChar(uint8* buffer, uint8 count)
 
 void InitState_Enter(uint8 tarskID)
 { 
+  osal_pwrmgr_device( PWRMGR_ALWAYS_ON);
   ECConnect_Reset(); // must be before FileManager_Load 
   FileManager_Load(); // has an image in Flash 
   StartDevice(); //Start if Image is Loaded. 
@@ -492,4 +493,5 @@ void InitState_Exit()
   if(FileManager_HasLoadedImage == false)
     FileManager_Save(); //Save Image To Flash; 
 
+   osal_pwrmgr_device( PWRMGR_BATTERY);
 }
