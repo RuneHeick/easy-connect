@@ -201,7 +201,6 @@ static void UartReadWrite_HandelUartPacket(osal_event_hdr_t * msg)
     { 
       if(RX.count > 2)
       {
-        uint16 handle = (RX.bufferPtr[0]<<8)+RX.bufferPtr[1];
         if(WriteData(RX.bufferPtr[0],RX.bufferPtr[1], &RX.bufferPtr[2], RX.count-2))
            Uart_Send_Response(ack,sizeof(ack));
       }

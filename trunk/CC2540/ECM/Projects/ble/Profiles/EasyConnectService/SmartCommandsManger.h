@@ -53,22 +53,25 @@ typedef struct
          
   gattAttribute_t* llReg;  //used to add the profile to the ble stack. Is createt by the complie function. 
   
-  GenericCharacteristic* first; 
+  GenericCharacteristic* first; // NULL if none 
   
 }SmartService;
 
-typedef struct updateHandleContainor UpdateHandle;
-
-struct updateHandleContainor 
+/* Contains handles to show in the Update Characteristic*/
+typedef struct updateHandleContainor 
 {
   uint16 handle; 
-  UpdateHandle* next;
-};
+  struct updateHandleContainor* next;
+}UpdateHandle;
 
-extern SmartService* SmartCommandServices[MAX_SERVICES_SUPPORTED];
+extern SmartService* SmartCommandServices[MAX_SERVICES_SUPPORTED]; 
 extern uint8 SmartCommandServices_Count; 
-extern UpdateHandle* HandelsToUpdate;
+extern UpdateHandle* HandelsToUpdate;  //Contains handles to show in the Update Characteristic
 //Functions 
+
+/*
+*   Description is in the .c file
+*/
 
 uint8 SmartCommandsManger_ElementsInService(SmartService* service); 
 

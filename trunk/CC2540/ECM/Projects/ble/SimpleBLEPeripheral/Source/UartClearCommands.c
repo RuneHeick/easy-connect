@@ -1,5 +1,5 @@
 #include "UartClearCommands.h"
-#include "ResetManager.h"; 
+#include "ResetManager.h"
 #include "ECConnect.h"
 #include "FileManager.h"
 
@@ -90,3 +90,8 @@ static void UartClearCommands_HandelUartPacket(osal_event_hdr_t * msg)
     
   }
 }
+
+/*
+-UartClearCommands_HandleResetButtom():void
+-UartClearCommands_ResetButtomISR():void 
+*/
