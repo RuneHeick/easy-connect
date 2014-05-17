@@ -40,6 +40,10 @@ public class ExpandableListAdapter extends BaseExpandableListAdapter {
      
     public View getChildView(final int groupPosition, final int childPosition, boolean isLastChild, View convertView, ViewGroup parent) {
         final String module = (String) getChild(groupPosition, childPosition);
+        
+        // get name of module instead and set as string.
+        
+        
         LayoutInflater inflater = context.getLayoutInflater();
          
         if (convertView == null) {
