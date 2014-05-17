@@ -20,10 +20,10 @@
  * GLOBAL VARIABLES
  */
 
-SmartService* SmartCommandServices[MAX_SERVICES_SUPPORTED]; 
-uint8 SmartCommandServices_Count = 0; 
+SmartService* SmartCommandServices[MAX_SERVICES_SUPPORTED]; // COntains all services, Max 10 In this device. 
+uint8 SmartCommandServices_Count = 0; // number of services creaded; 
 
-UpdateHandle* HandelsToUpdate = NULL;   //Dynamicly allocating, will grow in size, but not decrease. 
+UpdateHandle* HandelsToUpdate = NULL;   //Dynamicly allocating, will grow in size if possible, but not decrease. 
 
 /*********************************************************************
  * LOCAL VARIABLES
@@ -35,6 +35,7 @@ static void Local_Insert(gattAttribute_t* att, gattAttrType_t type, uint8 permis
 static uint8* GetReadAddress(uint8 readwrite);
 static bool SmartCommandsManger_CompileService(SmartService* service);
 
+/* Counts the number of BLE handle needed for the service  */
 uint8 SmartCommandsManger_ElementsInService(SmartService* service)
 {
   uint8 count = SERVICE_SELF_COUNT+CHAR_SELF_COUNT+CHAR_SELF_COUNT+DESC_SELF_COUNT; //the service and the description and the Update 
@@ -60,6 +61,7 @@ uint8 SmartCommandsManger_ElementsInService(SmartService* service)
   return count;
 }
 
+/* Create a Smart service, needs to be compiled before it can be used */
 SmartService* SmartCommandsManger_CreateService(uint8* description, uint8 len)
 {
   if(SmartCommandServices_Count>=MAX_SERVICES_SUPPORTED )
@@ -87,11 +89,13 @@ SmartService* SmartCommandsManger_CreateService(uint8* description, uint8 len)
   return NULL; 
 }
 
+/* Removes A service */
 bool SmartCommandsManger_DeleteService(SmartService* service)
 {
-  return false; 
+  return false; /* This is not possible at this time */
 }
 
+/* add Characteristic to the last regisred service, returns the Uart handle to the Characteristic. Retuens 0 if not possible */
 uint16 SmartCommandsManger_addCharacteristic(uint8 initialValueSize,uint8* description, uint8 descriptionCount, GUIPresentationFormat guiPresentationFormat, PresentationFormat typeFormat, Subscription subscription, uint8 premission, uint8 gpio)
 {
   SmartService* service; 
@@ -163,6 +167,7 @@ uint16 SmartCommandsManger_addCharacteristic(uint8 initialValueSize,uint8* descr
   return 0; 
 }
 
+/*  Add the Range descriptor to the last registed Characteristic */
 bool SmartCommandsManger_addRange(uint8* Range,uint8 len)
 {
   GenericCharacteristic* temp;
@@ -191,6 +196,7 @@ bool SmartCommandsManger_addRange(uint8* Range,uint8 len)
   return false; 
 }
 
+/*   Removes a Characteristic. THIS IS NOT USED IN THIS PROJECT*/
 bool SmartCommandsManger_RemoveCharacteristic(SmartService* service,GenericCharacteristic* characteristic)
 {
   if(service->llReg==NULL)
@@ -230,6 +236,7 @@ bool SmartCommandsManger_RemoveCharacteristic(SmartService* service,GenericChara
   return false; 
 }
 
+/*   Get the BLE handle for a Service Update Characteristic */
 uint16 SmartCommandsManger_GetUpdateHandle(uint8 ServiceIndex)
 {
   if(SmartCommandServices_Count>0)
@@ -243,6 +250,7 @@ uint16 SmartCommandsManger_GetUpdateHandle(uint8 ServiceIndex)
   return 0; 
 }
 
+/*   Comples all services, after this is it not possible to changed the service, but it can be added to the GATT Manager */
 bool SmartCommandsManger_CompileServices()
 {
   uint8 index = 0; 
@@ -280,6 +288,7 @@ bool SmartCommandsManger_CompileServices()
   return true; 
 }
 
+/* Add a handle to the Update Characteristic of All services */
 void SmartCommandsManger_AddHandleToUpdate(uint16 handel)
 {
   UpdateHandle* tempValue = HandelsToUpdate;
@@ -306,6 +315,7 @@ void SmartCommandsManger_AddHandleToUpdate(uint16 handel)
   
 }
 
+/* get all the handles in the Update Characteristic, Returns the number of handles in the Update Characteristic. */
 uint8 SmartCommandsManger_GetUpdate(uint8* ptr, uint8 maxsize)
 {
   UpdateHandle* tempValue = HandelsToUpdate;
@@ -330,6 +340,7 @@ uint8 SmartCommandsManger_GetUpdate(uint8* ptr, uint8 maxsize)
 }
 
 
+/* Get the Characteristic Value, in a service */
 GenericValue* GetCharacteristic(uint8 service,uint8 characteristic)
 {
   GenericCharacteristic* chara = GetChare(service,characteristic);
@@ -337,6 +348,7 @@ GenericValue* GetCharacteristic(uint8 service,uint8 characteristic)
 }
 
 
+/* Get the Characteristic, in a service */
 GenericCharacteristic* GetChare(uint8 service,uint8 characteristic)
 {
   uint8 count = 1; 
@@ -361,7 +373,7 @@ GenericCharacteristic* GetChare(uint8 service,uint8 characteristic)
   return chara;
 }
 
-
+/* Get the Uart handle for a special Characteristic by sercing for the pointer*/
 uint16 GetCharacteristicUartHandle(GenericValue* data)
 {
   for(uint8 s = 0; s < SmartCommandServices_Count; s++)
@@ -381,7 +393,7 @@ uint16 GetCharacteristicUartHandle(GenericValue* data)
   }
 }
 
-
+/* Get the BLE handle for a Characteristic */
 uint16 GetCharacteristicHandel(uint8 service,uint8 characteristic)
 {
   SmartService* servicePtr = SmartCommandServices[service-1];
@@ -417,6 +429,7 @@ uint16 GetCharacteristicHandel(uint8 service,uint8 characteristic)
 }
 
 
+/* Get the BLE handle for a Characteristic */
 GenericCharacteristic* GetCharaFromHandle(uint16 handle)
 {
    for(uint8 s = 0; s < SmartCommandServices_Count; s++)
@@ -456,6 +469,7 @@ GenericCharacteristic* GetCharaFromHandle(uint16 handle)
    return NULL; 
 }
 
+/* Compiles a singele service */
 static bool SmartCommandsManger_CompileService(SmartService* service)
 {
   uint8 numberOfItems = SmartCommandsManger_ElementsInService(service);
@@ -487,6 +501,7 @@ static void Local_RemoveCharacteristic(GenericCharacteristic* characteristic)
     osal_mem_free(characteristic);
 }
 
+/* Used when compiling the service to create the GATT item*/
 static uint8 Local_CreateInfo(SmartService* service, gattAttribute_t* att, uint8 index, GenericCharacteristic* chara )
 {
     uint8 count = index; 
@@ -530,6 +545,7 @@ static uint8 Local_CreateInfo(SmartService* service, gattAttribute_t* att, uint8
     return index-count; 
 }
 
+/* Translate to GATT READ WRITE INFO*/
 static uint8* GetReadAddress(uint8 readwrite)
 {
   switch(readwrite)
@@ -545,7 +561,7 @@ static uint8* GetReadAddress(uint8 readwrite)
   }
 }
 
-
+/*Inserts GATT Item */
 static void Local_Insert(gattAttribute_t* att, gattAttrType_t type, uint8 permissions, uint8 * pValue)
 {
     struct attAttribute_t item = 

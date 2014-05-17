@@ -211,64 +211,6 @@ static void InvokeCallback(ECC_Status_t newstate)
   }
 }
 
-
-/*********************************************************************
- * @fn      DevInfo_SetParameter
- *
- * @brief   Set a Device Information parameter.
- *
- * @param   param - Profile parameter ID
- * @param   len - length of data to write
- * @param   value - pointer to data to write.  This is dependent on
- *          the parameter ID and WILL be cast to the appropriate
- *          data type (example: data type of uint16 will be cast to
- *          uint16 pointer).
- *
- * @return  bStatus_t
- */
-bStatus_t ECConnect_SetParameter( uint8 param, uint8 len, void *value )
-{
-  bStatus_t ret = SUCCESS;
-
-  switch ( param )
-  {
-    
-    default:
-      ret = INVALIDPARAMETER;
-      break;
-  }
-
-  return ( ret );
-}
-
-/*********************************************************************
- * @fn      DevInfo_GetParameter
- *
- * @brief   Get a Device Information parameter.
- *
- * @param   param - Profile parameter ID
- * @param   value - pointer to data to get.  This is dependent on
- *          the parameter ID and WILL be cast to the appropriate
- *          data type (example: data type of uint16 will be cast to
- *          uint16 pointer).
- *
- * @return  bStatus_t
- */
-bStatus_t ECConnect_GetParameter( uint8 param, void *value )
-{
-  bStatus_t ret = SUCCESS;
-
-  switch ( param )
-  {
-
-    default:
-      ret = INVALIDPARAMETER;
-      break;
-  }
-
-  return ( ret );
-}
-
 /*********************************************************************
  * @fn          ECConnect_ReadAttrCB
  *
@@ -343,7 +285,10 @@ static uint8 ECConnect_WriteAttrCB( uint16 connHandle, gattAttribute_t *pAttr,
         {
             if(offset!=0)
               return ATT_ERR_INVALID_OFFSET;
-     
+            
+            if(ECConnect_AcceptedHost != CONNECTED_ACCEPTED)
+              return ATT_ERR_WRITE_NOT_PERMITTED;
+            
             if(len == 4)
             {
               osal_memcpy(&UpdateTime,pValue,len);
@@ -425,7 +370,7 @@ static void ECConnect_HandleConnStatusCB( uint16 connHandle, uint8 changeType )
       break;
   default:
     {
-      volatile int a = 5;  
+
     }
     break; 
   }
@@ -435,6 +380,7 @@ static void ECConnect_HandleConnStatusCB( uint16 connHandle, uint8 changeType )
 
 static void addConnectionToList()
 {
+  
   KnownAddrs_t Address;
   GAPRole_GetParameter(GAPROLE_CONN_BD_ADDR, Address.addr);
   if(GenericList_contains(&KnownAddresList,(uint8*)&Address,sizeof(KnownAddrs_t))==false)
@@ -478,9 +424,13 @@ uint16 ECConnect_ProcessEvent( uint8 task_id, uint16 events )
       Update_UpdateTime();
       GAPRole_GetParameter(GAPROLE_CONN_BD_ADDR, Address.addr);
       if(GenericList_contains(&KnownAddresList,(uint8*)&Address,sizeof(KnownAddrs_t))==true)
+      {
         InvokeCallback(CONNECTED_ACCEPTED);
+      }
       else
+      {
         InvokeCallback(CONNECTED_NOTACCEPTED);
+      }
       
       return ( events ^ NEWLINK_EVENT );
   }

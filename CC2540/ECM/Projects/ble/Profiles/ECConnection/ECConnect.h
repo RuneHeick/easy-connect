@@ -29,37 +29,12 @@ extern ECC_Status_t ECConnect_AcceptedHost;
  *
  */
 
+/* Add the service to the GATT Manager and starts it*/
 extern bStatus_t ECConnect_AddService();
 
-/*********************************************************************
- * @fn      ECConnect_SetParameter
- *
- * @brief   Set a Device Information parameter.
- *
- * @param   param - Profile parameter ID
- * @param   len - length of data to right
- * @param   value - pointer to data to write.  This is dependent on
- *          the parameter ID and WILL be cast to the appropriate
- *          data type (example: data type of uint16 will be cast to
- *          uint16 pointer).
- *
- * @return  bStatus_t
- */
-bStatus_t ECConnect_SetParameter( uint8 param, uint8 len, void *value );
 
-/*
- * ECConnect_GetParameter - Get a Device Information parameter.
- *
- *    param - Profile parameter ID
- *    value - pointer to data to write.  This is dependent on
- *          the parameter ID and WILL be cast to the appropriate
- *          data type (example: data type of uint16 will be cast to
- *          uint16 pointer).
- */
-extern bStatus_t ECConnect_GetParameter( uint8 param, void *value );
-
+/*  OSAL functions*/
 extern void ECConnect_Init( uint8 task_id );
-
 extern uint16 ECConnect_ProcessEvent( uint8 task_id, uint16 events );
 
 
@@ -69,10 +44,19 @@ extern uint16 ECConnect_ProcessEvent( uint8 task_id, uint16 events );
  */
 extern void ECConnect_RegistreChangedCallback(ECConnect_StatusChange_t handler);
 
+
+/*
+ * ECConnect_RegistrePassCodeCallback - registre a callback function.
+    This is called if there is any changes in the SYSTEMID. 
+ */
 extern void ECConnect_RegistrePassCodeCallback(ECConnect_GotPassCode handler);
 
+
+/* Get a pointer to the System ID */ 
 extern uint8* GetSetSystemID();
 
+ /* Init */
 extern void ECConnect_Reset();
 
+/* Clear the systemID */
 extern void ECConnect_ClearPassCode();

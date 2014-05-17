@@ -1,4 +1,4 @@
-#pragma ones 
+#pragma once
 #include "OSAL.h"
 #include "Uart.h"
 

@@ -42,7 +42,7 @@ CONST uint8 descriptionStringCharUUID[ATT_BT_UUID_SIZE] =
   LO_UINT16(DESCRIPTIONSTR_CHARACTERISTICS_UUID), HI_UINT16(DESCRIPTIONSTR_CHARACTERISTICS_UUID)
 };
 
-
+/* Needs to be in a static place in memory for the GATT Manager*/
 uint8 ReadProps = GATT_PROP_READ ;
 uint8 WriteProps =  GATT_PROP_WRITE;
 uint8 ReadWriteProps = GATT_PROP_READ | GATT_PROP_WRITE;
