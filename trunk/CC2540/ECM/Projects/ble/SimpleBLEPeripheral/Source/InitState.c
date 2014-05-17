@@ -225,7 +225,7 @@ DEVINFO_MODEL_NUMBER              1
 #define DEVINFO_MANUFACTURER_NAME         6
 */
 
-void InitState_HandelUartPacket(osal_event_hdr_t * msg)
+static void InitState_HandelUartPacket(osal_event_hdr_t * msg)
 {
   RqMsg* pMsg = (RqMsg*) msg; 
   PayloadBuffer RX = Uart_getRXpayload();
