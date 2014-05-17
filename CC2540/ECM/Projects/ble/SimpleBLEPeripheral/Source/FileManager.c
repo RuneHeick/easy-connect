@@ -50,6 +50,10 @@ typedef struct TempCharacteristic
   
 }TempCharacteristic;
 
+
+void ReadFromFlash(uint16 addr, uint8 count, uint8* buffer);
+void WriteToFlash(uint16 addr, uint8 count, uint8* buffer);
+
 static TempCharacteristic tempChare; 
 
 //to FlashBuilder 
