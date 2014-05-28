@@ -9,6 +9,7 @@
 #include "SmartCommandsManger.h"
 #include "EasyConnectProfile.h"
 #include "SmartCommandsProperties.h"
+#include "GPIOManager.h"
 
 #define GENERICCHAR_MANDATORY_DESCRIPTORS_COUNT       3
 #define SERVICE_SELF_COUNT                            1
@@ -119,6 +120,17 @@ uint16 SmartCommandsManger_addCharacteristic(uint8 initialValueSize,uint8* descr
     chare->subscribtion = subscription; 
     chare->typePresentationFormat = typeFormat;
     chare->gpio = gpio;
+    
+    uint8 i; 
+    for(i = 0; i<8; i++)
+    {
+      if( (gpio>>i) & 0x01)
+      {
+        GPIO_register(i,typeFormat.Format);
+      }
+    }
+    
+    
     chare->nextitem = NULL; 
     
     if(!GenericValue_CreateContainer(&chare->value, initialValueSize))

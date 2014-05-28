@@ -82,6 +82,8 @@
 #include "UartClearCommands.h"
 #include "UartReadWriteCommands.h"
 
+#include "GPIOManager.h"
+
 /*********************************************************************
  * GLOBAL VARIABLES
  */
@@ -106,7 +108,8 @@ const pTaskEventHandlerFn tasksArr[] =
   ECConnect_ProcessEvent,
   SimpleBLEPeripheral_ProcessEvent,                                  // task 13
   UartClearCommands_ProcessEvent,
-  UartReadWrite_ProcessEvent
+  UartReadWrite_ProcessEvent,
+  GPIO_ProcessEvent
 };
 
 const uint8 tasksCnt = sizeof( tasksArr ) / sizeof( tasksArr[0] );
@@ -177,6 +180,7 @@ void osalInitTasks( void )
   
   UartReadWrite_Init(taskID++);
   
+  GPIO_Init(taskID++);
 }
 
 /*********************************************************************
