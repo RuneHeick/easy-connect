@@ -31,6 +31,7 @@
 #include "InitState.h"
 #include "FileManager.h"
 #include "UartReadWriteCommands.h"
+#include "GPIOManager.h"
 
 #define PERIODIC_TEST_EVENT (1<<10)
 
@@ -66,7 +67,7 @@ uint16 NormalState_ProcessEvent( uint8 task_id, uint16 events )
     return (events ^ SYS_EVENT_MSG);
   }
   
-  if ( events & PERIODIC_TEST_EVENT )
+  if ( events & PERIODIC_TEST_EVENT ) // Only for test 
   {
     SimpleProfile_SetParameter(0x0101,3,"HEJ"); // set to hej every time; 
 
@@ -86,7 +87,7 @@ void NormalState_Enter(uint8 tarskID)
   ECConnect_RegistrePassCodeCallback(GotPasscode);
   SimpleProfile_RegistreUnreadCallback(hasApplicationUnreadData);
   SimpleProfile_RegistreBLEWriteCallback(WriteFromBLE); 
-  //osal_start_reload_timer(tarskID,PERIODIC_TEST_EVENT,30000);
+  //osal_start_reload_timer(tarskID,PERIODIC_TEST_EVENT,30000); // for test 
 }
 
 void NormalState_Exit()
@@ -144,10 +145,12 @@ static void hasApplicationUnreadData(bool hasUnreadData, uint16 handle)
   GenericCharacteristic* chara =  GetCharaFromHandle(handle);
   UpdateGPIO(chara);
   
+  /*  Wake from sleep-mode  */
   if(hasUnreadData == true && currentState == CONNECTED_SLEEPING)
     Setup_discoverableMode(GAP_ADTYPE_FLAGS_GENERAL,requestRead,handle);
 }
 
+/*  Updated Value from ECRU  */
 static void WriteFromBLE(bool hasUnreadData, uint16 uarthandle)
 {
   UartReadWrite_UpdateHandle(uarthandle); 
@@ -156,12 +159,21 @@ static void WriteFromBLE(bool hasUnreadData, uint16 uarthandle)
   UpdateGPIO(chara);
 }
 
+/*  Recived Passcode from BLE */
 static void GotPasscode()
 {
   FileManager_UpdatePassCode();
 }
 
+/*  Update the GPIO pin if any */
 static void UpdateGPIO(GenericCharacteristic* chara)
 {
-  
+  uint8 i; 
+  for(i = 0; i<8; i++)
+  {
+    if( (chara->gpio>>i) & 0x01)
+    {
+      GPIO_Trig(i, chara->value.pValue[0]);
+    }
+  }
 }

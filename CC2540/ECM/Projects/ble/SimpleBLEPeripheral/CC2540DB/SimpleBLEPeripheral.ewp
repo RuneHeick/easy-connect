@@ -8518,6 +8518,12 @@
         <name>$PROJ_DIR$\..\Source\GenericValueManger.h</name>
       </file>
       <file>
+        <name>$PROJ_DIR$\..\Source\GPIOManager.c</name>
+      </file>
+      <file>
+        <name>$PROJ_DIR$\..\Source\GPIOManager.h</name>
+      </file>
+      <file>
         <name>$PROJ_DIR$\..\..\SimpleBLECentral\Source\ResetManager.c</name>
       </file>
       <file>
