@@ -50,44 +50,24 @@ namespace ECRU
 
                     switch (currentState)
                     {
-                    case 1: //Load System Information state
-                        SystemInfo.LoadConfig("SysInfoConfig.cfg");
-                        SystemInfo.Start();
-                        SystemInfo.ConnectedDevices.Add("E68170E5C578".FromHex());
-                        SystemInfo.ConnectedDevices.Add("F83A228CBA1C".FromHex());
-                        break;
+                        case 1: //Load System Information state
+                            SystemInfo.LoadConfig("SysInfoConfig.cfg");
+                            SystemInfo.Start();
+                            SystemInfo.ConnectedDevices.Add("E68170E5C578".FromHex());
+                            SystemInfo.ConnectedDevices.Add("F83A228CBA1C".FromHex());
+                            break;
 
-                    case 2: //System Configuration state
-                        _bleModule.LoadConfig("");
-                        _bleModule.Start();
-                        break;
+                        case 2: //System Configuration state
+                            _bleModule.LoadConfig("");
+                            _bleModule.Start();
+                            break;
 
-                    case 3: //Normal state
-                        _bleModule.Reset();
-                        _netDaemon.LoadConfig("");
-                        _netDaemon.Start();
-                        break;
-                }
-                }
-                else if(currentState == 3) // test
-                {
-                    Thread.Sleep(60000);
-                    FileBase file = null;
-                    if (FileSystem.Exists("Rune.txt", FileType.Shared))
-                    {
-                        file = FileSystem.GetFile("Rune.txt", FileAccess.ReadWrite, FileType.Shared);
+                        case 3: //Normal state
+                            _bleModule.Reset();
+                            _netDaemon.LoadConfig("");
+                            _netDaemon.Start();
+                            break;
                     }
-                    else
-                    {
-                        file = FileSystem.CreateFile("Rune.txt", FileType.Shared);
-                    }
-
-                    if (file != null)
-                    {
-                        file.Data = new byte[] { (byte)'A' };
-                        file.Close();
-                    }
-
                 }
                 else
                 {
@@ -127,7 +107,7 @@ namespace ECRU
 
             //(new BLEModule()).Start();
 
-           
+            
         }
 
         private static void StateSwitch(Byte[] sysMac, string name, string passCode)
