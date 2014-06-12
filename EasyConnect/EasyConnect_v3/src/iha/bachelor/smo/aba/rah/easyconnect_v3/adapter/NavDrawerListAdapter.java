@@ -1,5 +1,5 @@
 package iha.bachelor.smo.aba.rah.easyconnect_v3.adapter;
-
+/// this code has been made with inspiration of http://www.androidhive.info/2013/11/android-sliding-menu-using-navigation-drawer/
 
 import iha.bachelor.smo.aba.rah.easyconnect_v3.R;
 import iha.bachelor.smo.aba.rah.easyconnect_v3.model.NavDrawerItem;

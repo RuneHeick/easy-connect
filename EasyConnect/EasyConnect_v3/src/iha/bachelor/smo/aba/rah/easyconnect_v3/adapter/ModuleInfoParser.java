@@ -34,7 +34,7 @@ public class ModuleInfoParser {
 //                        break;
                     case (byte) 0x10:
                         file.Manufacturer.handle = (short)(((short)(data[i + 2]) << 8) + ((short)data[i + 3]));
-                    	file.Manufacturer.Value = Arrays.copyOfRange(data, i+4, len);
+                    	file.Manufacturer.Value = Arrays.copyOfRange(data, i+4, i+len);
                         break;
                     case (byte) 0x11:
                         file.Model.handle = (short)(((short)(data[i + 2]) << 8) + ((short)data[i + 3]));

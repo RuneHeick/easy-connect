@@ -9,15 +9,20 @@ import java.util.List;
 import java.util.Map;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.graphics.Typeface;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.View.OnClickListener;
 import android.widget.BaseExpandableListAdapter;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.TextView;
+import android.widget.Toast;
  
 public class ExpandableListModuleAdapter extends BaseExpandableListAdapter {
 	private Activity context;
@@ -57,11 +62,11 @@ public class ExpandableListModuleAdapter extends BaseExpandableListAdapter {
  
     public View getGroupView(int groupPosition, boolean isExpanded, View convertView, ViewGroup parent) {
     	Service service = (Service) getGroup(groupPosition);
-        if (convertView == null) {
-            LayoutInflater infalInflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-            convertView = infalInflater.inflate(R.layout.service_item, null);
-        }
-        TextView item = (TextView) convertView.findViewById(R.id.service);
+    	if (convertView == null) {
+    		LayoutInflater infalInflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+    		convertView = infalInflater.inflate(R.layout.service_item, null);
+    	}
+    	TextView item = (TextView) convertView.findViewById(R.id.service);
         item.setTypeface(null, Typeface.BOLD);
         
         try {
@@ -70,6 +75,31 @@ public class ExpandableListModuleAdapter extends BaseExpandableListAdapter {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+        
+        ImageView update = (ImageView) convertView.findViewById(R.id.update_service);
+        update.setOnClickListener(new OnClickListener() {
+             
+            public void onClick(View v) {
+                AlertDialog.Builder builder = new AlertDialog.Builder(context);
+                builder.setMessage("Start Service?");
+                builder.setCancelable(false);
+                builder.setPositiveButton("Yes",
+                        new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int id) {
+                            	 Toast.makeText(context, "Updated", Toast.LENGTH_LONG).show(); 
+                            }
+                        });
+                builder.setNegativeButton("No",
+                        new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int id) {
+                                dialog.cancel();
+                            }
+                        });
+                AlertDialog alertDialog = builder.create();
+                alertDialog.show();
+            }
+        });
+        
         return convertView;
     }
  
@@ -86,22 +116,23 @@ public class ExpandableListModuleAdapter extends BaseExpandableListAdapter {
 		final Characteristic tempChar = (Characteristic) getChild(groupPosition, childPosition);
 		LayoutInflater inflater = context.getLayoutInflater();
         
-		switch (tempChar._gUIFormat.Value[1]){
+		//switch (5){
+		switch (tempChar._gUIFormat.Value[0]){   // FIX ME Dør fordi den er null
 			case 2:
-				convertView = inflater.inflate(R.drawable.characteristic_textbox, null);
+				convertView = inflater.inflate(R.layout.characteristic_textbox, null);
 				break;
 			case 3:
-				convertView = inflater.inflate(R.drawable.characteristic_seekbar, null);
+				convertView = inflater.inflate(R.layout.characteristic_seekbar, null);
 				SeekBar seeker = (SeekBar) convertView.findViewById(R.id.seekbar);
 				if ( tempChar._range.handle != 0){
 					seeker.setMax(tempChar._range.Value[1]);
 				}
 				break;
 			case 5:
-				convertView = inflater.inflate(R.drawable.characteristic_checkbox, null);
+				convertView = inflater.inflate(R.layout.characteristic_checkbox, null);
 				break;
 			default:
-				convertView = inflater.inflate(R.drawable.characteristic_textbox, null);
+				convertView = inflater.inflate(R.layout.characteristic_textbox, null);
 				EditText edittext = (EditText) convertView.findViewById(R.id.EditText);
 				edittext.clearFocus();
 				break;

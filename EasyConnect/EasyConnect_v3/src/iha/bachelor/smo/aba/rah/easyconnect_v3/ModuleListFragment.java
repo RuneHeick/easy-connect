@@ -27,30 +27,30 @@ public class ModuleListFragment extends Fragment{
 	List<String> groupList;
 	Map<String, List<String>> roomUnitCollection;
 	ExpandableListView expListView;
-	
+
 	public ModuleListFragment(){}
-	
+
 	@Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		View rootView = inflater.inflate(R.layout.fragment_module_list, container, false);
-	
+
 		if (savedInstanceState != null){
 			return rootView;
 		}
 		//createTestFunctionList();
 		createREALCollection();
-		
+
 		expListView = (ExpandableListView) rootView.findViewById(R.id.function_list);
 		final ExpandableListAdapter expListAdapter = new ExpandableListAdapter(getActivity(), groupList, roomUnitCollection);
 		expListView.setAdapter(expListAdapter);
-		 
+
 		expListView.setOnChildClickListener(new OnChildClickListener() {
 			public boolean onChildClick(ExpandableListView parent, View v, int groupPosition, int childPosition, long id) {
 				final String selected = (String) expListAdapter.getChild(groupPosition, childPosition);
 				Toast.makeText(getActivity().getBaseContext(), selected, Toast.LENGTH_LONG).show();
-				
-				
-				
+
+
+
 				Bundle bundle = new Bundle();
 				bundle.putString("module", selected);
 				Fragment ModuleFragment = new ModuleFragment();
@@ -59,11 +59,11 @@ public class ModuleListFragment extends Fragment{
 				return true;
 			}
 		});
-		
+
 		Log.i(LOG_TAG, "FileWrite complete");
-		
-        return rootView;
-    }
+
+		return rootView;
+	}
 
 	public FunctionList createTestFunctionList(){
 		FunctionList fl =  new FunctionList("test");
@@ -78,7 +78,7 @@ public class ModuleListFragment extends Fragment{
 				FileHandler.FUNCTIONS_LIST_DIR,
 				FileHandler.FUNCTIONS_LIST_FILENAME,
 				FileHandler.EncodeGSoN(fl));
-		
+
 		return null;
 	}
 
@@ -87,21 +87,26 @@ public class ModuleListFragment extends Fragment{
 	}
 
 	private void createREALCollection(){
-		RoutingTable rt =  FileHandler.DecodeGsonRoutingTable(
-				FileHandler.ReadStringFromFile(
-						getActivity(),
-						MainActivity.CurrentProfileName,
-						"routingTable",
-						"routingTable.txt"));
+		try{
+			RoutingTable rt =  FileHandler.DecodeGsonRoutingTable(
+					FileHandler.ReadStringFromFile(
+							getActivity(),
+							MainActivity.CurrentProfileName,
+							"routingTable",
+							"routingTable.txt"));
 
-        groupList = new ArrayList<String>();
-        roomUnitCollection = new LinkedHashMap<String, List<String>>();
+			groupList = new ArrayList<String>();
+			roomUnitCollection = new LinkedHashMap<String, List<String>>();
 
-		for (UnitAdress ua : rt.UnitAdresses ){
-			String serialiseRoomUnit = FileHandler.ReadStringFromFile(getActivity(), MainActivity.CurrentProfileName, FileHandler.FUNCTIONS_LIST_DIR, ua._macAdress+ ".txt");
-			ECRU tempEcru = FileHandler.DecodeGsonEcru(serialiseRoomUnit);
-			groupList.add(tempEcru.Name);
-			roomUnitCollection.put(tempEcru.Name, tempEcru.Devices);
+			for (UnitAdress ua : rt.UnitAdresses ){
+				String serialiseRoomUnit = FileHandler.ReadStringFromFile(getActivity(), MainActivity.CurrentProfileName, FileHandler.FUNCTIONS_LIST_DIR, ua._macAdress+ ".txt");
+				ECRU tempEcru = FileHandler.DecodeGsonEcru(serialiseRoomUnit);
+				groupList.add(tempEcru.Name);
+				roomUnitCollection.put(tempEcru.Name, tempEcru.Devices);
+			}
+		}
+		catch (Exception e){
+			Toast.makeText(getActivity().getBaseContext(), "No resources available", Toast.LENGTH_LONG).show();
 		}
 	}
 }

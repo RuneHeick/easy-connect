@@ -25,15 +25,12 @@ public class LoaderActivity extends Activity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_initial);
-		
-		wifiManager = (WifiManager) this.getSystemService(WIFI_SERVICE);
-		CheckConnection();
 	}
 	
 	@Override
 	protected void onResume(){
 		super.onResume();
-		
+		wifiManager = (WifiManager) this.getSystemService(WIFI_SERVICE);
 		CheckConnection();
 	}
 	
@@ -48,23 +45,23 @@ public class LoaderActivity extends Activity {
 		WifiInfo wifiInfo = wifiManager.getConnectionInfo();
 		
 		if (SeachProfilesForCurrentWifi(wifiInfo.getSSID())){
-			Intent NetworkNotAvailable = new Intent(this, MainActivity.class);
-			NetworkNotAvailable.putExtra("CurrentProfile", foundProfile);
+			Intent NetworkAvailable = new Intent(this, MainActivity.class);
+			NetworkAvailable.putExtra("CurrentProfile", foundProfile);
 			
 			Bundle extras = getIntent().getExtras();
 			if (extras == null) {
-				NetworkNotAvailable.putExtra("TargetFragment", MODULE_LIST);
+				NetworkAvailable.putExtra("TargetFragment", MODULE_LIST);
 			}else {
-				NetworkNotAvailable.putExtra("TargetFragment", PROFILE_LIST);
+				NetworkAvailable.putExtra("TargetFragment", PROFILE_LIST);
 			}
 			
 			
-			startActivity(NetworkNotAvailable);
+			startActivity(NetworkAvailable);
 		}
 		else {
-			Intent NetworkAvailable = new Intent(this, MainActivity.class);
-			NetworkAvailable.putExtra("TargetFragment", CREATE_PROFILE);
-			startActivity(NetworkAvailable);
+			Intent NetworkNotAvailable = new Intent(this, MainActivity.class);
+			NetworkNotAvailable.putExtra("TargetFragment", CREATE_PROFILE);
+			startActivity(NetworkNotAvailable);
 		}
 		
 	}

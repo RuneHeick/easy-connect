@@ -1,4 +1,4 @@
-<resources>
+<resources xmlns:android="http://schemas.android.com/apk/res/android">
 
     <!--
         Base application theme, dependent on API level. This theme is replaced
@@ -11,10 +11,18 @@
             backward-compatibility can go here.
         -->
     </style>
-
+    
     <!-- Application theme. -->
     <style name="AppTheme" parent="AppBaseTheme">
+        <item name="android:background">@color/easyconnect_darkcolor</item>
+        <item name="android:textColor">@color/easyConnect_color</item>
         <!-- All customizations that are NOT specific to a particular API-level can go here. -->
     </style>
 
+	<style name="ChildItems" parent="">
+        <item name="android:background">@color/easyconnect_darkcolor</item>
+        <item name="android:textColor">@color/easyConnect_color</item>
+        <!-- All customizations that are NOT specific to a particular API-level can go here. -->
+    </style>
+  		  
 </resources>

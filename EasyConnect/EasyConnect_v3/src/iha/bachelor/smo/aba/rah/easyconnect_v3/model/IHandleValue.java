@@ -11,6 +11,9 @@ public interface IHandleValue {
 	    public byte[] Value;
 	    
 		public byte[] getValue() {
+			if (Value.equals(null)){
+				return new byte[2];
+			}
 			return Value;
 		}
 		
