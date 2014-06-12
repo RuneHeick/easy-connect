@@ -276,6 +276,7 @@ public class MainActivity extends Activity {
 	public void ShowProfileListFragment(){
 		Intent done = new Intent(this, MainActivity.class);
 		done.putExtra("TargetFragment", LoaderActivity.PROFILE_LIST);
+		done.putExtra("CurrentProfile", CurrentProfileName);
 	    startActivity(done);
 	}
 	

@@ -42,14 +42,14 @@ public class NetworkService extends Service {
 	private String MacAddress;
 	private IBinder mBinder = new ServiceBinder();
 	public String CurrentProfileName;
-	
+
 	@Override
 	public void onCreate() {
 
 		Log.i(LOG_TAG,"onCreate Called");
 		UDPrunning = true;
 		routingTable = new RoutingTable();
-		
+
 		new Thread(new UDPServer()).start(); 
 		try { 
 			Thread.sleep(500); 
@@ -61,18 +61,18 @@ public class NetworkService extends Service {
 		Log.i(LOG_TAG, "onBind Called");
 		return mBinder;
 	}
-	
+
 	public class ServiceBinder extends Binder {
 		public NetworkService getService() {
 			return NetworkService.this;
 		}
 	}
-	
+
 	@Override
 	public int onStartCommand(Intent intent, int flags, int startId) {
 		Log.i(LOG_TAG, "onStartCommand Called");
 		CurrentProfileName = (String) intent.getExtras().get("CurrentProfile");
-	    return Service.START_REDELIVER_INTENT;
+		return Service.START_REDELIVER_INTENT;
 	}
 
 	@Override
@@ -82,10 +82,10 @@ public class NetworkService extends Service {
 		while (!socketClosed){}
 		super.onDestroy();
 	}
-	
+
 	public class UDPServer implements Runnable {
 		private static final String LOG_TAG = "NetworkService:UDPServer";
-		
+
 		@Override 
 		public void run() {
 			Log.i(LOG_TAG, "run() startet");
@@ -98,17 +98,17 @@ public class NetworkService extends Service {
 					socket = new DatagramSocket(SERVERPORT);
 					packet = new DatagramPacket(receiveBuffer, receiveBuffer.length);
 					socket.receive(packet);
-					
+
 					Log.i(LOG_TAG, "ClientAdress received: "+ packet.getAddress().toString());
 					Log.i(LOG_TAG, "ClientPort received: " + packet.getPort());
-					
+
 					MacAddress = getMacAdress(packet);
 					if (MacAddress != null){
-						
+
 						currentServerIP = packet.getAddress();
 						UnitAdress received = new UnitAdress(MacAddress, currentServerIP);
 						Log.i(LOG_TAG, "UnitAdress created!");
-						
+
 						if (!routingTable.contains(received)){
 							routingTable.add(received);
 							getDevices(received);						
@@ -117,6 +117,7 @@ public class NetworkService extends Service {
 						} else {
 							Log.i(LOG_TAG, "UnitAddress already there!");
 						}
+//						getDevices(received);
 						Log.i(LOG_TAG, "end of try");
 					} else {
 						Log.i(LOG_TAG, "Wrong package type");
@@ -132,7 +133,7 @@ public class NetworkService extends Service {
 			}
 		}
 	}
-	
+
 	private void getDevices(UnitAdress roomUnit){
 		Socket tcpSocket = null;
 		BufferedReader in = null;
@@ -142,49 +143,51 @@ public class NetworkService extends Service {
 			Log.d(LOG_TAG, "Connecting...");
 			tcpSocket = new Socket(roomUnit._currentIp, SERVERPORT);
 			Log.d(LOG_TAG, "Connected...");
-			
+
 			in = new BufferedReader(new InputStreamReader(tcpSocket.getInputStream()));
-			
+
 			Log.d(LOG_TAG, "Sending command.");
 			out = new BufferedWriter(new OutputStreamWriter(tcpSocket.getOutputStream()));
 
 			String outMsg;
-	        outMsg = ReqDevs;
+			outMsg = ReqDevs;
 			out.write(outMsg);
-			
+
 			out.flush();
 			Log.i(LOG_TAG, "sent: " + outMsg);
-			
+
 			String inMsg = in.readLine() + System.getProperty("line.separator");
 			inMsg = inMsg.replace("Accepted", "");
-			
+
 			Log.i(LOG_TAG, "received inMsg: " + inMsg);
 			tempEcru = FileHandler.DecodeGsonEcru(inMsg);
 			funcList.addECRU(tempEcru);
-			
+
 			FileHandler.writeToFile(getBaseContext(),
 					CurrentProfileName,
 					FileHandler.FUNCTIONS_LIST_DIR,
 					FileHandler.FUNCTIONS_LIST_FILENAME,
 					FileHandler.EncodeGSoN(funcList));
-			
+
 			Log.i(LOG_TAG, "received ECRU: " + tempEcru.toString());
 		} catch (Exception e) {
 			Log.e(LOG_TAG, "Error", e);
-        } finally {
-        	try {
-        		if ( tcpSocket != null && tcpSocket.isConnected()){
-        			tcpSocket.close();
-        			Log.i(LOG_TAG, "TCP-connection Closed");
-        		}
+		} finally {
+			try {
+				if ( tcpSocket != null && tcpSocket.isConnected()){
+					tcpSocket.close();
+					Log.i(LOG_TAG, "TCP-connection Closed");
+				}
 			} catch (IOException e) {
 				Log.e(LOG_TAG, "Error", e);
 			}
-        }
-		
+		}
+
 		FileHandler.writeToFile(this, CurrentProfileName, FileHandler.FUNCTIONS_LIST_DIR, roomUnit._macAdress + ".txt", tempEcru.toString());
-		for (String s: tempEcru.Devices){
-			getDeviceInformation(roomUnit, s);
+		if (!tempEcru.Devices.isEmpty()){
+			for (String s: tempEcru.Devices){
+				getDeviceInformation(roomUnit, s);
+			}
 		}
 	}
 
@@ -196,19 +199,19 @@ public class NetworkService extends Service {
 			Log.d(LOG_TAG, "reqDevInf: Connecting...");
 			tcpSocket = new Socket(roomUnit._currentIp, SERVERPORT);
 			Log.d(LOG_TAG, "reqDevInf: Connected...");
-			
+
 			in = tcpSocket.getInputStream();
 			out = tcpSocket.getOutputStream();
-			
+
 			Log.d(LOG_TAG, "reqDevInf: Sending command.");
 			String outMsg;
-	        outMsg = ReqDevInf;
+			outMsg = ReqDevInf;
 			out.write(outMsg.getBytes("UTF-8"));	// Sending Request Device Information
 
 			byte[] buf = new byte[1024];
 			int availableBytes = 0;
 			availableBytes = in.read(buf);		// reading if accepted
-			
+
 			if (availableBytes > 0){
 				availableBytes = 0;
 				Log.d(LOG_TAG, "reqDevInf: Sending macAddres.");
@@ -224,30 +227,30 @@ public class NetworkService extends Service {
 			}
 		} catch (Exception e) {
 			Log.e(LOG_TAG, "Error", e);
-        } finally {
-        	try {
-        		if ( tcpSocket != null && tcpSocket.isConnected()){
-        			tcpSocket.close();
-        			Log.i(LOG_TAG, "TCP-connection Closed");
-        		}
+		} finally {
+			try {
+				if ( tcpSocket != null && tcpSocket.isConnected()){
+					tcpSocket.close();
+					Log.i(LOG_TAG, "TCP-connection Closed");
+				}
 			} catch (IOException e) {
 				Log.e(LOG_TAG, "Error", e);
 			}
-        }
+		}
 	}
-	
+
 	public String getMacAdress(DatagramPacket dataPacket){
 		Log.i(LOG_TAG, "getting Mac Address");
 		final char[] hexArray = "0123456789ABCDEF".toCharArray();
 		byte[] buf = dataPacket.getData();
-	
+
 		if ( buf[0] == 1){
 			char[] hexChars = new char[12];
 			for ( int j = 0; j < 6; j++ ) {
-	        	int v = buf[j+1] & 0xFF;
-	        	hexChars[j * 2] = hexArray[v >>> 4];
-	        	hexChars[j * 2 + 1] = hexArray[v & 0x0F];
-	    	}
+				int v = buf[j+1] & 0xFF;
+				hexChars[j * 2] = hexArray[v >>> 4];
+				hexChars[j * 2 + 1] = hexArray[v & 0x0F];
+			}
 			String MacAddress = new String(hexChars);
 			Log.i(LOG_TAG, "Mac Address: " + MacAddress);
 

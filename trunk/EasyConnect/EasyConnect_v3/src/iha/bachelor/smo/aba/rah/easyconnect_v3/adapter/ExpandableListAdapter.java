@@ -1,7 +1,11 @@
 package iha.bachelor.smo.aba.rah.easyconnect_v3.adapter;
 
+import iha.bachelor.smo.aba.rah.easyconnect_v3.MainActivity;
 import iha.bachelor.smo.aba.rah.easyconnect_v3.R;
+import iha.bachelor.smo.aba.rah.easyconnect_v3.contentprovider.FileHandler;
+import iha.bachelor.smo.aba.rah.easyconnect_v3.model.ModuleInfo;
 
+import java.io.UnsupportedEncodingException;
 import java.util.List;
 import java.util.Map;
 
@@ -40,7 +44,12 @@ public class ExpandableListAdapter extends BaseExpandableListAdapter {
      
     public View getChildView(final int groupPosition, final int childPosition, boolean isLastChild, View convertView, ViewGroup parent) {
         final String module = (String) getChild(groupPosition, childPosition);
-        
+        ModuleInfo testMI = ModuleInfoParser.ByteToInfo(
+        		FileHandler.ReadBytesFromFile(context,
+        				MainActivity.CurrentProfileName,
+        				FileHandler.MODULE_DIR,
+        				module+".BLE"
+        				));
         // get name of module instead and set as string.
         
         
@@ -79,7 +88,12 @@ public class ExpandableListAdapter extends BaseExpandableListAdapter {
             }
         });
          
-        item.setText(module);
+        try {
+			item.setText(new String(testMI.Name.Value,"UTF-8"));
+		} catch (UnsupportedEncodingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
         return convertView;
     }
  

@@ -47,8 +47,8 @@ public class ModuleFragment extends Fragment {
 	}
 	
 	private void createREALCollection(String fileName){
-		ModuleInfo testMI = ModuleInfoParser.ByteToInfo(ReadFileFromSDCard("EC_CONNECT",FileHandler.MODULE_DIR, fileName+".BLE"));
-		Log.i(LOG_TAG, testMI.toString());
+		ModuleInfo testMI = ModuleInfoParser.ByteToInfo(ReadFileFromSDCard(MainActivity.CurrentProfileName,FileHandler.MODULE_DIR, fileName+".BLE"));
+//		Log.i(LOG_TAG, testMI.toString()); // skal fixes så det kan logges (characteristic kan ikke lave en ToString!
 		ServiceNameList = new ArrayList<Service>();
 		CharacteristicsCollection = new LinkedHashMap<Service, List<Characteristic>>();
 		

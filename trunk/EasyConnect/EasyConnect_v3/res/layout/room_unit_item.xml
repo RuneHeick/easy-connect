@@ -3,11 +3,17 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:padding="10dp" >
+    android:background="@color/easyconnect_darkcolor"
+    android:padding="20dp" >
  
     <TextView
         android:id="@+id/laptop"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:paddingLeft="25dp"/>
+        android:paddingLeft="35dp"
+        android:textSize="20sp"
+        android:textColor="@color/easyConnect_color"
+        />
+    
+    
 </LinearLayout>

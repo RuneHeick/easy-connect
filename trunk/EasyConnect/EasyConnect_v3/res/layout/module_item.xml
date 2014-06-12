@@ -2,15 +2,19 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="fill_parent"
     android:layout_height="wrap_content"
+    android:background="@color/easyconnect_darkcolor"
     android:padding="10dp" >
  
     <TextView
         android:id="@+id/laptop"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentLeft="true"
+        android:textSize="15sp"
         android:layout_centerVertical="true"
-        android:paddingLeft="25dp" />
+        android:paddingLeft="45dp"
+        android:textColor="@color/easyConnect_color"
+        android:textStyle="italic|bold"
+         />
  
     <ImageView
         android:id="@+id/delete"
