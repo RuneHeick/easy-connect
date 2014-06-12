@@ -1,7 +1,6 @@
 package iha.bachelor.smo.aba.rah.easyconnect_v3.contentprovider;
 
 import iha.bachelor.smo.aba.rah.easyconnect_v3.model.ECRU;
-import iha.bachelor.smo.aba.rah.easyconnect_v3.model.FunctionList;
 import iha.bachelor.smo.aba.rah.easyconnect_v3.model.RoutingTable;
 
 import java.io.BufferedInputStream;
@@ -172,11 +171,6 @@ public class FileHandler {
 	public static String EncodeGSoN(Object m){
 		Gson gson = new Gson();
 		return gson.toJson(m);
-	}
-	
-	public static FunctionList DecodeGSoNFunctionList(String s){
-		Gson gson = new Gson();
-		return gson.fromJson(s, FunctionList.class);
 	}
 	
 	public static ECRU DecodeGsonEcru(String s){

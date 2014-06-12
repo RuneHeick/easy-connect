@@ -3,7 +3,6 @@ package iha.bachelor.smo.aba.rah.easyconnect_v3;
 import iha.bachelor.smo.aba.rah.easyconnect_v3.adapter.ExpandableListAdapter;
 import iha.bachelor.smo.aba.rah.easyconnect_v3.contentprovider.FileHandler;
 import iha.bachelor.smo.aba.rah.easyconnect_v3.model.ECRU;
-import iha.bachelor.smo.aba.rah.easyconnect_v3.model.FunctionList;
 import iha.bachelor.smo.aba.rah.easyconnect_v3.model.RoutingTable;
 import iha.bachelor.smo.aba.rah.easyconnect_v3.model.UnitAdress;
 
@@ -37,7 +36,6 @@ public class ModuleListFragment extends Fragment{
 		if (savedInstanceState != null){
 			return rootView;
 		}
-		//createTestFunctionList();
 		createREALCollection();
 
 		expListView = (ExpandableListView) rootView.findViewById(R.id.function_list);
@@ -63,23 +61,6 @@ public class ModuleListFragment extends Fragment{
 		Log.i(LOG_TAG, "FileWrite complete");
 
 		return rootView;
-	}
-
-	public FunctionList createTestFunctionList(){
-		FunctionList fl =  new FunctionList("test");
-		ECRU ru = new ECRU("A4B627FE2F7A");
-		ru.insertModuleMac("E68170E5C578");
-		ru.insertModuleMac("F83A228CBA1C");
-		ru.insertModuleMac("ECEC10100101");
-		fl.addECRU(ru);
-		FileHandler.writeToFile(
-				getActivity(),
-				MainActivity.CurrentProfileName,
-				FileHandler.FUNCTIONS_LIST_DIR,
-				FileHandler.FUNCTIONS_LIST_FILENAME,
-				FileHandler.EncodeGSoN(fl));
-
-		return null;
 	}
 
 	public void writeFileToSDCard(String ProfileName, String fileType, String fileName, String GSoNString){
