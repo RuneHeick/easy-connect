@@ -30,7 +30,7 @@
                 <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>    
             <StackPanel>
-                <Image Grid.Column="0" Height="70" Width="70">
+                <Image Grid.Column="0" Height="70" Width="70" Source="/NetworkAnalysor;component/ECRU.png" >
             
                 </Image>
                 <TextBlock HorizontalAlignment="Center" Text="{Binding Mac, Converter={StaticResource byteArrayConverter}}"/>
