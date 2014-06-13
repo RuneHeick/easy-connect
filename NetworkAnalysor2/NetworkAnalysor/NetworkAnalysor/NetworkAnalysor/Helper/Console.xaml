@@ -1,0 +1,15 @@
+﻿<Window x:Class="NetworkAnalysor.Helper.Console"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Console" Height="300" Width="300">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="auto" />
+        </Grid.RowDefinitions>
+        <ScrollViewer>
+            <ItemsControl ItemsSource="{Binding Console}" />
+        </ScrollViewer>
+        <TextBox Grid.Row="1" KeyDown="TextBox_KeyDown" Name="InputBox"/>
+    </Grid>
+</Window>

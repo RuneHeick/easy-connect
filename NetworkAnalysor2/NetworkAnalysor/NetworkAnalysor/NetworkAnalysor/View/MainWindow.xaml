@@ -1,0 +1,25 @@
+﻿<Window x:Class="NetworkAnalysor.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:view="clr-namespace:NetworkAnalysor.View"
+        Title="MainWindow" Height="550" Width="925" KeyDown="Window_KeyDown">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="auto" /> 
+        </Grid.RowDefinitions>
+        <ScrollViewer>
+            <ItemsControl ItemsSource="{Binding UnitsDiscovered}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <view:ECRUItemView Margin="2"/>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </ScrollViewer>
+        
+        <StackPanel Grid.Row="1" HorizontalAlignment="Right" Margin="5,5,30,5">
+            <Button Content="Clear" Width="100" Command='{Binding ClearCommand}'/>
+        </StackPanel>
+    </Grid>
+</Window>
