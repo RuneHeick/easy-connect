@@ -59,7 +59,7 @@ namespace UartTester.ViewModel
         }
 
         private byte[] statusHandle { get; set; }
-        private string status = "Klar";
+        private string status = "Ikke opsat";
         public string Status
         {
             get
