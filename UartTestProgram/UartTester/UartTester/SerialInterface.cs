@@ -40,6 +40,8 @@ namespace UartTester
             }
         }
 
+        public event Action<SerialCommand> PacketRecived; 
+
         static SerialInterface()
         {
             Log = new ObservableCollection<SerialCommand>();
@@ -83,7 +85,7 @@ namespace UartTester
             for (int i = 0; i < retrys; i++)
             {
                 SendCommand(cmd);
-                Thread.Sleep(200);
+                Thread.Sleep(300);
                 if (LastPacket != null)
                     return LastPacket;
             }
@@ -140,6 +142,8 @@ namespace UartTester
 
                         }));
 
+                        if (PacketRecived != null)
+                            PacketRecived(LastPacket);
 
                         buffer = new List<byte>();
                     }

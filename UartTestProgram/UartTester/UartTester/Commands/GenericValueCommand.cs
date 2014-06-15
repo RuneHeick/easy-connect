@@ -218,11 +218,7 @@ namespace UartTester.Commands
             this.Value = Value; 
         }
 
-        public static PresentationFormat[] Items
-        {
-            get
-            {
-                return new PresentationFormat[]
+        private static PresentationFormat[] items = new PresentationFormat[]
                 {
                     new PresentationFormat("Boolean",1,1),
                     new PresentationFormat("unsigned2_bit",2,1),
@@ -251,6 +247,11 @@ namespace UartTester.Commands
                     new PresentationFormat("UTF_8string",25,null),
                     new PresentationFormat("UTF_16string",26,null)
                 };
+        public static PresentationFormat[] Items
+        {
+            get
+            {
+                return items; 
             }
         }
 

@@ -42,7 +42,9 @@
             <view:ItemsView />
         </DataTemplate>
 
-
+        <DataTemplate DataType="{x:Type VM:KaffeSimulator}">
+            <view:KaffeSimTab />
+        </DataTemplate>
 
     </Application.Resources>
 </Application>

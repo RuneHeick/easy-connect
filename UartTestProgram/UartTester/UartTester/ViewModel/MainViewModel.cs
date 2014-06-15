@@ -19,6 +19,7 @@ namespace UartTester.ViewModel
 
         public ItemsViewModel Items { get; set;  }
 
+
         private Command selectedMainCommand;
         public Command SelectedMainCommand
         {
@@ -69,7 +70,7 @@ namespace UartTester.ViewModel
         }
 
         public SerialViewModel SerialSetup { get; set; }
-
+        public KaffeSimulator KaffeSimulator { get; set; }
 
         public enum MainCommandsValue
         {
@@ -82,7 +83,8 @@ namespace UartTester.ViewModel
         public MainViewModel()
         {
             Items = new ItemsViewModel(); 
-            SerialSetup = new SerialViewModel(); 
+            SerialSetup = new SerialViewModel();
+            KaffeSimulator = new ViewModel.KaffeSimulator(); 
             MainCommands = new ObservableCollection<Command>();
             serialCommandFromSelected = new SerialCommand();
             Command[] setupSubCommands = new Command[] { new DeviceNameCommand(), new ManifactureNameCommand(), new ModelNumberCommand(), new SerialNoCommand(), new SmartFunftionCommand(), new GenericValueCommand(), new RangesViewModel(), new Command(8, "Start") };

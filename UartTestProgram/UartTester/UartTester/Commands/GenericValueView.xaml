@@ -46,7 +46,7 @@
             </StackPanel>
             <StackPanel Orientation="Horizontal">
                 <TextBlock Margin="5" >Format:</TextBlock>
-                <ComboBox Margin="5" MinWidth="100" ItemsSource="{Binding Source={StaticResource FormatList}, Path=Items}" SelectedValue="{Binding Format, Mode=OneWayToSource}">
+                <ComboBox Margin="5" MinWidth="100" ItemsSource="{Binding Source={StaticResource FormatList}, Path=Items}" SelectedItem="{Binding Format}">
                     <ComboBox.ItemTemplate>
                         <DataTemplate>
                             <TextBlock Text="{Binding Name}"/>

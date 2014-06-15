@@ -36,6 +36,10 @@ namespace UartTester
                     MessageBox.Show(sb.ToString(), "Application error", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
             }
+            catch(Exception t)
+            {
+                Console.Write("Error");
+            }
             finally
             {
                 System.Environment.Exit(3);

@@ -16,7 +16,7 @@
             <RowDefinition Height="*" />
             <RowDefinition Height="auto" />
         </Grid.RowDefinitions>
-        <DataGrid Margin="2" Grid.Row="0" ItemsSource="{Binding Queue}" IsReadOnly="True" CanUserAddRows="False" CanUserDeleteRows="True" AutoGenerateColumns="False">
+        <DataGrid Margin="2" Grid.Row="0" ItemsSource="{Binding Queue}" CanUserAddRows="False" CanUserDeleteRows="True" AutoGenerateColumns="False">
             <DataGrid.Columns>
                 <DataGridTemplateColumn Header="Main" Width="Auto" IsReadOnly="True">
                     <DataGridTemplateColumn.CellTemplate>
