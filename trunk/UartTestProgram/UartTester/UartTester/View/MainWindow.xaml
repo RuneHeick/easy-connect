@@ -33,7 +33,9 @@
             <TabItem Header="Setup">
                 <ContentControl Content="{Binding SerialSetup}"></ContentControl>
             </TabItem>
-            
+            <TabItem Header="CoffeeSim">
+                <ContentControl Content="{Binding KaffeSimulator}"></ContentControl>
+            </TabItem>
         </TabControl>
 
         

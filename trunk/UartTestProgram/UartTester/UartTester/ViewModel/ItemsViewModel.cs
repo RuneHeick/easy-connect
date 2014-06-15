@@ -30,7 +30,7 @@ namespace UartTester.ViewModel
             get
             {
                 if (saveCommand == null)
-                    saveCommand = new RelayCommand((p) => saveCommandExecute());
+                    saveCommand = new RelayCommand((p) => saveCommandExecute(), (o) => Queue.Count > 0);
                 return saveCommand;
             }
         }
@@ -67,6 +67,17 @@ namespace UartTester.ViewModel
                 if (loadCommand == null)
                     loadCommand = new RelayCommand((p) => loadCommandExecute());
                 return loadCommand;
+            }
+        }
+
+        private RelayCommand sendAllCommand;
+        public ICommand SendAllCommand
+        {
+            get
+            {
+                if (sendAllCommand == null)
+                    sendAllCommand = new RelayCommand((p) => sendAllCommandExecute(), (o) => Queue.Count>0);
+                return sendAllCommand;
             }
         }
 

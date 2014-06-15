@@ -28,10 +28,15 @@ namespace UartTester
             {
                 if (value == null) return null;
                 List<byte> b = value as List<byte>;
+
+                string resturnString; 
                 if (value is List<byte>)
-                    return BitConverter.ToString((value as List<byte>).ToArray()).Replace("-", " ");
+                    resturnString = BitConverter.ToString((value as List<byte>).ToArray()).Replace("-", " ");
                 else
-                    return BitConverter.ToString((value as byte[])).Replace("-", " ");
+                    resturnString = BitConverter.ToString((value as byte[])).Replace("-", " ");
+
+                return resturnString;
+
             }
             catch
             {
@@ -62,6 +67,12 @@ namespace UartTester
 
         public static byte[] StringToByteArray(string hex)
         {
+            if (hex == "" || hex == null)
+                return null; 
+
+            if (hex.Length % 2 != 0)
+                hex = hex.Insert(hex.Length, "0");
+
             return Enumerable.Range(0, hex.Length)
                              .Where(x => x % 2 == 0)
                              .Select(x => System.Convert.ToByte(hex.Substring(x, 2), 16))

@@ -23,10 +23,10 @@
         </Grid.ColumnDefinitions>
         
         <TextBlock Grid.Row="1" Margin="5">Minimum: </TextBlock>
-        <TextBox Grid.Column="1" Margin="5" Grid.Row="1" Text="{Binding Minimum, Converter={StaticResource HexStringConverter}, UpdateSourceTrigger=PropertyChanged}" />
+        <TextBox Grid.Column="1" Margin="5" Grid.Row="1" Text="{Binding Minimum, Converter={StaticResource HexStringConverter}, UpdateSourceTrigger=PropertyChanged, Mode=OneWayToSource}" />
 
 
         <TextBlock Grid.Row="2" Margin="5">Maximum:</TextBlock>
-        <TextBox Grid.Column="1" Margin="5" Grid.Row="2" Text="{Binding Maximum, Converter={StaticResource HexStringConverter}, UpdateSourceTrigger=PropertyChanged}" />
+        <TextBox Grid.Column="1" Margin="5" Grid.Row="2" Text="{Binding Maximum, Converter={StaticResource HexStringConverter}, UpdateSourceTrigger=PropertyChanged, Mode=OneWayToSource}" />
     </Grid>
 </UserControl>
