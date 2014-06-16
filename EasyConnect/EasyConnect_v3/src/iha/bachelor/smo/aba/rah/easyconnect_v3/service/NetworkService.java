@@ -43,7 +43,11 @@ public class NetworkService extends Service {
 
 	@Override
 	public void onCreate() {
-
+		
+//		Intent testintent = new Intent(this, SetDataIntentService.class);
+//		testintent.putExtra("test", "test");
+//		startService(testintent);
+		
 		Log.i(LOG_TAG,"onCreate Called");
 		UDPrunning = true;
 		routingTable = new RoutingTable();
