@@ -85,7 +85,7 @@ namespace UartTester
             for (int i = 0; i < retrys; i++)
             {
                 SendCommand(cmd);
-                Thread.Sleep(300);
+                Thread.Sleep(3000);
                 if (LastPacket != null)
                     return LastPacket;
             }

@@ -82,6 +82,7 @@ namespace UartTester.ViewModel
             pHeight = SourceImage.PixelHeight; 
 
             stride = SourceImage.PixelWidth * 4;
+
         }
 
 
@@ -119,32 +120,33 @@ namespace UartTester.ViewModel
                 l = l.Replace(" ", "");
                 SerialCommand cmd = new SerialCommand(ItemsViewModel.StringToByteArray(l).ToList());
                 SerialCommand reply = SerialViewModel.Serial.SendCommandGetResponse(cmd, 3);
-                if(reply == null)
+                if (reply == null)
                 {
                     Status = "Fejl: ingen svar ved Opsætning";
-                    return; 
+                    return;
                 }
 
-                if(cmd.MainCommand == 1 && cmd.SubCommand == 6) // Generic Value command
+                if (cmd.MainCommand == 1 && cmd.SubCommand == 6) // Generic Value command
                 {
-                    if(reply.Payload != null && reply.Payload.Length<2)
+                    if (reply.Payload != null && reply.Payload.Length < 2)
                     {
                         Status = "Fejl: Modtog Nack i Opsætning";
-                        return; 
+                        return;
                     }
                     else
                     {
-                        if(antalkopperHandle == null)
+                        if (antalkopperHandle == null)
                         {
                             antalkopperHandle = new byte[2];
-                            Array.Copy(reply.Payload, 1, antalkopperHandle, 0, 2); 
+                            Array.Copy(reply.Payload, 1, antalkopperHandle, 0, 2);
                         }
                         else
                         {
                             statusHandle = new byte[2];
-                            Array.Copy(reply.Payload, 1, statusHandle, 0, 2); 
+                            Array.Copy(reply.Payload, 1, statusHandle, 0, 2);
                         }
                     }
+                    
                 }
             }
             SerialViewModel.Serial.PacketRecived += Serial_PacketRecived;
@@ -175,8 +177,10 @@ namespace UartTester.ViewModel
             if(!simulationRunning)
             {
                 simulationRunning = true;
-                Status = "Brygger "+AntalKopper.ToString()+ (AntalKopper == 1 ? " Kop" : " Kopper"); 
-                startCommandExecute();
+                Status = "Brygger "+AntalKopper.ToString()+ (AntalKopper == 1 ? " Kop" : " Kopper");
+                Thread t = new Thread(() => startCommandExecute());
+                t.IsBackground = true; 
+                t.Start();
             }
         }
 
@@ -201,19 +205,22 @@ namespace UartTester.ViewModel
 
         private void startCommandExecute()
         {
-            SourceImage = new WriteableBitmap(new BitmapImage(new Uri("pack://application:,,,/UartTester;component/Kaffekande.bmp")));
-            int size = SourceImage.PixelHeight * stride;
-            ImageInfo = new byte[size];
+            Application.Current.Dispatcher.Invoke(() =>
+                {
+                    SourceImage = new WriteableBitmap(new BitmapImage(new Uri("pack://application:,,,/UartTester;component/Kaffekande.bmp")));
 
-            SourceImage.CopyPixels(ImageInfo, stride, 0);
-            int Centerindex = ((int)(SourceImage.PixelHeight / 2) * stride) + (4 * (int)(SourceImage.PixelWidth / 2));
-            targetRed = ImageInfo[Centerindex];
-            targetGreen = ImageInfo[Centerindex + 1];
-            targetBlue = ImageInfo[Centerindex + 2];
-            targetAlpha = ImageInfo[Centerindex + 2];
-            Thread t = new Thread(() => DoAnimation(AntalKopper));
-            t.IsBackground = true; 
-            t.Start();
+                    int size = SourceImage.PixelHeight * stride;
+                    ImageInfo = new byte[size];
+
+                    SourceImage.CopyPixels(ImageInfo, stride, 0);
+
+                    int Centerindex = ((int)(SourceImage.PixelHeight / 2) * stride) + (4 * (int)(SourceImage.PixelWidth / 2));
+                    targetRed = ImageInfo[Centerindex];
+                    targetGreen = ImageInfo[Centerindex + 1];
+                    targetBlue = ImageInfo[Centerindex + 2];
+                    targetAlpha = ImageInfo[Centerindex + 2];
+                });
+            DoAnimation(AntalKopper);
         }
 
 
@@ -245,8 +252,15 @@ namespace UartTester.ViewModel
 
                 Application.Current.Dispatcher.Invoke(() =>
                 {
-                    SourceImage.WritePixels(new Int32Rect(0, 0, SourceImage.PixelWidth, SourceImage.PixelHeight), ImageInfo, SourceImage.PixelWidth * SourceImage.Format.BitsPerPixel / 8, 0);
-                    OnPropertyChanged("SourceImage");
+                    try
+                    {
+                        SourceImage.WritePixels(new Int32Rect(0, 0, SourceImage.PixelWidth, SourceImage.PixelHeight), ImageInfo, SourceImage.PixelWidth * SourceImage.Format.BitsPerPixel / 8, 0);
+                        OnPropertyChanged("SourceImage");
+                    }
+                    catch(Exception e)
+                    {
+
+                    }
                 });
 
                 Thread.Sleep(10000 / 230);
