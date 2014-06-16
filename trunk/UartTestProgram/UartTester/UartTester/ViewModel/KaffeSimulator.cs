@@ -9,6 +9,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using UartTester.Helper;
 
 namespace UartTester.ViewModel
 {
@@ -83,6 +84,7 @@ namespace UartTester.ViewModel
 
             stride = SourceImage.PixelWidth * 4;
 
+            Debug.AddFunction("Animation", (s) => { StartSimulation(); return ""; }); 
         }
 
 
