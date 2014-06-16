@@ -1,6 +1,7 @@
 package iha.bachelor.smo.aba.rah.easyconnect_v3;
 
 import iha.bachelor.smo.aba.rah.easyconnect_v3.contentprovider.ProfileContentProvider;
+import iha.bachelor.smo.aba.rah.easyconnect_v3.service.GetDataIntentService;
 import iha.bachelor.smo.aba.rah.easyconnect_v3.service.NetworkService;
 import iha.bachelor.smo.aba.rah.easyconnect_v3.sqlite.ProfilesTable;
 import android.net.wifi.WifiInfo;
@@ -25,6 +26,7 @@ public class LoaderActivity extends Activity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_initial);
+		
 	}
 	
 	@Override

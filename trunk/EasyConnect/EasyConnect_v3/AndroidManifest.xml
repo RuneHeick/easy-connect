@@ -35,6 +35,8 @@
             android:exported="false">
         </provider>
         <service android:name="iha.bachelor.smo.aba.rah.easyconnect_v3.service.NetworkService" />
+        <service android:name="iha.bachelor.smo.aba.rah.easyconnect_v3.service.GetDataIntentService" />
+        <service android:name="iha.bachelor.smo.aba.rah.easyconnect_v3.service.SetDataIntentService" />
     </application>
 
 </manifest>
