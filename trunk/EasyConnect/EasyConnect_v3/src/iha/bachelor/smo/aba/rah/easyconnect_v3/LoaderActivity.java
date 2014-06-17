@@ -57,7 +57,6 @@ public class LoaderActivity extends Activity {
 				NetworkAvailable.putExtra("TargetFragment", PROFILE_LIST);
 			}
 			
-			
 			startActivity(NetworkAvailable);
 		}
 		else {
