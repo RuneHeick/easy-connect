@@ -1,14 +1,8 @@
 package iha.bachelor.smo.aba.rah.easyconnect_v3.service;
 
-import iha.bachelor.smo.aba.rah.easyconnect_v3.contentprovider.FileHandler;
-
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.io.OutputStreamWriter;
 import java.math.BigInteger;
 import java.net.InetAddress;
 import java.net.Socket;
@@ -31,12 +25,21 @@ public class GetDataIntentService extends IntentService
 
 	@Override
 	protected void onHandleIntent(Intent intent) {
+		String targetAddress = intent.getStringExtra(TARGET_IP_ADDRESS);
+		String targetMac = intent.getStringExtra(TARGET_MAC_ADDRESS);
+		String targetHandle = intent.getStringExtra(TARGET_HANDLE);
+		
 		Socket tcpSocket = null;
 		InputStream in = null;
 		OutputStream out = null;
 		try {
 			Log.d(LOG_TAG, "reqDevInf: Connecting...");
-			tcpSocket = new Socket(InetAddress.getByName("192.168.1.3"), SERVERPORT);
+			
+			if (targetAddress != null)
+				tcpSocket = new Socket(InetAddress.getByName(targetAddress), SERVERPORT);
+			else
+				tcpSocket = new Socket(InetAddress.getByName("192.168.1.3"), SERVERPORT);
+			
 			Log.d(LOG_TAG, "reqDevInf: Connected...");
 
 			in = tcpSocket.getInputStream();
@@ -54,16 +57,20 @@ public class GetDataIntentService extends IntentService
 
 			if (availableBytes > 0){
 				availableBytes = 0;
-				Log.d(LOG_TAG, "reqDevInf: Sending macAddres.");
-				byte[] mac = new BigInteger("E68170E5C5780023",16).toByteArray();
+				Log.d(LOG_TAG, "reqDevInf: Sending macAddres & Handle.");
+				byte[] mac;
+				
+				if (targetMac != null && targetHandle != null)
+					mac = new BigInteger(targetMac+targetHandle,16).toByteArray();
+				else
+					mac = new BigInteger("E68170E5C5780023",16).toByteArray();
+				
 				out.write(mac, 1, 8);				// Sending MacAddress of requested device
 
 				availableBytes = in.read(buf);	// Reading the ModuleInformation
 				if (availableBytes > 0){
 					byte[] deviceInformation = Arrays.copyOfRange(buf, 0, availableBytes);
 					Log.i(LOG_TAG, "received: ");
-					
-//					FileHandler.writeToFile(this, CurrentProfileName, FileHandler.MODULE_DIR, deviceMacAddress + ".BLE", deviceInformation);
 				}
 			}
 		} catch (Exception e) {
@@ -79,6 +86,12 @@ public class GetDataIntentService extends IntentService
 			}
 		}
 	
+//		Intent responceBroadcastIntent = new Intent();
+//		responceBroadcastIntent.setAction(GetDataReceiver.RESPONSE);
+//		responceBroadcastIntent.addCategory(Intent.CATEGORY_DEFAULT);
+//		responceBroadcastIntent.putExtra(RESPONSESTRING, value)
+		
+		
 	}
 
 }

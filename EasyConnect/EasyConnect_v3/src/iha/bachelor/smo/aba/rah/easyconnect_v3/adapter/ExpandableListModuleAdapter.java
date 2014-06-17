@@ -116,6 +116,10 @@ public class ExpandableListModuleAdapter extends BaseExpandableListAdapter {
 		final Characteristic tempChar = (Characteristic) getChild(groupPosition, childPosition);
 		LayoutInflater inflater = context.getLayoutInflater();
         
+		
+		
+		
+		
 		//switch (5){
 		switch (tempChar._gUIFormat.Value[0]){   // FIX ME Dør fordi den er null
 			case 2:
