@@ -6,6 +6,7 @@ using ECRU.Utilities.Factories.ModuleFactory;
 using ECRU.Utilities.HelpFunction;
 using Microsoft.SPOT;
 using ResetEvent = ECRU.BLEController.Packets.ResetEvent;
+using ECRU.Utilities.Timers; 
 
 namespace ECRU.BLEController
 {
@@ -15,12 +16,15 @@ namespace ECRU.BLEController
         private readonly SerialController serial = new SerialController();
         private DeviceInfoFactory Infofactory;
         private DataManager data;
-        bool started = false; 
+        bool started = false;
+        bool isreset = false;
+        ECTimer ResetTimer;
 
         public BLEModule()
         {
             packetmanager = new PacketManager(serial);
             Infofactory = new DeviceInfoFactory(packetmanager);
+            ResetTimer = new ECTimer(SendResetCallBack, null, 0, 2000);
         }
 
         private bool IsInitMode { get; set; }
@@ -102,36 +106,67 @@ namespace ECRU.BLEController
 
         private void FoundDevices(IPacket pack)
         {
-            var newDevice = pack as DeviceEvent;
-            Debug.Print("Found Device: " + newDevice.Address.ToHex());
-
-            if (newDevice != null)
+            lock (data)
             {
-                if (data.IsSystemDevice(newDevice.Address))
+                var newDevice = pack as DeviceEvent;
+                Debug.Print("Found Device: " + newDevice.Address.ToHex());
+                
+                if (newDevice != null)
                 {
-                    if (!data.hasInfoFile(newDevice.Address))
-                        Infofactory.GetDeviceInfo(newDevice.Address, DiscoverComplete);
+                    if (data.IsSystemDevice(newDevice.Address))
+                    {
+                        DataManager.InfoFileStatus  fileStatus = data.hasInfoFile(newDevice.Address);
+                        switch(fileStatus)
+                        {
+                            case DataManager.InfoFileStatus.HaveNone:
+                                Infofactory.GetDeviceInfo(newDevice.Address, DiscoverComplete);
+                                break;
+                            case DataManager.InfoFileStatus.NeedRead:
+                                {
+                                    DeviceInfo item = data.GetDeviceInfo(newDevice.Address);
+                                    if(item != null)
+                                    {
+                                        DoFullRead(item);
+                                    }
+                                }
+                                break;
+                            case DataManager.InfoFileStatus.Done:
+                                {
+                                    DeviceInfo item = data.GetDeviceInfo(newDevice.Address);
+                                    if (item != null)
+                                    {
+                                        AddDevice(item);
+                                        {
+                                            WriteEvent Revent = new WriteEvent();
+                                            Revent.Address = newDevice.Address;
+
+
+                                            Revent.Handle = 0x0023;
+                                            Revent.Value = new byte[] { 0x08 };
+
+
+
+                                            packetmanager.Send(Revent);
+
+                                            Revent.Handle = 0x0020;
+                                            Revent.Value = new byte[] { 0x01 };
+                                            Debug.Print("Start Kaffe");
+                                            
+                                            
+                                            
+                                            packetmanager.Send(Revent);
+                                        }
+                                    }
+                                }
+                                break; 
+
+
+                        }
+                    }
                     else
-                        Infofactory.GetDeviceInfo(newDevice.Address, DiscoverCompleteForCheck);
-                }
-                else
-                {
-                    data.AddToSeenDevices(newDevice);
-                }
-            }
-        }
-
-        private void DiscoverCompleteForCheck(DeviceInfoFactory.Status_t status, DeviceInfo item)
-        {
-            if (status == DeviceInfoFactory.Status_t.Done)
-            {
-                DeviceInfo info = data.GetDeviceInfo(item.Address);
-                if (info != null && item.IsEqual(info))
-                    AddDevice(info);
-                else
-                {
-                    AddDevice(info);
-                    Infofactory.DoFullRead(item, DoneRead);
+                    {
+                        data.AddToSeenDevices(newDevice);
+                    }
                 }
             }
         }
@@ -152,9 +187,15 @@ namespace ECRU.BLEController
             if (status == DeviceInfoFactory.Status_t.Done)
             {
                 Debug.Print("ok");
-                AddDevice(item);
-                Infofactory.DoFullRead(item, DoneRead);
+                data.UpdateOrCreateInfoFile(item);
+                DoFullRead(item);
             }
+        }
+
+        private void DoFullRead(DeviceInfo item)
+        {
+            AddDevice(item);
+            Infofactory.DoFullRead(item, DoneRead);
         }
 
         private void DoneRead(DeviceInfoFactory.Status_t status, DeviceInfo item)
@@ -162,11 +203,15 @@ namespace ECRU.BLEController
             Debug.Print("Read Done:");
             if (status == DeviceInfoFactory.Status_t.Done)
             {
+                Debug.Print("ok");
                 data.UpdateOrCreateInfoFile(item);
+            }
+            else if (status == DeviceInfoFactory.Status_t.TimeOut)
+            {
+                Infofactory.DoFullRead(item, DoneRead);
             }
             else
             {
-                data.DeleteSystemInfo(item.Address);
                 data.DisconnectDevice(item.Address);
             }
         }
@@ -174,6 +219,7 @@ namespace ECRU.BLEController
         // Called if the CC2540 reset. 
         public void BLEControllerReset(IPacket packet)
         {
+            isreset = true; 
             Debug.Print("BLE RESET");
             data.Reset();
             SendSystemInfo();
@@ -186,7 +232,8 @@ namespace ECRU.BLEController
             var DataPacket = packet as DataEvent;
             if (DataPacket != null)
             {
-                data.GotData(DataPacket);
+                if (!Infofactory.IsHandledByFactory(DataPacket.Address))
+                    data.GotData(DataPacket);
             }
         }
 
@@ -234,15 +281,36 @@ namespace ECRU.BLEController
         public void SendSystemInfo()
         {
             var info = new SystemInfoEvent();
-            info.SystemID = SystemInfo.SystemID;
+            try
+            {
+                info.SystemID = SystemInfo.SystemID;
+            }
+            catch
+            {
+                info.SystemID = new byte[8]; 
+            }
             info.InitMode = IsInitMode;
             packetmanager.Send(info);
         }
 
         public void SendReset()
         {
-            var reset = new ResetEvent();
-            packetmanager.Send(reset);
+            isreset = false;
+            ResetTimer.Start(); 
         }
+
+        private void SendResetCallBack(object o)
+        {
+            if (isreset == false)
+            {
+                var reset = new ResetEvent();
+                packetmanager.Send(reset);
+            }
+            else
+            {
+                ResetTimer.Stop();
+            }
+        }
+
     }
 }

@@ -1,0 +1,189 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns:dm0="http://schemas.microsoft.com/VisualStudio/2008/DslTools/Core" xmlns:dm1="http://schemas.microsoft.com/dsltools/Kernel" xmlns:dm2="http://schemas.microsoft.com/dsltools/Component" xmlns:dm3="http://schemas.microsoft.com/dsltools/UseCase" xmlns:dm4="http://schemas.microsoft.com/dsltools/Activity" xmlns:dm5="http://schemas.microsoft.com/dsltools/Interaction" xmlns:dm6="http://schemas.microsoft.com/dsltools/UmlModelLibrary" xmlns:dm7="http://schemas.microsoft.com/dsltools/UmlDiagrams" xmlns:dm8="http://schemas.microsoft.com/dsltools/LogicalClassDesigner"
+  dslVersion="1.0.0.0"
+  Id="e6b587dd-7a9d-4a69-8628-0cc88a1ca773"
+  name="Ports"
+  visibility="Private" xmlns="http://schemas.microsoft.com/dsltools/ModelStore">
+  <referencesInternal>
+    <reference
+      Id="874b9c30-6647-433b-af4c-fa5532b41888"
+      handle="viewcode://./CodeSchema_Namespace?Namespace%3DSystem.IO.Ports"
+      tag="ViewCode" />
+  </referencesInternal>
+  <packagedElements>
+    <packageHasNamedElement>
+      <class
+        Id="d1badb03-1bbc-4621-8d28-b7ba1221003e"
+        name="SerialDataReceivedEventArgs"
+        isAbstract="false"
+        isLeaf="false"
+        isActiveClass="false">
+        <referencesInternal>
+          <reference
+            Id="6067eeaf-b8ce-4657-949d-e34497518dd5"
+            handle="viewcode://./CodeSchema_Class?Assembly%3D&quot;file:%2F%2F%2FC:%2FProgram Files (x86)%2FMicrosoft .NET Micro Framework%2Fv4.3%2FAssemblies%2Fle%2FMicrosoft.SPOT.Hardware.dll&quot; Namespace%3DSystem.IO.Ports Type%3DSerialDataReceivedEventArgs"
+            tag="ViewCode" />
+        </referencesInternal>
+        <appliedStereotypesInternal>
+          <stereotypeInstance
+            Id="9c07670d-8ace-492f-99a7-938c4a3ba683"
+            name="class"
+            profile="CSharpProfile">
+            <propertyInstances>
+              <stereotypeInstanceHasPropertyInstances
+                Id="76f1a681-69ca-45c6-a4a8-f68be14b0539">
+                <propertyInstance
+                  Id="ba6f09ee-bd13-467b-8710-6e56a5221812"
+                  name="ClrAttributes" />
+              </stereotypeInstanceHasPropertyInstances>
+              <stereotypeInstanceHasPropertyInstances
+                Id="fbcc7bb9-9ed2-4f0a-9727-1ffc27928f85">
+                <propertyInstance
+                  Id="4ce818e8-b3b4-4420-8386-378d501bb41a"
+                  name="IsPartial"
+                  value="false" />
+              </stereotypeInstanceHasPropertyInstances>
+              <stereotypeInstanceHasPropertyInstances
+                Id="8c6e750a-0dfa-4d8a-9eae-8367fb53f680">
+                <propertyInstance
+                  Id="b552e25b-276e-4e57-974d-d7caccf42bc9"
+                  name="IsStatic"
+                  value="False" />
+              </stereotypeInstanceHasPropertyInstances>
+              <stereotypeInstanceHasPropertyInstances
+                Id="d5c5d594-ac15-44d6-b126-7d3a7830712f">
+                <propertyInstance
+                  Id="0dcb4941-0b7f-448d-8931-ae77b5daea25"
+                  name="IsUnsafe"
+                  value="false" />
+              </stereotypeInstanceHasPropertyInstances>
+              <stereotypeInstanceHasPropertyInstances
+                Id="25b5ec31-e8eb-4a8c-bcf4-cbde9544338e">
+                <propertyInstance
+                  Id="05b3110f-164a-4dc7-b536-245b23a1fb28"
+                  name="PackageVisibility"
+                  value="internal" />
+              </stereotypeInstanceHasPropertyInstances>
+            </propertyInstances>
+          </stereotypeInstance>
+        </appliedStereotypesInternal>
+      </class>
+    </packageHasNamedElement>
+    <packageHasNamedElement>
+      <class
+        Id="cd88ce7f-66a8-4fe2-b5d0-552faa43652a"
+        name="SerialErrorReceivedEventArgs"
+        isAbstract="false"
+        isLeaf="false"
+        isActiveClass="false">
+        <referencesInternal>
+          <reference
+            Id="c73b95e5-4a15-4be8-9872-387d0ab5a839"
+            handle="viewcode://./CodeSchema_Class?Assembly%3D&quot;file:%2F%2F%2FC:%2FProgram Files (x86)%2FMicrosoft .NET Micro Framework%2Fv4.3%2FAssemblies%2Fle%2FMicrosoft.SPOT.Hardware.dll&quot; Namespace%3DSystem.IO.Ports Type%3DSerialErrorReceivedEventArgs"
+            tag="ViewCode" />
+        </referencesInternal>
+        <appliedStereotypesInternal>
+          <stereotypeInstance
+            Id="23b0810c-b1dd-4bc5-9cbb-3199561e4d80"
+            name="class"
+            profile="CSharpProfile">
+            <propertyInstances>
+              <stereotypeInstanceHasPropertyInstances
+                Id="aeb6335d-6c92-4a56-be2f-e7132207f138">
+                <propertyInstance
+                  Id="7df83599-c9a9-4af2-9d92-464711eeb3d1"
+                  name="ClrAttributes" />
+              </stereotypeInstanceHasPropertyInstances>
+              <stereotypeInstanceHasPropertyInstances
+                Id="19319a39-6aa6-43d0-984c-16f78bc5b658">
+                <propertyInstance
+                  Id="1f951e96-0b10-475f-b26d-232f3a334853"
+                  name="IsPartial"
+                  value="false" />
+              </stereotypeInstanceHasPropertyInstances>
+              <stereotypeInstanceHasPropertyInstances
+                Id="5f9dd757-7097-4ac6-b15f-38837874e399">
+                <propertyInstance
+                  Id="148484f9-e8ef-421f-b86c-906b9619009c"
+                  name="IsStatic"
+                  value="False" />
+              </stereotypeInstanceHasPropertyInstances>
+              <stereotypeInstanceHasPropertyInstances
+                Id="790562d8-c5ad-404a-be2c-7d382c597d15">
+                <propertyInstance
+                  Id="b7c82a14-ad14-4017-a9ad-2e0924593fa5"
+                  name="IsUnsafe"
+                  value="false" />
+              </stereotypeInstanceHasPropertyInstances>
+              <stereotypeInstanceHasPropertyInstances
+                Id="b9a00f9d-268d-4cd5-bc66-1ce88dad8b37">
+                <propertyInstance
+                  Id="73344af0-3ede-4679-81ea-633a7a0c46bf"
+                  name="PackageVisibility"
+                  value="internal" />
+              </stereotypeInstanceHasPropertyInstances>
+            </propertyInstances>
+          </stereotypeInstance>
+        </appliedStereotypesInternal>
+      </class>
+    </packageHasNamedElement>
+    <packageHasNamedElement>
+      <class
+        Id="08fb10d5-486e-4872-ad45-64e666b4d3ff"
+        name="SerialPort"
+        isAbstract="false"
+        isLeaf="false"
+        isActiveClass="false">
+        <referencesInternal>
+          <reference
+            Id="393028ae-4926-4431-bba0-0bc107afc3f0"
+            handle="viewcode://./CodeSchema_Class?Assembly%3D&quot;file:%2F%2F%2FC:%2FProgram Files (x86)%2FMicrosoft .NET Micro Framework%2Fv4.3%2FAssemblies%2Fle%2FMicrosoft.SPOT.Hardware.SerialPort.dll&quot; Namespace%3DSystem.IO.Ports Type%3DSerialPort"
+            tag="ViewCode" />
+        </referencesInternal>
+        <appliedStereotypesInternal>
+          <stereotypeInstance
+            Id="b969d0c6-39a7-48fb-bbde-3f66177d0cca"
+            name="class"
+            profile="CSharpProfile">
+            <propertyInstances>
+              <stereotypeInstanceHasPropertyInstances
+                Id="e12273dd-1acd-404f-afa6-905bc610e1e4">
+                <propertyInstance
+                  Id="67eb86e0-57e8-4b44-89e6-33a9bfa3a5c4"
+                  name="ClrAttributes" />
+              </stereotypeInstanceHasPropertyInstances>
+              <stereotypeInstanceHasPropertyInstances
+                Id="96d83979-baf5-4c57-92a2-1daff11ea112">
+                <propertyInstance
+                  Id="bd0f7778-0102-4685-b06a-087938ef0cd8"
+                  name="IsPartial"
+                  value="false" />
+              </stereotypeInstanceHasPropertyInstances>
+              <stereotypeInstanceHasPropertyInstances
+                Id="424792ce-8f46-42fa-954a-6c266052fcc7">
+                <propertyInstance
+                  Id="8f1871c4-5513-43e6-bcfb-bd1867d9dfb0"
+                  name="IsStatic"
+                  value="False" />
+              </stereotypeInstanceHasPropertyInstances>
+              <stereotypeInstanceHasPropertyInstances
+                Id="ed23490c-4947-49fd-93ca-90a3aec287c6">
+                <propertyInstance
+                  Id="f8fbb47b-ad2c-4775-9e98-417fae2148e2"
+                  name="IsUnsafe"
+                  value="false" />
+              </stereotypeInstanceHasPropertyInstances>
+              <stereotypeInstanceHasPropertyInstances
+                Id="767bd679-3760-490b-80cf-d77b676fea2a">
+                <propertyInstance
+                  Id="9967be78-c8bf-49ee-ae83-f2e6aab07777"
+                  name="PackageVisibility"
+                  value="internal" />
+              </stereotypeInstanceHasPropertyInstances>
+            </propertyInstances>
+          </stereotypeInstance>
+        </appliedStereotypesInternal>
+      </class>
+    </packageHasNamedElement>
+  </packagedElements>
+</package>

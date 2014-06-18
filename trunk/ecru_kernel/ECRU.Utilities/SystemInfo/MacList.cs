@@ -40,6 +40,7 @@ namespace ECRU.Utilities
 
         public void Remove(byte[] mac)
         {
+            /*
             try
             {
                 lock (Lock)
@@ -61,6 +62,7 @@ namespace ECRU.Utilities
             catch
             {
             }
+             */
         }
 
         private bool HasElement(out int index, byte[] mac)

@@ -1,0 +1,73 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns:dm0="http://schemas.microsoft.com/VisualStudio/2008/DslTools/Core" xmlns:dm1="http://schemas.microsoft.com/dsltools/Kernel" xmlns:dm2="http://schemas.microsoft.com/dsltools/Component" xmlns:dm3="http://schemas.microsoft.com/dsltools/UseCase" xmlns:dm4="http://schemas.microsoft.com/dsltools/Activity" xmlns:dm5="http://schemas.microsoft.com/dsltools/Interaction" xmlns:dm6="http://schemas.microsoft.com/dsltools/UmlModelLibrary" xmlns:dm7="http://schemas.microsoft.com/dsltools/UmlDiagrams" xmlns:dm8="http://schemas.microsoft.com/dsltools/LogicalClassDesigner"
+  dslVersion="1.0.0.0"
+  Id="8a380ddb-aa45-4fa6-ac15-ad6bf35acf53"
+  name="Timers"
+  visibility="Private" xmlns="http://schemas.microsoft.com/dsltools/ModelStore">
+  <referencesInternal>
+    <reference
+      Id="e18ab93e-9aba-4940-9872-ac4e2c29df35"
+      handle="viewcode://./CodeSchema_Namespace?Namespace%3DECRU.Utilities.Timers"
+      tag="ViewCode" />
+  </referencesInternal>
+  <packagedElements>
+    <packageHasNamedElement>
+      <class
+        Id="c8c4a7f1-9a5f-42f1-9372-4f2bb60aa901"
+        name="ECTimer"
+        isAbstract="false"
+        isLeaf="false"
+        isActiveClass="false">
+        <referencesInternal>
+          <reference
+            Id="ddc4e49a-3ed7-4ec2-a8ec-8f4b3f0e9ff5"
+            handle="viewcode://./CodeSchema_Class?Assembly%3D&quot;file:%2F%2F%2FC:%2FUsers%2FRune%2FDocuments%2FVisual Studio 2013%2FProjects%2Fecru_kernel%2Fecru_kernel%2FECRU.Utilities%2Fbin%2FDebug%2FECRU.Utilities.dll&quot; Namespace%3DECRU.Utilities.Timers Type%3DECTimer"
+            tag="ViewCode" />
+        </referencesInternal>
+        <appliedStereotypesInternal>
+          <stereotypeInstance
+            Id="67e546ff-b1e2-4061-9cd6-8a764eee8069"
+            name="class"
+            profile="CSharpProfile">
+            <propertyInstances>
+              <stereotypeInstanceHasPropertyInstances
+                Id="1e49c934-b8f5-4503-9dea-75e95400d0ee">
+                <propertyInstance
+                  Id="72a8eac6-986c-422b-8631-584902ef5415"
+                  name="ClrAttributes" />
+              </stereotypeInstanceHasPropertyInstances>
+              <stereotypeInstanceHasPropertyInstances
+                Id="1645d285-5ad6-4eac-b29c-8ee061221911">
+                <propertyInstance
+                  Id="d33e8d3d-28fc-4209-aa37-fec37983f888"
+                  name="IsPartial"
+                  value="false" />
+              </stereotypeInstanceHasPropertyInstances>
+              <stereotypeInstanceHasPropertyInstances
+                Id="2fbe56ea-fdf6-4302-9f4a-c2180eeb3892">
+                <propertyInstance
+                  Id="57081128-0e10-4170-a761-16562581dacd"
+                  name="IsStatic"
+                  value="False" />
+              </stereotypeInstanceHasPropertyInstances>
+              <stereotypeInstanceHasPropertyInstances
+                Id="e150ace8-ebf5-4660-b4c4-deedf1c08e1a">
+                <propertyInstance
+                  Id="be035196-21e2-48a6-bc39-66c0f599bf94"
+                  name="IsUnsafe"
+                  value="false" />
+              </stereotypeInstanceHasPropertyInstances>
+              <stereotypeInstanceHasPropertyInstances
+                Id="1bf97c68-d4fb-4a09-ad95-6ea96c65a053">
+                <propertyInstance
+                  Id="b863b3a2-f8c5-4ed5-a0d4-22ba60ab0983"
+                  name="PackageVisibility"
+                  value="internal" />
+              </stereotypeInstanceHasPropertyInstances>
+            </propertyInstances>
+          </stereotypeInstance>
+        </appliedStereotypesInternal>
+      </class>
+    </packageHasNamedElement>
+  </packagedElements>
+</package>

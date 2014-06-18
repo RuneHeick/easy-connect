@@ -76,4 +76,7 @@
       <Name>ECRU.Utilities</Name>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="ClassDiagram2.cd" />
+  </ItemGroup>
 </Project>

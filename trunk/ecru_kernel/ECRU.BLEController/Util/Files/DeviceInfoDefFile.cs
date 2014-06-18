@@ -185,12 +185,14 @@ namespace ECRU.BLEController.Util
             IHandleValue[] pool = {deviceInfo.Manufacture, deviceInfo.Model, deviceInfo.Name, deviceInfo.Serial};
             foreach (IHandleValue p in pool)
             {
-                size += 2 + 2 + p.Value.Length;
+                size += 2 + 2;
+                size += p.Value == null ? 0 : p.Value.Length;
             }
 
             foreach (Service s in deviceInfo.Services)
             {
-                size += 2 + 2 + s.Description.Value.Length;
+                size += 2 + 2;
+                size += s.Description.Value == null ? 0 : s.Description.Value.Length;
                 size += 12;
 
                 foreach (Characteristic c in s.Characteristics)

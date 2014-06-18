@@ -1,0 +1,951 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns:dm0="http://schemas.microsoft.com/VisualStudio/2008/DslTools/Core" xmlns:dm1="http://schemas.microsoft.com/dsltools/Kernel" xmlns:dm2="http://schemas.microsoft.com/dsltools/Component" xmlns:dm3="http://schemas.microsoft.com/dsltools/UseCase" xmlns:dm4="http://schemas.microsoft.com/dsltools/Activity" xmlns:dm5="http://schemas.microsoft.com/dsltools/Interaction" xmlns:dm6="http://schemas.microsoft.com/dsltools/UmlModelLibrary" xmlns:dm7="http://schemas.microsoft.com/dsltools/UmlDiagrams" xmlns:dm8="http://schemas.microsoft.com/dsltools/LogicalClassDesigner"
+  dslVersion="1.0.0.0"
+  Id="c83ab6db-643e-434c-bcd3-9e5821f41e11"
+  name="LeadFollow"
+  visibility="Private" xmlns="http://schemas.microsoft.com/dsltools/ModelStore">
+  <referencesInternal>
+    <reference
+      Id="cc6d6c0f-98ed-43d9-85f3-f64b54d2ecbe"
+      handle="viewcode://./CodeSchema_Namespace?Namespace%3DECRU.Utilities.LeadFollow"
+      tag="ViewCode" />
+  </referencesInternal>
+  <packagedElements>
+    <packageHasNamedElement>
+      <class
+        Id="f49559c3-f429-451a-9095-00ebd2d5c0fb"
+        name="WorkPool"
+        isAbstract="false"
+        isLeaf="false"
+        isActiveClass="false">
+        <referencesInternal>
+          <reference
+            Id="7b15c69a-66e2-464b-8a21-ca5b7402db57"
+            handle="viewcode://./CodeSchema_Class?Assembly%3D&quot;file:%2F%2F%2FC:%2FUsers%2FRune%2FDocuments%2FVisual Studio 2013%2FProjects%2Fecru_kernel%2Fecru_kernel%2FECRU.Utilities%2Fbin%2FDebug%2FECRU.Utilities.dll&quot; Namespace%3DECRU.Utilities.LeadFollow Type%3DWorkPool"
+            tag="ViewCode" />
+        </referencesInternal>
+        <appliedStereotypesInternal>
+          <stereotypeInstance
+            Id="85263ba3-cae0-4aea-9225-4c462b689a6b"
+            name="class"
+            profile="CSharpProfile">
+            <propertyInstances>
+              <stereotypeInstanceHasPropertyInstances
+                Id="ff569835-aae0-4e68-af3b-b11b4818b9d3">
+                <propertyInstance
+                  Id="7de6bd0a-4c36-4b8d-8b2d-972189885f3d"
+                  name="ClrAttributes" />
+              </stereotypeInstanceHasPropertyInstances>
+              <stereotypeInstanceHasPropertyInstances
+                Id="d42353e2-7008-44d5-ab96-9b18cd6d43c4">
+                <propertyInstance
+                  Id="ae4408fd-b107-45e9-8107-14a5cc804594"
+                  name="IsPartial"
+                  value="false" />
+              </stereotypeInstanceHasPropertyInstances>
+              <stereotypeInstanceHasPropertyInstances
+                Id="a94c5801-f3ba-40bd-a580-fbdc6cfb5923">
+                <propertyInstance
+                  Id="6bef1d37-d987-494c-b9cf-06cc6043fb96"
+                  name="IsStatic"
+                  value="False" />
+              </stereotypeInstanceHasPropertyInstances>
+              <stereotypeInstanceHasPropertyInstances
+                Id="e4ac8d14-c80d-4580-9f84-13bfd6cbc3f8">
+                <propertyInstance
+                  Id="37270aad-00d7-4ffb-a422-80f561cdb4b1"
+                  name="IsUnsafe"
+                  value="false" />
+              </stereotypeInstanceHasPropertyInstances>
+              <stereotypeInstanceHasPropertyInstances
+                Id="664c2642-ffa6-440e-9330-2dc0381d8efb">
+                <propertyInstance
+                  Id="364095a2-4ac5-4646-8b64-c05da6d63bc8"
+                  name="PackageVisibility"
+                  value="internal" />
+              </stereotypeInstanceHasPropertyInstances>
+            </propertyInstances>
+          </stereotypeInstance>
+        </appliedStereotypesInternal>
+        <ownedAttributesInternal>
+          <property
+            Id="4d37fa50-d0ad-4ee0-94ac-6d63d7e3049c"
+            name="actionQueue"
+            visibility="Private"
+            isLeaf="false"
+            isStatic="false"
+            isReadOnly="false"
+            isDerived="false"
+            isDerivedUnion="false"
+            aggregation="None"
+            isComposite="false">
+            <referencesInternal>
+              <reference
+                Id="0e80662d-b8d8-4085-b38b-122bffc95a6a"
+                handle="viewcode://./CodeSchema_Field?Assembly%3D&quot;file:%2F%2F%2FC:%2FUsers%2FRune%2FDocuments%2FVisual Studio 2013%2FProjects%2Fecru_kernel%2Fecru_kernel%2FECRU.Utilities%2Fbin%2FDebug%2FECRU.Utilities.dll&quot; Namespace%3DECRU.Utilities.LeadFollow Type%3DWorkPool Member%3DactionQueue"
+                tag="ViewCode" />
+            </referencesInternal>
+            <appliedStereotypesInternal>
+              <stereotypeInstance
+                Id="5c969461-db62-4896-ab0f-2be70aa9e3b2"
+                name="field"
+                profile="CSharpProfile">
+                <propertyInstances>
+                  <stereotypeInstanceHasPropertyInstances
+                    Id="d95e665b-a238-48eb-878f-525b18b4a7d4">
+                    <propertyInstance
+                      Id="e1d2a693-557d-4f3e-b802-ce2925d64b6e"
+                      name="ClrAttributes" />
+                  </stereotypeInstanceHasPropertyInstances>
+                  <stereotypeInstanceHasPropertyInstances
+                    Id="8a91c792-333a-4ed8-8923-4553fa313fd6">
+                    <propertyInstance
+                      Id="66989fad-223c-46fb-a683-fdcc749d8507"
+                      name="IsConst"
+                      value="false" />
+                  </stereotypeInstanceHasPropertyInstances>
+                  <stereotypeInstanceHasPropertyInstances
+                    Id="377f0cb7-ba51-4633-afa0-75a21ec6ddc0">
+                    <propertyInstance
+                      Id="5d9fa909-4849-4201-a143-6f8aa56a7ecc"
+                      name="IsNullable"
+                      value="false" />
+                  </stereotypeInstanceHasPropertyInstances>
+                  <stereotypeInstanceHasPropertyInstances
+                    Id="63ec62ad-4257-434f-9e9c-c521d1716440">
+                    <propertyInstance
+                      Id="b87b7da8-b997-4222-a621-53a2a0313b6b"
+                      name="IsVolatile"
+                      value="false" />
+                  </stereotypeInstanceHasPropertyInstances>
+                  <stereotypeInstanceHasPropertyInstances
+                    Id="21439c0d-e304-459e-8e76-33af5a9938e6">
+                    <propertyInstance
+                      Id="75325e42-8220-4a9a-b442-17a3f1e40992"
+                      name="PackageVisibility"
+                      value="internal" />
+                  </stereotypeInstanceHasPropertyInstances>
+                </propertyInstances>
+              </stereotypeInstance>
+            </appliedStereotypesInternal>
+            <type_NamedElement>
+              <classMoniker
+                Id="e3a46f64-6919-4736-b840-a5ed8e93aae5"
+                LastKnownName="ArrayList"
+                LastKnownLocation="Package2_1325.uml" />
+            </type_NamedElement>
+          </property>
+          <property
+            Id="1bb9cac9-ebed-4897-a156-0e9b2fac7d89"
+            name="actionQueueLock"
+            visibility="Private"
+            isLeaf="false"
+            isStatic="false"
+            isReadOnly="false"
+            isDerived="false"
+            isDerivedUnion="false"
+            aggregation="None"
+            isComposite="false">
+            <referencesInternal>
+              <reference
+                Id="921a7060-4276-4340-8c15-bc2079bc893a"
+                handle="viewcode://./CodeSchema_Field?Assembly%3D&quot;file:%2F%2F%2FC:%2FUsers%2FRune%2FDocuments%2FVisual Studio 2013%2FProjects%2Fecru_kernel%2Fecru_kernel%2FECRU.Utilities%2Fbin%2FDebug%2FECRU.Utilities.dll&quot; Namespace%3DECRU.Utilities.LeadFollow Type%3DWorkPool Member%3DactionQueueLock"
+                tag="ViewCode" />
+            </referencesInternal>
+            <appliedStereotypesInternal>
+              <stereotypeInstance
+                Id="0618c5df-0c39-41e3-8557-aad0fbe10122"
+                name="field"
+                profile="CSharpProfile">
+                <propertyInstances>
+                  <stereotypeInstanceHasPropertyInstances
+                    Id="525dd61a-bfcc-47dc-aa90-ce9e2b8ae5e1">
+                    <propertyInstance
+                      Id="1e7d01fc-b98d-4e18-951e-5844ce9cd20d"
+                      name="ClrAttributes" />
+                  </stereotypeInstanceHasPropertyInstances>
+                  <stereotypeInstanceHasPropertyInstances
+                    Id="7920a21e-4b22-43e7-82b9-5321638073b6">
+                    <propertyInstance
+                      Id="e74d7698-a895-467a-8669-7680c4c1405c"
+                      name="IsConst"
+                      value="false" />
+                  </stereotypeInstanceHasPropertyInstances>
+                  <stereotypeInstanceHasPropertyInstances
+                    Id="a5397d10-ef6b-470c-b530-9d4f07aeede5">
+                    <propertyInstance
+                      Id="bc88d348-9c20-4c79-bc44-07bddf479ced"
+                      name="IsNullable"
+                      value="false" />
+                  </stereotypeInstanceHasPropertyInstances>
+                  <stereotypeInstanceHasPropertyInstances
+                    Id="11d00632-8791-46f1-ae93-f88edddac890">
+                    <propertyInstance
+                      Id="223ab090-52db-43f7-a196-0c6ea09b2119"
+                      name="IsVolatile"
+                      value="false" />
+                  </stereotypeInstanceHasPropertyInstances>
+                  <stereotypeInstanceHasPropertyInstances
+                    Id="87bae145-aa3a-49ed-b500-3bc554df881d">
+                    <propertyInstance
+                      Id="6d2839b2-0c67-434e-9390-933ffefe72b7"
+                      name="PackageVisibility"
+                      value="internal" />
+                  </stereotypeInstanceHasPropertyInstances>
+                </propertyInstances>
+              </stereotypeInstance>
+            </appliedStereotypesInternal>
+            <type_NamedElement>
+              <classMoniker
+                Id="516378e2-5ad6-4b46-bccd-980dafa6e3b7"
+                LastKnownName="Object"
+                LastKnownLocation="Package_1325.uml" />
+            </type_NamedElement>
+          </property>
+          <property
+            Id="9face4be-73e5-4d2c-bed8-f410e121b48e"
+            name="pool"
+            visibility="Private"
+            isLeaf="false"
+            isStatic="false"
+            isReadOnly="false"
+            isOrdered="true"
+            isDerived="false"
+            isDerivedUnion="false"
+            aggregation="None"
+            isComposite="false">
+            <referencesInternal>
+              <reference
+                Id="c75e419d-4a95-42f9-8da6-2fe11a2da1c3"
+                handle="viewcode://./CodeSchema_Field?Assembly%3D&quot;file:%2F%2F%2FC:%2FUsers%2FRune%2FDocuments%2FVisual Studio 2013%2FProjects%2Fecru_kernel%2Fecru_kernel%2FECRU.Utilities%2Fbin%2FDebug%2FECRU.Utilities.dll&quot; Namespace%3DECRU.Utilities.LeadFollow Type%3DWorkPool Member%3Dpool"
+                tag="ViewCode" />
+            </referencesInternal>
+            <appliedStereotypesInternal>
+              <stereotypeInstance
+                Id="d89cffd4-9551-4a37-b01b-65b4083babe6"
+                name="field"
+                profile="CSharpProfile">
+                <propertyInstances>
+                  <stereotypeInstanceHasPropertyInstances
+                    Id="dcd59cd8-6d2f-46c3-b544-79ee49cc8165">
+                    <propertyInstance
+                      Id="0c987bcf-df16-4e48-9c97-de103cd80bf3"
+                      name="ClrAttributes" />
+                  </stereotypeInstanceHasPropertyInstances>
+                  <stereotypeInstanceHasPropertyInstances
+                    Id="8544ee39-7f07-46ea-9c75-b1fd1a2e38f3">
+                    <propertyInstance
+                      Id="be1a4505-1a74-4474-838b-d63e1f3ed627"
+                      name="IsConst"
+                      value="false" />
+                  </stereotypeInstanceHasPropertyInstances>
+                  <stereotypeInstanceHasPropertyInstances
+                    Id="76e9d0ea-7a44-4b65-98ae-a00beb23edb5">
+                    <propertyInstance
+                      Id="2c0b3115-c4cf-4fe1-9c31-4c525c665ec4"
+                      name="IsNullable"
+                      value="false" />
+                  </stereotypeInstanceHasPropertyInstances>
+                  <stereotypeInstanceHasPropertyInstances
+                    Id="24a1adce-8596-410d-8bf1-300366204f73">
+                    <propertyInstance
+                      Id="e945d10d-dd23-4f02-9d50-b77bb1e3a3f8"
+                      name="IsVolatile"
+                      value="false" />
+                  </stereotypeInstanceHasPropertyInstances>
+                  <stereotypeInstanceHasPropertyInstances
+                    Id="0297cb20-0169-4b85-91e9-45b724da821b">
+                    <propertyInstance
+                      Id="9458c610-3601-4b2d-9912-354e4a2115bc"
+                      name="PackageVisibility"
+                      value="internal" />
+                  </stereotypeInstanceHasPropertyInstances>
+                </propertyInstances>
+              </stereotypeInstance>
+            </appliedStereotypesInternal>
+            <lowerValueInternal>
+              <literalString
+                Id="c7f034bf-122e-4d2e-9741-41ef52205510"
+                name="Lower"
+                value="*" />
+            </lowerValueInternal>
+            <upperValueInternal>
+              <literalString
+                Id="a03330ca-7d8f-42f2-b65f-5a3e14a1599b"
+                name="Upper"
+                value="*" />
+            </upperValueInternal>
+            <type_NamedElement>
+              <classMoniker
+                Id="66836f73-916d-4235-930a-00d6de28f0c1"
+                LastKnownName="Thread"
+                LastKnownLocation="Package_1331.uml" />
+            </type_NamedElement>
+          </property>
+          <property
+            Id="1d140c21-7581-4c28-9c3b-c24e01f2abf2"
+            name="poolLock"
+            visibility="Private"
+            isLeaf="false"
+            isStatic="false"
+            isReadOnly="false"
+            isDerived="false"
+            isDerivedUnion="false"
+            aggregation="None"
+            isComposite="false">
+            <referencesInternal>
+              <reference
+                Id="e3a79f5d-3a4c-4985-b486-e08174803cf4"
+                handle="viewcode://./CodeSchema_Field?Assembly%3D&quot;file:%2F%2F%2FC:%2FUsers%2FRune%2FDocuments%2FVisual Studio 2013%2FProjects%2Fecru_kernel%2Fecru_kernel%2FECRU.Utilities%2Fbin%2FDebug%2FECRU.Utilities.dll&quot; Namespace%3DECRU.Utilities.LeadFollow Type%3DWorkPool Member%3DpoolLock"
+                tag="ViewCode" />
+            </referencesInternal>
+            <appliedStereotypesInternal>
+              <stereotypeInstance
+                Id="73f0046f-c7a6-4e41-b1d4-1ec634b4a70a"
+                name="field"
+                profile="CSharpProfile">
+                <propertyInstances>
+                  <stereotypeInstanceHasPropertyInstances
+                    Id="85e35917-0e90-4792-93a0-d90e6ee4b5f6">
+                    <propertyInstance
+                      Id="6e014b0b-e149-4600-b7f0-175b40f008de"
+                      name="ClrAttributes" />
+                  </stereotypeInstanceHasPropertyInstances>
+                  <stereotypeInstanceHasPropertyInstances
+                    Id="f30ed5be-a262-46e7-a665-2eb4cd2f75e4">
+                    <propertyInstance
+                      Id="83977832-c170-4c9e-85ac-cb7638b87eae"
+                      name="IsConst"
+                      value="false" />
+                  </stereotypeInstanceHasPropertyInstances>
+                  <stereotypeInstanceHasPropertyInstances
+                    Id="b9ffdc3f-eca4-4f6b-840d-af3632dc14ef">
+                    <propertyInstance
+                      Id="971e1a3a-51dc-4d04-bcb2-74b45360f290"
+                      name="IsNullable"
+                      value="false" />
+                  </stereotypeInstanceHasPropertyInstances>
+                  <stereotypeInstanceHasPropertyInstances
+                    Id="40aa70db-8de9-4a5a-bc0d-665f206dd490">
+                    <propertyInstance
+                      Id="7ba4a3a0-1fd7-469c-99d1-c201f31edb44"
+                      name="IsVolatile"
+                      value="false" />
+                  </stereotypeInstanceHasPropertyInstances>
+                  <stereotypeInstanceHasPropertyInstances
+                    Id="fdcb3583-9b8d-47d6-b07a-9554f5b44f9e">
+                    <propertyInstance
+                      Id="2f1488b7-d361-4d9b-9bd5-5a5b9273f2ba"
+                      name="PackageVisibility"
+                      value="internal" />
+                  </stereotypeInstanceHasPropertyInstances>
+                </propertyInstances>
+              </stereotypeInstance>
+            </appliedStereotypesInternal>
+            <type_NamedElement>
+              <classMoniker
+                Id="516378e2-5ad6-4b46-bccd-980dafa6e3b7"
+                LastKnownName="Object"
+                LastKnownLocation="Package_1325.uml" />
+            </type_NamedElement>
+          </property>
+          <property
+            Id="d5ed69f6-8af9-415a-8818-f38576c2a9e6"
+            name="running"
+            visibility="Private"
+            isLeaf="false"
+            isStatic="false"
+            isReadOnly="false"
+            isDerived="false"
+            isDerivedUnion="false"
+            aggregation="None"
+            isComposite="false">
+            <referencesInternal>
+              <reference
+                Id="e6c7358a-71fc-4075-b096-0477a1cf71f1"
+                handle="viewcode://./CodeSchema_Field?Assembly%3D&quot;file:%2F%2F%2FC:%2FUsers%2FRune%2FDocuments%2FVisual Studio 2013%2FProjects%2Fecru_kernel%2Fecru_kernel%2FECRU.Utilities%2Fbin%2FDebug%2FECRU.Utilities.dll&quot; Namespace%3DECRU.Utilities.LeadFollow Type%3DWorkPool Member%3Drunning"
+                tag="ViewCode" />
+            </referencesInternal>
+            <appliedStereotypesInternal>
+              <stereotypeInstance
+                Id="7c7c66d4-5931-4648-aad3-04dc1a055351"
+                name="field"
+                profile="CSharpProfile">
+                <propertyInstances>
+                  <stereotypeInstanceHasPropertyInstances
+                    Id="fd9c97ac-bc44-4791-b221-fa80c72e8dee">
+                    <propertyInstance
+                      Id="584a7fbc-0795-4889-a4b7-40f44ab011d4"
+                      name="ClrAttributes" />
+                  </stereotypeInstanceHasPropertyInstances>
+                  <stereotypeInstanceHasPropertyInstances
+                    Id="1cc06174-8362-4523-807a-b6a4619d19f7">
+                    <propertyInstance
+                      Id="3c0dec6e-7494-49d5-a8d7-57018fd45d34"
+                      name="IsConst"
+                      value="false" />
+                  </stereotypeInstanceHasPropertyInstances>
+                  <stereotypeInstanceHasPropertyInstances
+                    Id="c2bd94cd-27e6-4fad-b267-1a3439ec189e">
+                    <propertyInstance
+                      Id="d7f53d57-900d-402c-af8d-8aa13a7e2a58"
+                      name="IsNullable"
+                      value="false" />
+                  </stereotypeInstanceHasPropertyInstances>
+                  <stereotypeInstanceHasPropertyInstances
+                    Id="9dab8580-d973-41e9-9d15-1b97fd335621">
+                    <propertyInstance
+                      Id="97f686b3-2986-47ef-ac5f-93c202c93958"
+                      name="IsVolatile"
+                      value="false" />
+                  </stereotypeInstanceHasPropertyInstances>
+                  <stereotypeInstanceHasPropertyInstances
+                    Id="be5eeb4e-a0fc-45f0-b518-0a938f7d068b">
+                    <propertyInstance
+                      Id="ae9cdc51-b5bc-4187-8b1b-3abbc18a01b4"
+                      name="PackageVisibility"
+                      value="internal" />
+                  </stereotypeInstanceHasPropertyInstances>
+                </propertyInstances>
+              </stereotypeInstance>
+            </appliedStereotypesInternal>
+            <type_NamedElement>
+              <primitiveTypeMoniker
+                Id="8943dc84-709e-4f62-b15a-a3273aa6f165"
+                LastKnownName="Boolean"
+                LastKnownLocation="Classdiagram1.uml" />
+            </type_NamedElement>
+          </property>
+        </ownedAttributesInternal>
+        <ownedOperationsInternal>
+          <operation
+            Id="4234cd81-2378-44cb-8f1d-d4b6ab78dd0e"
+            name="WorkPool"
+            isLeaf="false"
+            isStatic="false"
+            isAbstract="false"
+            concurrency="Sequential"
+            isQuery="false">
+            <referencesInternal>
+              <reference
+                Id="7531e1e6-77cc-45d0-addf-b911120e3122"
+                handle="viewcode://./CodeSchema_Method?Assembly%3D&quot;file:%2F%2F%2FC:%2FUsers%2FRune%2FDocuments%2FVisual Studio 2013%2FProjects%2Fecru_kernel%2Fecru_kernel%2FECRU.Utilities%2Fbin%2FDebug%2FECRU.Utilities.dll&quot; Namespace%3DECRU.Utilities.LeadFollow Type%3DWorkPool Member%3D(Name%3D.ctor OverloadingParameters%3D[(Assembly%3D&quot;file:%2F%2F%2FC:%2FProgram Files (x86)%2FMicrosoft .NET Micro Framework%2Fv4.3%2FAssemblies%2Fle%2Fmscorlib.dll&quot; Namespace%3DSystem Type%3DInt32)])"
+                tag="ViewCode" />
+            </referencesInternal>
+            <appliedStereotypesInternal>
+              <stereotypeInstance
+                Id="4601d43c-8a30-4961-9a81-a678fb27aa8e"
+                name="method"
+                profile="CSharpProfile">
+                <propertyInstances>
+                  <stereotypeInstanceHasPropertyInstances
+                    Id="9335aa7b-0224-4fdc-8a3f-73789f7c4c51">
+                    <propertyInstance
+                      Id="6ebc2167-ec0d-433f-abeb-67aef3a1f75f"
+                      name="ClrAttributes" />
+                  </stereotypeInstanceHasPropertyInstances>
+                  <stereotypeInstanceHasPropertyInstances
+                    Id="0e568db8-7643-4013-baf4-d0f37410b514">
+                    <propertyInstance
+                      Id="aeefabb7-bd33-429c-bf05-0043ffd77cdf"
+                      name="IsPartial"
+                      value="false" />
+                  </stereotypeInstanceHasPropertyInstances>
+                  <stereotypeInstanceHasPropertyInstances
+                    Id="8254da80-bb10-4194-9115-f1f883a799be">
+                    <propertyInstance
+                      Id="6c452b44-44c3-4b46-aeac-579cac571733"
+                      name="IsUnsafe"
+                      value="false" />
+                  </stereotypeInstanceHasPropertyInstances>
+                  <stereotypeInstanceHasPropertyInstances
+                    Id="b9d25ab9-82f2-485c-ba16-b77d5999ce02">
+                    <propertyInstance
+                      Id="02a69497-22d7-4020-9a32-8804e5b23c79"
+                      name="Inheritance"
+                      value="none" />
+                  </stereotypeInstanceHasPropertyInstances>
+                  <stereotypeInstanceHasPropertyInstances
+                    Id="3fdb1c83-b521-4d8e-976b-24c63d4fb008">
+                    <propertyInstance
+                      Id="1d13e42c-81c2-4a3d-87e4-173bf8d4208d"
+                      name="PackageVisibility"
+                      value="internal" />
+                  </stereotypeInstanceHasPropertyInstances>
+                  <stereotypeInstanceHasPropertyInstances
+                    Id="d685b714-abfb-4cb5-bd93-e70443b38645">
+                    <propertyInstance
+                      Id="82e18912-2820-4887-87e1-36d42545f185"
+                      name="params"
+                      value="false" />
+                  </stereotypeInstanceHasPropertyInstances>
+                </propertyInstances>
+              </stereotypeInstance>
+            </appliedStereotypesInternal>
+            <ownedParameters>
+              <operationHasOwnedParameters>
+                <parameter
+                  Id="171afea5-7af5-4fb3-87ef-5aa38faa32e5"
+                  name="ThreadPoolSize"
+                  direction="In">
+                  <referencesInternal>
+                    <reference
+                      Id="b398dfa0-f18f-49ec-adcb-e9ecd810140b"
+                      handle="viewcode://./CodeSchema_Parameter?Assembly%3D&quot;file:%2F%2F%2FC:%2FUsers%2FRune%2FDocuments%2FVisual Studio 2013%2FProjects%2Fecru_kernel%2Fecru_kernel%2FECRU.Utilities%2Fbin%2FDebug%2FECRU.Utilities.dll&quot; Namespace%3DECRU.Utilities.LeadFollow Type%3DWorkPool Member%3D(Name%3D.ctor OverloadingParameters%3D[(Assembly%3D&quot;file:%2F%2F%2FC:%2FProgram Files (x86)%2FMicrosoft .NET Micro Framework%2Fv4.3%2FAssemblies%2Fle%2Fmscorlib.dll&quot; Namespace%3DSystem Type%3DInt32)]) ParameterIdentifier%3DThreadPoolSize"
+                      tag="ViewCode" />
+                  </referencesInternal>
+                  <type_NamedElement>
+                    <primitiveTypeMoniker
+                      Id="220a3521-e091-4221-bae9-3ef9018e845c"
+                      LastKnownName="Integer"
+                      LastKnownLocation="Classdiagram1.uml" />
+                  </type_NamedElement>
+                </parameter>
+              </operationHasOwnedParameters>
+            </ownedParameters>
+          </operation>
+          <operation
+            Id="94fc0330-62d1-4146-8140-705987e347cd"
+            name="EnqueueAction"
+            isLeaf="false"
+            isStatic="false"
+            isAbstract="false"
+            concurrency="Sequential"
+            isQuery="false">
+            <referencesInternal>
+              <reference
+                Id="44a11615-97cc-4694-812e-90d8a9706670"
+                handle="viewcode://./CodeSchema_Method?Assembly%3D&quot;file:%2F%2F%2FC:%2FUsers%2FRune%2FDocuments%2FVisual Studio 2013%2FProjects%2Fecru_kernel%2Fecru_kernel%2FECRU.Utilities%2Fbin%2FDebug%2FECRU.Utilities.dll&quot; Namespace%3DECRU.Utilities.LeadFollow Type%3DWorkPool Member%3D(Name%3DEnqueueAction OverloadingParameters%3D[(Assembly%3D&quot;file:%2F%2F%2FC:%2FUsers%2FRune%2FDocuments%2FVisual Studio 2013%2FProjects%2Fecru_kernel%2Fecru_kernel%2FECRU.Utilities%2Fbin%2FDebug%2FECRU.Utilities.dll&quot; Namespace%3DECRU.Utilities.LeadFollow Type%3DAction)])"
+                tag="ViewCode" />
+            </referencesInternal>
+            <appliedStereotypesInternal>
+              <stereotypeInstance
+                Id="df6aa5f1-7de6-4a43-8d3a-4791c238bf70"
+                name="method"
+                profile="CSharpProfile">
+                <propertyInstances>
+                  <stereotypeInstanceHasPropertyInstances
+                    Id="2e7c12a2-74d9-49f1-977e-b5bdd7031c06">
+                    <propertyInstance
+                      Id="4b34e348-3cab-42ed-a89c-3cbd1f362bac"
+                      name="ClrAttributes" />
+                  </stereotypeInstanceHasPropertyInstances>
+                  <stereotypeInstanceHasPropertyInstances
+                    Id="94472c9e-dc11-4cd6-a767-a28816523d0e">
+                    <propertyInstance
+                      Id="8b519e55-e148-43f8-a8d6-14e4ee1a664a"
+                      name="IsPartial"
+                      value="false" />
+                  </stereotypeInstanceHasPropertyInstances>
+                  <stereotypeInstanceHasPropertyInstances
+                    Id="e1a61f6e-f11c-4130-b7f4-b4ceac9bc45d">
+                    <propertyInstance
+                      Id="b994df00-e568-4d0d-bb92-ce37b0ab8b81"
+                      name="IsUnsafe"
+                      value="false" />
+                  </stereotypeInstanceHasPropertyInstances>
+                  <stereotypeInstanceHasPropertyInstances
+                    Id="e0abd82b-5156-4eb5-a76b-e16093293747">
+                    <propertyInstance
+                      Id="91829a42-fe61-4f01-8659-5c4f56bc8f01"
+                      name="Inheritance"
+                      value="none" />
+                  </stereotypeInstanceHasPropertyInstances>
+                  <stereotypeInstanceHasPropertyInstances
+                    Id="bc8733e9-f1e5-41ce-9aeb-974b16ace1cc">
+                    <propertyInstance
+                      Id="125503df-d758-4b29-ae8f-1412c0233c1d"
+                      name="PackageVisibility"
+                      value="internal" />
+                  </stereotypeInstanceHasPropertyInstances>
+                  <stereotypeInstanceHasPropertyInstances
+                    Id="b478906f-a591-49ed-8659-522746e2839c">
+                    <propertyInstance
+                      Id="16e6004f-93cd-4206-bfb2-fe4154b8f584"
+                      name="params"
+                      value="false" />
+                  </stereotypeInstanceHasPropertyInstances>
+                </propertyInstances>
+              </stereotypeInstance>
+            </appliedStereotypesInternal>
+            <ownedParameters>
+              <operationHasOwnedParameters>
+                <parameter
+                  Id="87ba1d99-9aba-479b-9bf2-01882ad82ab7"
+                  direction="Return">
+                  <type_NamedElement>
+                    <primitiveTypeMoniker
+                      Id="8943dc84-709e-4f62-b15a-a3273aa6f165"
+                      LastKnownName="Boolean"
+                      LastKnownLocation="Classdiagram1.uml" />
+                  </type_NamedElement>
+                </parameter>
+              </operationHasOwnedParameters>
+              <operationHasOwnedParameters>
+                <parameter
+                  Id="c7fb8558-13a2-46d6-b524-e7378e927183"
+                  name="item"
+                  direction="In">
+                  <referencesInternal>
+                    <reference
+                      Id="8ca61c5e-07d8-4b9f-8f31-c897804d6bb0"
+                      handle="viewcode://./CodeSchema_Parameter?Assembly%3D&quot;file:%2F%2F%2FC:%2FUsers%2FRune%2FDocuments%2FVisual Studio 2013%2FProjects%2Fecru_kernel%2Fecru_kernel%2FECRU.Utilities%2Fbin%2FDebug%2FECRU.Utilities.dll&quot; Namespace%3DECRU.Utilities.LeadFollow Type%3DWorkPool Member%3D(Name%3DEnqueueAction OverloadingParameters%3D[(Assembly%3D&quot;file:%2F%2F%2FC:%2FUsers%2FRune%2FDocuments%2FVisual Studio 2013%2FProjects%2Fecru_kernel%2Fecru_kernel%2FECRU.Utilities%2Fbin%2FDebug%2FECRU.Utilities.dll&quot; Namespace%3DECRU.Utilities.LeadFollow Type%3DAction)]) ParameterIdentifier%3Ditem"
+                      tag="ViewCode" />
+                  </referencesInternal>
+                  <type_NamedElement>
+                    <classMoniker
+                      Id="a53faf31-fee5-4e77-a8be-aaee12c120e3"
+                      LastKnownName="Action"
+                      LastKnownLocation="Package_1347.uml" />
+                  </type_NamedElement>
+                </parameter>
+              </operationHasOwnedParameters>
+            </ownedParameters>
+          </operation>
+          <operation
+            Id="c54ef1d4-58f5-4382-b1cf-317ea8664ae9"
+            name="TryStart"
+            visibility="Private"
+            isLeaf="false"
+            isStatic="false"
+            isAbstract="false"
+            concurrency="Sequential"
+            isQuery="false">
+            <referencesInternal>
+              <reference
+                Id="405b301f-d190-4d7f-87c6-ee75d9e20f7b"
+                handle="viewcode://./CodeSchema_Method?Assembly%3D&quot;file:%2F%2F%2FC:%2FUsers%2FRune%2FDocuments%2FVisual Studio 2013%2FProjects%2Fecru_kernel%2Fecru_kernel%2FECRU.Utilities%2Fbin%2FDebug%2FECRU.Utilities.dll&quot; Namespace%3DECRU.Utilities.LeadFollow Type%3DWorkPool Member%3DTryStart"
+                tag="ViewCode" />
+            </referencesInternal>
+            <appliedStereotypesInternal>
+              <stereotypeInstance
+                Id="26a1721d-009c-4122-9ba4-c630d439e9d8"
+                name="method"
+                profile="CSharpProfile">
+                <propertyInstances>
+                  <stereotypeInstanceHasPropertyInstances
+                    Id="00d54928-2901-4a43-9e41-34aafbe27a4a">
+                    <propertyInstance
+                      Id="53d1e544-b3b0-43ae-a585-17c1775b784b"
+                      name="ClrAttributes" />
+                  </stereotypeInstanceHasPropertyInstances>
+                  <stereotypeInstanceHasPropertyInstances
+                    Id="105ae260-1362-4984-bb52-2cdd2db38989">
+                    <propertyInstance
+                      Id="11b08eb6-c6ee-4273-be65-8d1c23ad18f1"
+                      name="IsPartial"
+                      value="false" />
+                  </stereotypeInstanceHasPropertyInstances>
+                  <stereotypeInstanceHasPropertyInstances
+                    Id="7d602acb-9269-46db-bdc7-14fba6e9fc23">
+                    <propertyInstance
+                      Id="4a463a8e-07d0-46a9-839b-51fca3aa9b11"
+                      name="IsUnsafe"
+                      value="false" />
+                  </stereotypeInstanceHasPropertyInstances>
+                  <stereotypeInstanceHasPropertyInstances
+                    Id="224ea961-3ed3-40b6-957b-626da5c0f72c">
+                    <propertyInstance
+                      Id="47613b51-c760-4cbb-96aa-bab439541474"
+                      name="Inheritance"
+                      value="none" />
+                  </stereotypeInstanceHasPropertyInstances>
+                  <stereotypeInstanceHasPropertyInstances
+                    Id="fa6a0991-ed06-40a9-997c-d84d0fb2f953">
+                    <propertyInstance
+                      Id="570739c2-cd3c-47b7-a900-2e2bf066fe41"
+                      name="PackageVisibility"
+                      value="internal" />
+                  </stereotypeInstanceHasPropertyInstances>
+                  <stereotypeInstanceHasPropertyInstances
+                    Id="78c66e85-5aff-4505-9659-f7cd7e1f8b12">
+                    <propertyInstance
+                      Id="633634a4-ecec-4100-bb60-ef6ff058e5d2"
+                      name="params"
+                      value="false" />
+                  </stereotypeInstanceHasPropertyInstances>
+                </propertyInstances>
+              </stereotypeInstance>
+            </appliedStereotypesInternal>
+          </operation>
+          <operation
+            Id="81e8bd56-ef27-4710-8b6a-18fdf021c8eb"
+            name="getJob"
+            visibility="Private"
+            isLeaf="false"
+            isStatic="false"
+            isAbstract="false"
+            concurrency="Sequential"
+            isQuery="false">
+            <referencesInternal>
+              <reference
+                Id="7c44ece5-4a15-4550-a219-16e6e34e4fb9"
+                handle="viewcode://./CodeSchema_Method?Assembly%3D&quot;file:%2F%2F%2FC:%2FUsers%2FRune%2FDocuments%2FVisual Studio 2013%2FProjects%2Fecru_kernel%2Fecru_kernel%2FECRU.Utilities%2Fbin%2FDebug%2FECRU.Utilities.dll&quot; Namespace%3DECRU.Utilities.LeadFollow Type%3DWorkPool Member%3DgetJob"
+                tag="ViewCode" />
+            </referencesInternal>
+            <appliedStereotypesInternal>
+              <stereotypeInstance
+                Id="26b9fe1f-3ad2-4971-8321-e281eed77e5f"
+                name="method"
+                profile="CSharpProfile">
+                <propertyInstances>
+                  <stereotypeInstanceHasPropertyInstances
+                    Id="5d86ea90-6666-4729-941c-6fcc7be95e1d">
+                    <propertyInstance
+                      Id="8932047d-6ad0-4baa-aa65-cb37da1774e4"
+                      name="ClrAttributes" />
+                  </stereotypeInstanceHasPropertyInstances>
+                  <stereotypeInstanceHasPropertyInstances
+                    Id="88b4d850-ba28-4d08-9ed0-23fd163aaee5">
+                    <propertyInstance
+                      Id="18e1ecf2-8f5c-4949-b8ba-bbc5c861056a"
+                      name="IsPartial"
+                      value="false" />
+                  </stereotypeInstanceHasPropertyInstances>
+                  <stereotypeInstanceHasPropertyInstances
+                    Id="76a701c6-b1bd-4323-8afa-f143a61c3911">
+                    <propertyInstance
+                      Id="953dd8f3-9ea1-475a-84b3-66ed3f0c059c"
+                      name="IsUnsafe"
+                      value="false" />
+                  </stereotypeInstanceHasPropertyInstances>
+                  <stereotypeInstanceHasPropertyInstances
+                    Id="6e67ce13-1612-49fb-be48-acf210d2f385">
+                    <propertyInstance
+                      Id="9fb16b1b-4fe3-4ff9-974e-529a9cbe20a0"
+                      name="Inheritance"
+                      value="none" />
+                  </stereotypeInstanceHasPropertyInstances>
+                  <stereotypeInstanceHasPropertyInstances
+                    Id="86eca2be-bec1-4766-a6b2-9a963ede3874">
+                    <propertyInstance
+                      Id="fd2c06a7-1027-4ef1-a347-5fc424c26295"
+                      name="PackageVisibility"
+                      value="internal" />
+                  </stereotypeInstanceHasPropertyInstances>
+                  <stereotypeInstanceHasPropertyInstances
+                    Id="7d3f7153-f01b-48bc-8835-02e378d1ab8d">
+                    <propertyInstance
+                      Id="397c68f6-00fb-4276-b317-23751ec43204"
+                      name="params"
+                      value="false" />
+                  </stereotypeInstanceHasPropertyInstances>
+                </propertyInstances>
+              </stereotypeInstance>
+            </appliedStereotypesInternal>
+            <ownedParameters>
+              <operationHasOwnedParameters>
+                <parameter
+                  Id="c7be9aae-31b2-4d07-a1f4-b90feda74020"
+                  direction="Return">
+                  <type_NamedElement>
+                    <classMoniker
+                      Id="a53faf31-fee5-4e77-a8be-aaee12c120e3"
+                      LastKnownName="Action"
+                      LastKnownLocation="Package_1347.uml" />
+                  </type_NamedElement>
+                </parameter>
+              </operationHasOwnedParameters>
+            </ownedParameters>
+          </operation>
+          <operation
+            Id="bc73dac3-ffdf-4ef8-bdc1-87187dd6c525"
+            name="Threadrun"
+            visibility="Private"
+            isLeaf="false"
+            isStatic="false"
+            isAbstract="false"
+            concurrency="Sequential"
+            isQuery="false">
+            <referencesInternal>
+              <reference
+                Id="a451b7e5-bd39-4727-968c-68434a785b19"
+                handle="viewcode://./CodeSchema_Method?Assembly%3D&quot;file:%2F%2F%2FC:%2FUsers%2FRune%2FDocuments%2FVisual Studio 2013%2FProjects%2Fecru_kernel%2Fecru_kernel%2FECRU.Utilities%2Fbin%2FDebug%2FECRU.Utilities.dll&quot; Namespace%3DECRU.Utilities.LeadFollow Type%3DWorkPool Member%3D(Name%3DThreadrun OverloadingParameters%3D[(Assembly%3D&quot;file:%2F%2F%2FC:%2FProgram Files (x86)%2FMicrosoft .NET Micro Framework%2Fv4.3%2FAssemblies%2Fle%2Fmscorlib.dll&quot; Namespace%3DSystem Type%3DInt32)])"
+                tag="ViewCode" />
+            </referencesInternal>
+            <appliedStereotypesInternal>
+              <stereotypeInstance
+                Id="16016afb-9bf0-4853-b50f-a4717486bc0b"
+                name="method"
+                profile="CSharpProfile">
+                <propertyInstances>
+                  <stereotypeInstanceHasPropertyInstances
+                    Id="9b526090-f73c-4a77-9f61-8754687a6233">
+                    <propertyInstance
+                      Id="739887de-a5b9-4e0e-9e9d-54f92e3c1c1f"
+                      name="ClrAttributes" />
+                  </stereotypeInstanceHasPropertyInstances>
+                  <stereotypeInstanceHasPropertyInstances
+                    Id="fa1f84bb-7e20-42bc-bbc1-2cd3425a2047">
+                    <propertyInstance
+                      Id="aa30df36-65cc-4514-88c2-ef6d3b97c7a7"
+                      name="IsPartial"
+                      value="false" />
+                  </stereotypeInstanceHasPropertyInstances>
+                  <stereotypeInstanceHasPropertyInstances
+                    Id="ad137e6b-ca44-490c-9238-636776147a2f">
+                    <propertyInstance
+                      Id="f9e61b5d-c824-42e5-a733-911869e1fdea"
+                      name="IsUnsafe"
+                      value="false" />
+                  </stereotypeInstanceHasPropertyInstances>
+                  <stereotypeInstanceHasPropertyInstances
+                    Id="f1a283ec-e746-4967-b365-a708af9ae7b6">
+                    <propertyInstance
+                      Id="9dd67c0d-696b-4d42-9418-87cc542685c8"
+                      name="Inheritance"
+                      value="none" />
+                  </stereotypeInstanceHasPropertyInstances>
+                  <stereotypeInstanceHasPropertyInstances
+                    Id="8718082d-7058-4c4b-8b50-f449bcd77065">
+                    <propertyInstance
+                      Id="f5eb6d89-626c-47fa-b62e-2b6ef30bd39b"
+                      name="PackageVisibility"
+                      value="internal" />
+                  </stereotypeInstanceHasPropertyInstances>
+                  <stereotypeInstanceHasPropertyInstances
+                    Id="ecb4fff5-aed1-40cd-a4b3-3add3791b528">
+                    <propertyInstance
+                      Id="c46d602f-cfcc-483e-be95-0ade1c356e79"
+                      name="params"
+                      value="false" />
+                  </stereotypeInstanceHasPropertyInstances>
+                </propertyInstances>
+              </stereotypeInstance>
+            </appliedStereotypesInternal>
+            <ownedParameters>
+              <operationHasOwnedParameters>
+                <parameter
+                  Id="fc55da9e-76b5-438a-8999-d79234d64ccd"
+                  name="poolindex"
+                  direction="In">
+                  <referencesInternal>
+                    <reference
+                      Id="8ad148ff-e05f-44e8-a197-854626bf2801"
+                      handle="viewcode://./CodeSchema_Parameter?Assembly%3D&quot;file:%2F%2F%2FC:%2FUsers%2FRune%2FDocuments%2FVisual Studio 2013%2FProjects%2Fecru_kernel%2Fecru_kernel%2FECRU.Utilities%2Fbin%2FDebug%2FECRU.Utilities.dll&quot; Namespace%3DECRU.Utilities.LeadFollow Type%3DWorkPool Member%3D(Name%3DThreadrun OverloadingParameters%3D[(Assembly%3D&quot;file:%2F%2F%2FC:%2FProgram Files (x86)%2FMicrosoft .NET Micro Framework%2Fv4.3%2FAssemblies%2Fle%2Fmscorlib.dll&quot; Namespace%3DSystem Type%3DInt32)]) ParameterIdentifier%3Dpoolindex"
+                      tag="ViewCode" />
+                  </referencesInternal>
+                  <type_NamedElement>
+                    <primitiveTypeMoniker
+                      Id="220a3521-e091-4221-bae9-3ef9018e845c"
+                      LastKnownName="Integer"
+                      LastKnownLocation="Classdiagram1.uml" />
+                  </type_NamedElement>
+                </parameter>
+              </operationHasOwnedParameters>
+            </ownedParameters>
+          </operation>
+          <operation
+            Id="4d6f43a7-aa9c-41e2-854b-d65745ad70cb"
+            name="StopAll"
+            isLeaf="false"
+            isStatic="false"
+            isAbstract="false"
+            concurrency="Sequential"
+            isQuery="false">
+            <referencesInternal>
+              <reference
+                Id="080c9d65-bf06-440d-acde-eb58ba58f094"
+                handle="viewcode://./CodeSchema_Method?Assembly%3D&quot;file:%2F%2F%2FC:%2FUsers%2FRune%2FDocuments%2FVisual Studio 2013%2FProjects%2Fecru_kernel%2Fecru_kernel%2FECRU.Utilities%2Fbin%2FDebug%2FECRU.Utilities.dll&quot; Namespace%3DECRU.Utilities.LeadFollow Type%3DWorkPool Member%3DStopAll"
+                tag="ViewCode" />
+            </referencesInternal>
+            <appliedStereotypesInternal>
+              <stereotypeInstance
+                Id="4da88698-2604-4ca9-b1a9-0e9225779c6c"
+                name="method"
+                profile="CSharpProfile">
+                <propertyInstances>
+                  <stereotypeInstanceHasPropertyInstances
+                    Id="17e9f7bc-c673-4572-bb52-8498bd60e3d1">
+                    <propertyInstance
+                      Id="b77227d0-69d5-4389-9211-682eb31587b7"
+                      name="ClrAttributes" />
+                  </stereotypeInstanceHasPropertyInstances>
+                  <stereotypeInstanceHasPropertyInstances
+                    Id="80fa3de0-d8d9-4620-865b-6778c43aa4f8">
+                    <propertyInstance
+                      Id="714d602b-d775-4933-a35f-4c7d4f6afab0"
+                      name="IsPartial"
+                      value="false" />
+                  </stereotypeInstanceHasPropertyInstances>
+                  <stereotypeInstanceHasPropertyInstances
+                    Id="54867110-3128-4699-abbc-ac1cba2ce4f9">
+                    <propertyInstance
+                      Id="c029b183-8126-4342-b389-6fdbbf726571"
+                      name="IsUnsafe"
+                      value="false" />
+                  </stereotypeInstanceHasPropertyInstances>
+                  <stereotypeInstanceHasPropertyInstances
+                    Id="bf16a94c-3783-4735-b6e5-63fa7a2cc4f4">
+                    <propertyInstance
+                      Id="8f365b6f-87d5-4398-9123-9f584239f13d"
+                      name="Inheritance"
+                      value="none" />
+                  </stereotypeInstanceHasPropertyInstances>
+                  <stereotypeInstanceHasPropertyInstances
+                    Id="0365a7b2-918a-48fb-9c76-5a791615f7db">
+                    <propertyInstance
+                      Id="1e6cc8a0-cbd0-4ef2-b409-09ac0a581a73"
+                      name="PackageVisibility"
+                      value="internal" />
+                  </stereotypeInstanceHasPropertyInstances>
+                  <stereotypeInstanceHasPropertyInstances
+                    Id="5f6ec578-8eac-40b7-91a0-1ab8d5cc18c6">
+                    <propertyInstance
+                      Id="07101aaf-b521-45c4-ae7f-82073ee8a38d"
+                      name="params"
+                      value="false" />
+                  </stereotypeInstanceHasPropertyInstances>
+                </propertyInstances>
+              </stereotypeInstance>
+            </appliedStereotypesInternal>
+          </operation>
+        </ownedOperationsInternal>
+      </class>
+    </packageHasNamedElement>
+    <packageHasNamedElement>
+      <class
+        Id="a53faf31-fee5-4e77-a8be-aaee12c120e3"
+        name="Action"
+        isAbstract="false"
+        isLeaf="false"
+        isActiveClass="false">
+        <referencesInternal>
+          <reference
+            Id="f20fcdbd-8df0-4b7f-a8e1-f0e0c0a77afd"
+            handle="viewcode://./CodeSchema_Delegate?Assembly%3D&quot;file:%2F%2F%2FC:%2FUsers%2FRune%2FDocuments%2FVisual Studio 2013%2FProjects%2Fecru_kernel%2Fecru_kernel%2FECRU.Utilities%2Fbin%2FDebug%2FECRU.Utilities.dll&quot; Namespace%3DECRU.Utilities.LeadFollow Type%3DAction"
+            tag="ViewCode" />
+        </referencesInternal>
+        <appliedStereotypesInternal>
+          <stereotypeInstance
+            Id="a0055902-1b5c-4d1e-a9c4-5a9d952a1641"
+            name="delegate"
+            profile="CSharpProfile">
+            <propertyInstances>
+              <stereotypeInstanceHasPropertyInstances
+                Id="600213e3-7cc7-4c0e-9c62-e096fa0a0e5a">
+                <propertyInstance
+                  Id="770e626e-ac6f-41d3-aa8f-16a7dbd89388"
+                  name="ClrAttributes" />
+              </stereotypeInstanceHasPropertyInstances>
+              <stereotypeInstanceHasPropertyInstances
+                Id="0f68358b-e718-442a-97bd-1d546e10c23b">
+                <propertyInstance
+                  Id="2897095c-7597-412a-a29a-33fc2c761429"
+                  name="IsUnsafe"
+                  value="false" />
+              </stereotypeInstanceHasPropertyInstances>
+              <stereotypeInstanceHasPropertyInstances
+                Id="fa71d990-c81a-4080-84ed-315983e88794">
+                <propertyInstance
+                  Id="053e6c37-95bc-428d-929e-8629950083f7"
+                  name="PackageVisibility"
+                  value="internal" />
+              </stereotypeInstanceHasPropertyInstances>
+            </propertyInstances>
+          </stereotypeInstance>
+        </appliedStereotypesInternal>
+      </class>
+    </packageHasNamedElement>
+  </packagedElements>
+</package>

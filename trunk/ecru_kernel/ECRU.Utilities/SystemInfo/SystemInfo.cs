@@ -165,31 +165,37 @@ namespace ECRU.Utilities
         {
             ConfigFile systemConfigFile = null;
             String returnValue = null;
-
-            try
+            FileBase b = FileSystem.GetFile(_systemConfigFilePath, FileAccess.Read, FileType.Local);
+            if (b != null)
             {
-                systemConfigFile =
-                    new ConfigFile(FileSystem.GetFile(_systemConfigFilePath, FileAccess.Read, FileType.Local));
 
-                if (systemConfigFile != null)
+                try
                 {
-                    if (systemConfigFile.Contains(property))
+
+                    systemConfigFile = new ConfigFile(b);
+
+                    if (systemConfigFile != null)
                     {
-                        returnValue = systemConfigFile[property];
-                        if (returnValue == "")
-                            returnValue = null; 
+                        if (systemConfigFile.Contains(property))
+                        {
+                            returnValue = systemConfigFile[property];
+                            if (returnValue == "")
+                                returnValue = null;
+                        }
                     }
                 }
-            }
-            finally
-            {
-                if (systemConfigFile != null)
+                finally
                 {
-                    systemConfigFile.Close();
+                    if (systemConfigFile != null)
+                    {
+                        systemConfigFile.Close();
+                    }
                 }
-            }
 
-            return returnValue;
+                return returnValue;
+            }
+            return null; 
         }
     }
+   
 }

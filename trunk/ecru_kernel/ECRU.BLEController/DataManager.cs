@@ -54,8 +54,8 @@ namespace ECRU.BLEController
 
         public AddDeviceEvent addConnectedDevice(byte[] address)
         {
-            if (ConnectedDevices != null)
-                ConnectedDevices.Add(address);
+            if (SystemInfo.ConnectedDevices != null)
+                SystemInfo.ConnectedDevices.Add(address);
             return null;
         }
 
@@ -89,10 +89,28 @@ namespace ECRU.BLEController
             }
         }
 
-
-        internal bool hasInfoFile(byte[] addr)
+        public enum InfoFileStatus
         {
-            return FileSystem.Exists(addr.ToHex() + ".BLE", FileType.Shared);
+            HaveNone, 
+            Done,
+            NeedRead
+        }
+
+        internal InfoFileStatus hasInfoFile(byte[] addr)
+        {
+            DeviceInfo item = GetDeviceInfo(addr); 
+            if(item != null)
+            {
+                if(item.isReadDone())
+                {
+                    return InfoFileStatus.Done;
+                }
+                else
+                {
+                    return InfoFileStatus.NeedRead;
+                }
+            }
+            return InfoFileStatus.HaveNone;
         }
 
         internal DeviceInfo GetDeviceInfo(byte[] addr)
@@ -317,10 +335,11 @@ namespace ECRU.BLEController
 
             using (Socket socket = msg.GetSocket())
             {
+                DeviceInfoValueFile valfile = null;
                 try
                 {
                     bool waitingForData = true;
-
+                    
                     while (waitingForData)
                     {
                         waitingForData = !socket.Poll(10, SelectMode.SelectRead) &&
@@ -349,7 +368,7 @@ namespace ECRU.BLEController
 
                         file = FileSystem.GetFile(mac.ToHex() + ".val", FileAccess.ReadWrite, FileType.Local);
 
-                        var valfile = new DeviceInfoValueFile(file);
+                        valfile = new DeviceInfoValueFile(file);
 
 
                         //write data to val file
@@ -375,9 +394,9 @@ namespace ECRU.BLEController
                     {
                         socket.Close();
                     }
-                    if (file != null)
+                    if (valfile != null)
                     {
-                        file.Close();
+                        valfile.Close();
                     }
                 }
             }

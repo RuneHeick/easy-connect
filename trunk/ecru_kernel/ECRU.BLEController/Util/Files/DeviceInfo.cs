@@ -29,6 +29,17 @@ namespace ECRU.BLEController.Util
 
         public Service[] Services { get; set; }
 
+
+        public bool isReadDone()
+        {
+            foreach(Service s in Services)
+            {
+                if (!s.hasReadData())
+                    return false; 
+            }
+            return true;
+        }
+
         public bool isCompleted()
         {
             if (TimeHandel != 0 && PassCodeHandel != 0 && Name.handle != 0 && Model.handle != 0 && Serial.handle != 0 &&
@@ -107,6 +118,17 @@ namespace ECRU.BLEController.Util
             }
             return false;
         }
+
+        public bool hasReadData()
+        {
+            foreach(Characteristic c in Characteristics)
+            {
+                if (!c.hasReadData())
+                    return false; 
+            }
+            return true; 
+        }
+
     }
 
     public class Characteristic
@@ -132,6 +154,16 @@ namespace ECRU.BLEController.Util
         {
             return Value.handle != 0 && Description.handle != 0 && Format.handle != 0 && GUIFormat.handle != 0;
         }
+
+        public bool hasReadData()
+        {
+            if (Description.Value == null || Format.Value == null || GUIFormat.Value == null||
+                Description.Value.Length == 0 || Format.Value.Length == 0 || GUIFormat.Value.Length == 0)
+                return false;
+            else
+                return true; 
+        }
+
     }
 
     public class HandleValuePair : IHandleValue
