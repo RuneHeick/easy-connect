@@ -46,10 +46,15 @@ namespace ECRU.BLEController
 
         public bool IsSystemDevice(byte[] addr)
         {
-            if (FileSystem.Exists(addr.ToHex() + ".BLE", FileType.Local))
-                return true;
+            //if (FileSystem.Exists(addr.ToHex() + ".BLE", FileType.Shared))
+            //    return true;
+#if DEMOECRU1
+            return addr.ByteArrayCompare(new byte[] {0x52, 0xa0, 0x27, 0xaf, 0x59, 0x90});
+#endif
 
-            return true; // Accepted Devices. 
+#if DEMOECRU2
+            return addr.ByteArrayCompare(new byte[] { 0x66, 0xa0, 0x27, 0xaf, 0x59, 0x90});
+#endif
         }
 
         public AddDeviceEvent addConnectedDevice(byte[] address)

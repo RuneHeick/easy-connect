@@ -4,6 +4,7 @@ using ECRU.BLEController;
 using ECRU.netd;
 using ECRU.Utilities;
 using ECRU.Utilities.HelpFunction;
+using Microsoft.SPOT;
 
 namespace ECRU
 {
@@ -26,6 +27,14 @@ namespace ECRU
         public static void Main()
         {
             //Debug.EnableGCMessages(true);
+
+#if DEMOECRU1
+            Debug.Print("Hello this is ECRU1!");
+#endif
+
+#if DEMOECRU2
+            Debug.Print("Hello this is ECRU2!");
+#endif
 
             // write your code here
             Thread.Sleep(5000);
@@ -53,8 +62,10 @@ namespace ECRU
                         case 1: //Load System Information state
                             SystemInfo.LoadConfig("SysInfoConfig.cfg");
                             SystemInfo.Start();
+#if DEBUG
                             SystemInfo.ConnectedDevices.Add("E68170E5C578".FromHex());
                             SystemInfo.ConnectedDevices.Add("F83A228CBA1C".FromHex());
+#endif
                             break;
 
                         case 2: //System Configuration state
