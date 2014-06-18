@@ -105,7 +105,7 @@ namespace ECRU.netd
                 byte[] _messageType = data.GetPart(0, 1);
                 byte[] _message = data.GetPart(1, length - 1);
 
-                if (_message.Length > 0)
+                if (_messageType != null && _message != null)
                 {
                     EventBus.Publish(new RecivedBroadcastMessage
                     {
