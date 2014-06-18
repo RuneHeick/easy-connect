@@ -1,0 +1,134 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ClassDiagram MajorVersion="1" MinorVersion="1">
+  <Class Name="ECRU.BLEController.BLEModule">
+    <Position X="0.75" Y="1.25" Width="2.25" />
+    <AssociationLine Name="packetmanager" Type="ECRU.BLEController.PacketManager" ManuallyRouted="true">
+      <Path>
+        <Point X="1.875" Y="1.25" />
+        <Point X="1.875" Y="0.461" />
+        <Point X="12.433" Y="0.461" />
+        <Point X="12.433" Y="1.25" />
+      </Path>
+    </AssociationLine>
+    <AssociationLine Name="serial" Type="ECRU.BLEController.SerialController" ManuallyRouted="true">
+      <Path>
+        <Point X="1.875" Y="6.911" />
+        <Point X="1.875" Y="6.692" />
+        <Point X="7.25" Y="6.692" />
+        <Point X="7.25" Y="5.247" />
+      </Path>
+    </AssociationLine>
+    <AssociationLine Name="Infofactory" Type="ECRU.BLEController.DeviceInfoFactory" ManuallyRouted="true" FixedFromPoint="true" FixedToPoint="true">
+      <Path>
+        <Point X="1.312" Y="6.911" />
+        <Point X="1.312" Y="7.062" />
+        <Point X="7.675" Y="7.062" />
+        <Point X="7.675" Y="6.841" />
+        <Point X="8.5" Y="6.841" />
+      </Path>
+    </AssociationLine>
+    <TypeIdentifier>
+      <HashCode>AAASAAAAACAABAAgAAQAEgCBEEBCAABAKMAQEAAAAAU=</HashCode>
+      <FileName>BLEModule.cs</FileName>
+    </TypeIdentifier>
+    <ShowAsAssociation>
+      <Field Name="packetmanager" />
+      <Field Name="serial" />
+      <Field Name="Infofactory" />
+      <Field Name="data" />
+    </ShowAsAssociation>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="ECRU.BLEController.DeviceInfoFactory">
+    <Position X="8.5" Y="1.25" Width="2.25" />
+    <NestedTypes>
+      <Enum Name="ECRU.BLEController.DeviceInfoFactory.Status_t" Collapsed="true">
+        <TypeIdentifier>
+          <NewMemberFileName>Util\DeviceInfoFactory.cs</NewMemberFileName>
+        </TypeIdentifier>
+      </Enum>
+      <Class Name="ECRU.BLEController.DeviceInfoFactory.InfoContainor" Collapsed="true">
+        <TypeIdentifier>
+          <NewMemberFileName>Util\DeviceInfoFactory.cs</NewMemberFileName>
+        </TypeIdentifier>
+      </Class>
+    </NestedTypes>
+    <TypeIdentifier>
+      <HashCode>AAAQAKAEACAAABIBQABABACAEAQIAEAAiAAAAABAAgQ=</HashCode>
+      <FileName>Util\DeviceInfoFactory.cs</FileName>
+    </TypeIdentifier>
+    <ShowAsAssociation>
+      <Field Name="packetmanager" />
+    </ShowAsAssociation>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="ECRU.BLEController.PacketManager">
+    <Position X="11.25" Y="1.25" Width="1.75" />
+    <NestedTypes>
+      <Enum Name="ECRU.BLEController.PacketManager.ComState" Collapsed="true">
+        <TypeIdentifier>
+          <NewMemberFileName>PacketManager.cs</NewMemberFileName>
+        </TypeIdentifier>
+      </Enum>
+      <Class Name="ECRU.BLEController.PacketManager.SupscriptionPair" Collapsed="true">
+        <TypeIdentifier>
+          <NewMemberFileName>PacketManager.cs</NewMemberFileName>
+        </TypeIdentifier>
+      </Class>
+    </NestedTypes>
+    <AssociationLine Name="seriel" Type="ECRU.BLEController.SerialController" ManuallyRouted="true">
+      <Path>
+        <Point X="11.804" Y="1.25" />
+        <Point X="11.804" Y="0.811" />
+        <Point X="7.25" Y="0.811" />
+        <Point X="7.25" Y="1.25" />
+      </Path>
+    </AssociationLine>
+    <TypeIdentifier>
+      <HashCode>AARAQQAAAAAAAABAAEABAAAAAAACACABCAgAAAEAIBE=</HashCode>
+      <FileName>PacketManager.cs</FileName>
+    </TypeIdentifier>
+    <ShowAsAssociation>
+      <Field Name="seriel" />
+      <Field Name="workPool" />
+    </ShowAsAssociation>
+  </Class>
+  <Class Name="ECRU.BLEController.SerialController">
+    <Position X="6.25" Y="1.25" Width="2" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAACACAABUAAIIAAEAAAAAAAAIAAIAAAIAAAAAg=</HashCode>
+      <FileName>SerialController.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ECRU.BLEController.DataManager">
+    <Position X="3.5" Y="1.25" Width="2.25" />
+    <NestedTypes>
+      <Enum Name="ECRU.BLEController.DataManager.InfoFileStatus" Collapsed="true">
+        <TypeIdentifier>
+          <NewMemberFileName>DataManager.cs</NewMemberFileName>
+        </TypeIdentifier>
+      </Enum>
+    </NestedTypes>
+    <AssociationLine Name="packetmanager" Type="ECRU.BLEController.PacketManager" ManuallyRouted="true">
+      <Path>
+        <Point X="4.625" Y="1.25" />
+        <Point X="4.625" Y="0.625" />
+        <Point X="12.118" Y="0.625" />
+        <Point X="12.118" Y="1.25" />
+      </Path>
+    </AssociationLine>
+    <TypeIdentifier>
+      <HashCode>AAAAgAUAACAABAAAABAAAA0AAIEAEAAAiAAAAQgAAkA=</HashCode>
+      <FileName>DataManager.cs</FileName>
+    </TypeIdentifier>
+    <ShowAsAssociation>
+      <Field Name="packetmanager" />
+    </ShowAsAssociation>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="ECRU.Utilities.LeadFollow.WorkPool">
+    <Position X="14" Y="1.25" Width="1.5" />
+    <TypeIdentifier />
+  </Class>
+  <Font Name="Segoe UI" Size="9" />
+</ClassDiagram>

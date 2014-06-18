@@ -19,19 +19,18 @@ namespace ECRU.BLEController
             GotDescriptior = 8,
             GotCharacteristic = 16,
             ReadOut = 24,
-            Init = 32
+            Init = 32,
+            TimeOut = 64
         };
 
         private readonly object Lock = new object();
         private ArrayList ContainorList = new ArrayList();
         private PacketManager packetmanager;
+        private Queue ActionQueue = new Queue(); 
 
         public DeviceInfoFactory(PacketManager packetmanager)
         {
             this.packetmanager = packetmanager;
-            packetmanager.Subscrib(CommandType.ServiceEvent, RecivedPacketEvent);
-            packetmanager.Subscrib(CommandType.DisconnectEvent, RecivedError);
-            packetmanager.Subscrib(CommandType.DataEvent, RecivedDataEvent);
         }
 
         public void Dispose()
@@ -46,39 +45,103 @@ namespace ECRU.BLEController
                     Remove((ContainorList[0] as InfoContainor));
                 }
             }
+            ActionQueue.Clear();
+        }
+
+        public void Clear()
+        {
+            lock (Lock)
+            {
+                while (ContainorList.Count > 0)
+                {
+                    Remove((ContainorList[0] as InfoContainor));
+                }
+            }
+        }
+
+        private class QueueItem
+        {
+            public InfoContainor item { get; set; }
+
+            public bool isReadCommand { get; set; }
         }
 
 
         public void GetDeviceInfo(byte[] addr, InfoSearchDone callBack)
         {
-            lock (Lock)
+            lock (ActionQueue)
             {
-                if (!HasAddrRegistered(addr))
+                if(ContainorList.Count>0)
                 {
+                    var infoc = ContainorList[0] as InfoContainor;
+                    if (infoc.Info.Address.ByteArrayCompare(addr))
+                    {
+                        var disEvent = new DiscoverEvent();
+                        disEvent.Type = DiscoverType.Service;
+                        disEvent.StartHandle = 0x0001;
+                        disEvent.EndHandle = 0xFF00;
+                        disEvent.Address = addr;
 
-                    var item = new InfoContainor(TimeOut);
-                    item.Info = new DeviceInfo();
-                    item.Info.Address = addr;
-                    item.Callback = callBack;
-                    item.Status = Status_t.Init;
-
-                    ContainorList.Add(item);
-                }
-                else
-                {
-                    var info = GetInfo(addr);
-                    if ((info.Status & Status_t.ReadOut) == Status_t.ReadOut || (info.Status & Status_t.GotService) == Status_t.GotService || (DateTime.Now - info.CommandStarted).Ticks < TimeSpan.TicksPerSecond)
+                        packetmanager.Send(disEvent);
                         return;
+                    } 
+                }
+                if (ActionQueue.Count > 0)
+                {
+                    foreach (object o in ActionQueue)
+                    {
+                        QueueItem queueItem = o as QueueItem;
+                        if (queueItem != null)
+                        {
+                            if (queueItem.item.Info.Address.ByteArrayCompare(addr))
+                                return;
+                        }
+                    }
+                }
+                InfoContainor con = new InfoContainor(null) { Callback = callBack, Info = new DeviceInfo() { Address = addr } };
+
+                QueueItem item = new QueueItem() { item = con, isReadCommand = false };
+                ActionQueue.Enqueue(item);
+
+                if (ContainorList.Count == 0)
+                {
+                    StartNextTask();
                 }
             }
+        }
 
-            var disEvent = new DiscoverEvent();
-            disEvent.Type = DiscoverType.Service;
-            disEvent.StartHandle = 0x0001;
-            disEvent.EndHandle = 0xFFFF;
-            disEvent.Address = addr;
 
-            packetmanager.Send(disEvent);
+        private void StartGetDeviceInfo(byte[] addr, InfoSearchDone callBack)
+        {
+                lock (Lock)
+                {
+                    if (!HasAddrRegistered(addr))
+                    {
+
+                        var item = new InfoContainor(TimeOut);
+                        item.Info = new DeviceInfo();
+                        item.Info.Address = addr;
+                        item.Callback = callBack;
+                        item.Status = Status_t.Init;
+
+                        ContainorList.Add(item);
+                    }
+                    else
+                    {
+                        var info = GetInfo(addr);
+                        if ((info.Status & Status_t.ReadOut) == Status_t.ReadOut || (info.Status & Status_t.GotService) == Status_t.GotService || (DateTime.Now - info.CommandStarted).Ticks < TimeSpan.TicksPerSecond)
+                            return;
+                    }
+                }
+
+                var disEvent = new DiscoverEvent();
+                disEvent.Type = DiscoverType.Service;
+                disEvent.StartHandle = 0x0001;
+                disEvent.EndHandle = 0xFF00;
+                disEvent.Address = addr;
+
+                packetmanager.Send(disEvent);
+            
         }
 
 
@@ -152,12 +215,54 @@ namespace ECRU.BLEController
                     if (obj.Info.isCompleted() && (obj.Status & Status_t.ReadOut) != Status_t.ReadOut)
                     {
                         obj.Status = Status_t.Done;
-                        Remove(obj);
-                        if (obj.Callback != null)
-                            obj.Callback(obj.Status, obj.Info);
+                        InvokeCallack(obj); 
                     }
                 }
                 obj.Status = obj.Status & Status_t.GotService;
+            }
+        }
+
+
+        private void InvokeCallack(InfoContainor obj)
+        {
+            if (obj.Callback != null)
+                obj.Callback(obj.Status, obj.Info);
+            Remove(obj);
+            if (ActionQueue.Count > 0)
+                StartNextTask();
+        }
+
+        private void StartNextTask()
+        {
+            lock (ActionQueue)
+            {
+                if (ActionQueue.Count > 0 && ContainorList.Count == 0)
+                {
+
+                    QueueItem item;
+
+                    item = ActionQueue.Dequeue() as QueueItem;
+
+                    if (item.isReadCommand)
+                    {
+                        packetmanager.Subscrib(CommandType.DataEvent, RecivedDataEvent);
+
+                        packetmanager.Unsubscrib(CommandType.ServiceEvent, RecivedPacketEvent);
+                        packetmanager.Unsubscrib(CommandType.DisconnectEvent, RecivedError);
+
+                        startDoFullRead(item.item.Info, item.item.Callback);
+                    }
+                    else
+                    {
+                        packetmanager.Subscrib(CommandType.ServiceEvent, RecivedPacketEvent);
+                        packetmanager.Subscrib(CommandType.DisconnectEvent, RecivedError);
+
+                        packetmanager.Unsubscrib(CommandType.DataEvent, RecivedDataEvent);
+
+                        StartGetDeviceInfo(item.item.Info.Address, item.item.Callback);
+                    }
+
+                }
             }
         }
 
@@ -191,11 +296,12 @@ namespace ECRU.BLEController
                     foreach (Service s in obj.Info.Services)
                     {
                         int count = CountHandels(val, Def.GENERIC_VALUE_UUID, s.StartHandel, s.EndHandel);
-                        s.Characteristics = new Characteristic[count];
 
                         if (count != 0)
                         {
                             int index = 0;
+                            if (s.Characteristics == null)
+                                s.Characteristics = new Characteristic[count];
 
                             foreach (ServiceDirRes i in val)
                             {
@@ -205,6 +311,7 @@ namespace ECRU.BLEController
                                     s.Characteristics[index] = new Characteristic();
                                     s.Characteristics[index].Value.handle = p.handle;
                                     s.Characteristics[index].Value.ReadWriteProps = p.ReadWriteProp;
+                                    Debug.Print("Chara Added at: " + s.StartHandel.ToString());
                                     index++;
                                 }
 
@@ -225,9 +332,7 @@ namespace ECRU.BLEController
                 if (obj.Info.isCompleted() && (obj.Status & Status_t.ReadOut) != Status_t.ReadOut)
                 {
                     obj.Status = Status_t.Done;
-                    Remove(obj);
-                    if (obj.Callback != null)
-                        obj.Callback(obj.Status, obj.Info);
+                    InvokeCallack(obj);
                 }
                 obj.Status = obj.Status & Status_t.GotCharacteristic;
             }
@@ -247,10 +352,7 @@ namespace ECRU.BLEController
 
                     if (countEvent == 0)
                     {
-                        Remove(obj);
-                        if (obj.Callback != null)
-                            obj.Callback(obj.Status, obj.Info);
-
+                        InvokeCallack(obj);
                         return;
                     }
 
@@ -295,7 +397,8 @@ namespace ECRU.BLEController
             int count = 0;
             foreach (ServiceDirRes i in items)
             {
-                if (i.UUID == UUID && i.handle >= startHandle && i.handle <= endHandle)
+                if (i.UUID == UUID)
+                    if(i.handle >= startHandle && i.handle <= endHandle)
                     count++;
             }
             return count;
@@ -309,9 +412,7 @@ namespace ECRU.BLEController
             {
                 InfoContainor obj = GetInfo(disPack.Address);
                 obj.Status = Status_t.Error;
-                Remove(obj);
-                if (obj.Callback != null)
-                    obj.Callback(obj.Status, obj.Info);
+                InvokeCallack(obj);
             }
         }
 
@@ -322,6 +423,14 @@ namespace ECRU.BLEController
                 obj.timeout.Dispose();
                 ContainorList.Remove(obj);
             }
+        }
+
+        public bool IsHandledByFactory(byte[] addr)
+        {
+            if (ContainorList.Count == 0)
+                return false;
+
+            return HasAddrRegistered(addr); 
         }
 
         private bool HasAddrRegistered(byte[] addr)
@@ -354,6 +463,34 @@ namespace ECRU.BLEController
 
         public void DoFullRead(DeviceInfo infofile, InfoSearchDone callback)
         {
+            lock (ActionQueue)
+            {
+                if (ActionQueue.Count > 0)
+                {
+                    foreach (object o in ActionQueue)
+                    {
+                        QueueItem queueItem = o as QueueItem;
+                        if (queueItem != null)
+                        {
+                            if (queueItem.item.Info.Address.ByteArrayCompare(infofile.Address))
+                                return;
+                        }
+                    }
+                }
+                InfoContainor con = new InfoContainor(null) { Callback = callback, Info = infofile };
+
+                QueueItem item = new QueueItem() { item = con, isReadCommand = true };
+                ActionQueue.Enqueue(item);
+
+                if (ContainorList.Count == 0)
+                {
+                    StartNextTask();
+                }
+            }
+        }
+
+        private void startDoFullRead(DeviceInfo infofile, InfoSearchDone callback)
+        {
             var file = new InfoContainor(TimeOut);
             file.Info = infofile;
             file.Callback = callback;
@@ -374,7 +511,7 @@ namespace ECRU.BLEController
 
             ushort handle = FindPair(file.ReadIndex, file.Info).handle;
             Read.handel = handle;
-            Debug.Print("Read.handel" + handle.ToString());
+            Debug.Print("Read.handel " + handle.ToString());
             packetmanager.Send(Read);
         }
 
@@ -400,9 +537,7 @@ namespace ECRU.BLEController
                         if (nextitem == null)
                         {
                             obj.Status = Status_t.Done;
-                            Remove(obj);
-                            if (obj.Callback != null)
-                                obj.Callback(obj.Status, obj.Info);
+                            InvokeCallack(obj);
                             break;
                         }
                         else if (nextitem.handle != 0)
@@ -492,8 +627,8 @@ namespace ECRU.BLEController
         private void TimeOut(object state)
         {
             var obj = state as InfoContainor;
-            Remove(obj);
-            obj.Callback(Status_t.Error, obj.Info);
+            obj.Status = Status_t.TimeOut; 
+            InvokeCallack(obj);
         }
 
         private class InfoContainor
@@ -501,7 +636,8 @@ namespace ECRU.BLEController
             public InfoContainor(TimerCallback timeoutCall)
             {
                 CommandStarted = DateTime.Now;
-                timeout = new Timer(timeoutCall, this, 120000, Timeout.Infinite); // 5 min timeout. 
+                if(timeoutCall != null)
+                    timeout = new Timer(timeoutCall, this, 120000, Timeout.Infinite); // 5 min timeout. 
             }
 
             public Timer timeout { get; private set; }

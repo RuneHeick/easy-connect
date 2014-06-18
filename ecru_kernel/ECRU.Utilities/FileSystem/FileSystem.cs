@@ -93,7 +93,6 @@ namespace ECRU.Utilities
                 return networkManager.FileExists(path);
             }
 
-            return false;
         }
 
         public static void DeleteFile(string path, FileType type)

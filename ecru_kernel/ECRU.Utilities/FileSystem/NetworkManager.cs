@@ -37,7 +37,6 @@ namespace ECRU.Utilities
             InfoManager = new LocalManager(path + "\\" + InfoFolderName);
             NetFileManager = new LocalManager(path + "\\" + FileFolderName);
 
-
             EventBus.Subscribe(typeof(NetworkStatusMessage), netStateChanged);
             EventBus.Subscribe(typeof(ConnectionRequestMessage), connectionEstablishedEvent);
         }
@@ -289,7 +288,7 @@ namespace ECRU.Utilities
 
         #region Mutex
 
-        Hashtable MutexCollection = new Hashtable(); 
+        private Hashtable MutexCollection = new Hashtable(); 
 
         class Mutex_t
         {
@@ -298,7 +297,6 @@ namespace ECRU.Utilities
             public DateTime Locktime { get; set; }
 
         }
-
 
         private bool isMutexFree(string path)
         {
@@ -721,7 +719,6 @@ namespace ECRU.Utilities
         }
 
         //------------------------------------------------
-
 
         public void Dispose()
         {

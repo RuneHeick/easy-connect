@@ -1,0 +1,27 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns:dm0="http://schemas.microsoft.com/VisualStudio/2008/DslTools/Core" xmlns:dm1="http://schemas.microsoft.com/dsltools/Kernel" xmlns:dm2="http://schemas.microsoft.com/dsltools/Component" xmlns:dm3="http://schemas.microsoft.com/dsltools/UseCase" xmlns:dm4="http://schemas.microsoft.com/dsltools/Activity" xmlns:dm5="http://schemas.microsoft.com/dsltools/Interaction" xmlns:dm6="http://schemas.microsoft.com/dsltools/UmlModelLibrary" xmlns:dm7="http://schemas.microsoft.com/dsltools/UmlDiagrams" xmlns:dm8="http://schemas.microsoft.com/dsltools/LogicalClassDesigner"
+  dslVersion="1.0.0.0"
+  Id="1892acdc-a238-4639-b5dc-5890801a5591"
+  name="ECRU"
+  visibility="Private" xmlns="http://schemas.microsoft.com/dsltools/ModelStore">
+  <referencesInternal>
+    <reference
+      Id="aebbfba0-bb5a-485c-99eb-d6ef3b150b48"
+      handle="viewcode://./CodeSchema_Namespace?Namespace%3DECRU"
+      tag="ViewCode" />
+  </referencesInternal>
+  <packagedElements>
+    <packageHasNamedElement>
+      <packageMoniker
+        Id="c09a63e4-a214-4468-9e09-5af77a8364df"
+        LastKnownName="Utilities"
+        LastKnownLocation="Package1_1324.uml" />
+    </packageHasNamedElement>
+    <packageHasNamedElement>
+      <packageMoniker
+        Id="26b52436-3d50-4430-a7d7-fd54db13960d"
+        LastKnownName="BLEController"
+        LastKnownLocation="Package_1340.uml" />
+    </packageHasNamedElement>
+  </packagedElements>
+</package>

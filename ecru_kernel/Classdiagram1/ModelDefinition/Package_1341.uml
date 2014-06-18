@@ -1,0 +1,319 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns:dm0="http://schemas.microsoft.com/VisualStudio/2008/DslTools/Core" xmlns:dm1="http://schemas.microsoft.com/dsltools/Kernel" xmlns:dm2="http://schemas.microsoft.com/dsltools/Component" xmlns:dm3="http://schemas.microsoft.com/dsltools/UseCase" xmlns:dm4="http://schemas.microsoft.com/dsltools/Activity" xmlns:dm5="http://schemas.microsoft.com/dsltools/Interaction" xmlns:dm6="http://schemas.microsoft.com/dsltools/UmlModelLibrary" xmlns:dm7="http://schemas.microsoft.com/dsltools/UmlDiagrams" xmlns:dm8="http://schemas.microsoft.com/dsltools/LogicalClassDesigner"
+  dslVersion="1.0.0.0"
+  Id="69a20abf-7522-4cd1-a583-8c898e20dd78"
+  name="Packets"
+  visibility="Private" xmlns="http://schemas.microsoft.com/dsltools/ModelStore">
+  <referencesInternal>
+    <reference
+      Id="8fbc85c8-b3e2-4c19-817b-e82a464595bf"
+      handle="viewcode://./CodeSchema_Namespace?Namespace%3DECRU.BLEController.Packets"
+      tag="ViewCode" />
+  </referencesInternal>
+  <packagedElements>
+    <packageHasNamedElement>
+      <class
+        Id="8982c374-e189-4eba-befa-f0d2948905db"
+        name="ServiceEvent"
+        visibility="Package"
+        isAbstract="false"
+        isLeaf="false"
+        isActiveClass="false">
+        <referencesInternal>
+          <reference
+            Id="370ba7b4-1c12-4b56-9784-aa919027f38e"
+            handle="viewcode://./CodeSchema_Class?Assembly%3D&quot;file:%2F%2F%2FC:%2FUsers%2FRune%2FDocuments%2FVisual Studio 2013%2FProjects%2Fecru_kernel%2Fecru_kernel%2FECRU.BLEController%2Fbin%2FDebug%2FECRU.BLEController.dll&quot; Namespace%3DECRU.BLEController.Packets Type%3DServiceEvent"
+            tag="ViewCode" />
+        </referencesInternal>
+        <appliedStereotypesInternal>
+          <stereotypeInstance
+            Id="af8387ed-5fcd-44b3-b705-0a8a4a091283"
+            name="class"
+            profile="CSharpProfile">
+            <propertyInstances>
+              <stereotypeInstanceHasPropertyInstances
+                Id="a168aee3-80ab-4b76-bda2-3cedea5ccd5d">
+                <propertyInstance
+                  Id="86e35b28-3dab-440a-a4e0-4b56e68a0035"
+                  name="ClrAttributes" />
+              </stereotypeInstanceHasPropertyInstances>
+              <stereotypeInstanceHasPropertyInstances
+                Id="1c58c6c8-1d81-41ef-a3dd-c7d8d7e3f5fd">
+                <propertyInstance
+                  Id="ae53ea87-a249-4f1e-844f-7ba6f091035e"
+                  name="IsPartial"
+                  value="false" />
+              </stereotypeInstanceHasPropertyInstances>
+              <stereotypeInstanceHasPropertyInstances
+                Id="20a169ca-b222-4cb9-baec-0543eded4edc">
+                <propertyInstance
+                  Id="1cf8c117-c76c-4619-a8e3-980854b64b28"
+                  name="IsStatic"
+                  value="False" />
+              </stereotypeInstanceHasPropertyInstances>
+              <stereotypeInstanceHasPropertyInstances
+                Id="9c1487e7-61ff-4bde-bd7b-49a28cbaa12c">
+                <propertyInstance
+                  Id="fe95ae40-ddf5-465c-abc2-036e4a461b9d"
+                  name="IsUnsafe"
+                  value="false" />
+              </stereotypeInstanceHasPropertyInstances>
+              <stereotypeInstanceHasPropertyInstances
+                Id="3c0ef1dc-e535-4d00-8c07-0236521de1c5">
+                <propertyInstance
+                  Id="49cb41ac-cfcd-47b1-bbde-5196d27e1547"
+                  name="PackageVisibility"
+                  value="internal" />
+              </stereotypeInstanceHasPropertyInstances>
+            </propertyInstances>
+          </stereotypeInstance>
+        </appliedStereotypesInternal>
+        <suppliersInternal>
+          <interfaceRealization
+            Id="02bcc263-d261-4664-be59-3cdc5b05d4ae">
+            <interfaceMoniker
+              Id="bd7cc47e-bfdb-493b-bdf2-7ba4573eefa1"
+              LastKnownName="IPacket"
+              LastKnownLocation="Package_1340.uml" />
+          </interfaceRealization>
+        </suppliersInternal>
+      </class>
+    </packageHasNamedElement>
+    <packageHasNamedElement>
+      <class
+        Id="9de0d037-90c2-4fb8-b9d4-07ac443d3597"
+        name="ServiceDirRes"
+        visibility="Private"
+        isAbstract="false"
+        isLeaf="false"
+        isActiveClass="false">
+        <referencesInternal>
+          <reference
+            Id="16b2b8f1-9446-4402-ba78-c6f711972634"
+            handle="viewcode://./CodeSchema_Class?Assembly%3D&quot;file:%2F%2F%2FC:%2FUsers%2FRune%2FDocuments%2FVisual Studio 2013%2FProjects%2Fecru_kernel%2Fecru_kernel%2FECRU.BLEController%2Fbin%2FDebug%2FECRU.BLEController.dll&quot; Namespace%3DECRU.BLEController.Packets Type%3D(Name%3DServiceDirRes ArrayRank%3D1 ParentType%3DServiceDirRes)"
+            tag="ViewCode" />
+        </referencesInternal>
+        <appliedStereotypesInternal>
+          <stereotypeInstance
+            Id="9b6d2920-7c48-4569-8303-527de025beea"
+            name="class"
+            profile="CSharpProfile">
+            <propertyInstances>
+              <stereotypeInstanceHasPropertyInstances
+                Id="b1dc7b9a-399e-42c6-a2da-3b3f0ff41b7b">
+                <propertyInstance
+                  Id="fe0f6acc-b505-4432-b43e-f10b25afba34"
+                  name="ClrAttributes" />
+              </stereotypeInstanceHasPropertyInstances>
+              <stereotypeInstanceHasPropertyInstances
+                Id="a54e13e3-ee41-462f-85ff-b02f49be6f17">
+                <propertyInstance
+                  Id="ab36cf87-0b30-4cfa-85d1-c7706894f51a"
+                  name="IsPartial"
+                  value="false" />
+              </stereotypeInstanceHasPropertyInstances>
+              <stereotypeInstanceHasPropertyInstances
+                Id="88d354e4-cde0-49fc-9776-ceebbfa91eaa">
+                <propertyInstance
+                  Id="83caa392-a956-4b05-8d8a-6f824f9de0bc"
+                  name="IsStatic"
+                  value="False" />
+              </stereotypeInstanceHasPropertyInstances>
+              <stereotypeInstanceHasPropertyInstances
+                Id="0c7d187a-bf23-4930-9201-51909ecbfc33">
+                <propertyInstance
+                  Id="1d3ef677-9fd1-4764-9eb1-53a2aee91e33"
+                  name="IsUnsafe"
+                  value="false" />
+              </stereotypeInstanceHasPropertyInstances>
+              <stereotypeInstanceHasPropertyInstances
+                Id="4c8588e7-97f5-496b-b276-0c11306c050e">
+                <propertyInstance
+                  Id="a450882a-8440-46b1-984c-0f7a2ac031a1"
+                  name="PackageVisibility"
+                  value="internal" />
+              </stereotypeInstanceHasPropertyInstances>
+            </propertyInstances>
+          </stereotypeInstance>
+        </appliedStereotypesInternal>
+      </class>
+    </packageHasNamedElement>
+    <packageHasNamedElement>
+      <class
+        Id="e3b856db-f14f-4ab6-b1fa-d78ac4741ce6"
+        name="AddDeviceEvent"
+        visibility="Package"
+        isAbstract="false"
+        isLeaf="false"
+        isActiveClass="false">
+        <referencesInternal>
+          <reference
+            Id="c8da7a25-0899-4853-97fe-7f1f7813a3bd"
+            handle="viewcode://./CodeSchema_Class?Assembly%3D&quot;file:%2F%2F%2FC:%2FUsers%2FRune%2FDocuments%2FVisual Studio 2013%2FProjects%2Fecru_kernel%2Fecru_kernel%2FECRU.BLEController%2Fbin%2FDebug%2FECRU.BLEController.dll&quot; Namespace%3DECRU.BLEController.Packets Type%3DAddDeviceEvent"
+            tag="ViewCode" />
+        </referencesInternal>
+        <appliedStereotypesInternal>
+          <stereotypeInstance
+            Id="dcacee13-40cd-4361-95db-2dae74f95758"
+            name="class"
+            profile="CSharpProfile">
+            <propertyInstances>
+              <stereotypeInstanceHasPropertyInstances
+                Id="cc2bf1c1-db34-4f95-a260-624027048ce6">
+                <propertyInstance
+                  Id="f831c983-be70-44db-a3b3-cca8113c2106"
+                  name="ClrAttributes" />
+              </stereotypeInstanceHasPropertyInstances>
+              <stereotypeInstanceHasPropertyInstances
+                Id="2e280f21-2fa7-45d7-921e-54b064cd5303">
+                <propertyInstance
+                  Id="f2a0fe4e-b3ea-46c9-b084-a409e24e8d40"
+                  name="IsPartial"
+                  value="false" />
+              </stereotypeInstanceHasPropertyInstances>
+              <stereotypeInstanceHasPropertyInstances
+                Id="23f59a09-c45c-4244-9025-74a3c8cd212b">
+                <propertyInstance
+                  Id="a8526605-220a-433f-8ded-31f469ecad7b"
+                  name="IsStatic"
+                  value="False" />
+              </stereotypeInstanceHasPropertyInstances>
+              <stereotypeInstanceHasPropertyInstances
+                Id="5dc7089c-20c6-499b-a19b-eba7a00fe01c">
+                <propertyInstance
+                  Id="4f2a120b-3570-49f1-8865-5807e5149ad4"
+                  name="IsUnsafe"
+                  value="false" />
+              </stereotypeInstanceHasPropertyInstances>
+              <stereotypeInstanceHasPropertyInstances
+                Id="3fd42095-ca5b-4fad-9b66-cc3f21295022">
+                <propertyInstance
+                  Id="d96ffc05-9456-44e8-bd1a-ded024096d74"
+                  name="PackageVisibility"
+                  value="internal" />
+              </stereotypeInstanceHasPropertyInstances>
+            </propertyInstances>
+          </stereotypeInstance>
+        </appliedStereotypesInternal>
+      </class>
+    </packageHasNamedElement>
+    <packageHasNamedElement>
+      <class
+        Id="f084c586-ce3a-4872-810e-8cfb8c5f0468"
+        name="DeviceEvent"
+        visibility="Package"
+        isAbstract="false"
+        isLeaf="false"
+        isActiveClass="false">
+        <referencesInternal>
+          <reference
+            Id="b557ba5f-5f7d-4be4-87d7-b4c653b316dd"
+            handle="viewcode://./CodeSchema_Class?Assembly%3D&quot;file:%2F%2F%2FC:%2FUsers%2FRune%2FDocuments%2FVisual Studio 2013%2FProjects%2Fecru_kernel%2Fecru_kernel%2FECRU.BLEController%2Fbin%2FDebug%2FECRU.BLEController.dll&quot; Namespace%3DECRU.BLEController.Packets Type%3DDeviceEvent"
+            tag="ViewCode" />
+        </referencesInternal>
+        <appliedStereotypesInternal>
+          <stereotypeInstance
+            Id="e4c78659-215b-42f5-9acd-0e4f94bfb278"
+            name="class"
+            profile="CSharpProfile">
+            <propertyInstances>
+              <stereotypeInstanceHasPropertyInstances
+                Id="86184f81-6ef5-48ec-94f6-9e291c180c8d">
+                <propertyInstance
+                  Id="47e2efc8-d147-4ed4-aeb5-1c3694499fca"
+                  name="ClrAttributes" />
+              </stereotypeInstanceHasPropertyInstances>
+              <stereotypeInstanceHasPropertyInstances
+                Id="62ca10d3-13cd-4323-8512-5540f206c544">
+                <propertyInstance
+                  Id="cca1548a-4cde-4322-b0fe-7121ec111efe"
+                  name="IsPartial"
+                  value="false" />
+              </stereotypeInstanceHasPropertyInstances>
+              <stereotypeInstanceHasPropertyInstances
+                Id="a9798510-42f6-4903-baa8-22c88bc41ed9">
+                <propertyInstance
+                  Id="dc091a2e-1b66-4d6e-a738-cd402d9cae55"
+                  name="IsStatic"
+                  value="False" />
+              </stereotypeInstanceHasPropertyInstances>
+              <stereotypeInstanceHasPropertyInstances
+                Id="514232d9-8ad1-49fa-9ddd-b692d0badf04">
+                <propertyInstance
+                  Id="641a1bbf-9206-4b14-af26-21960e977ff2"
+                  name="IsUnsafe"
+                  value="false" />
+              </stereotypeInstanceHasPropertyInstances>
+              <stereotypeInstanceHasPropertyInstances
+                Id="3ca4e664-9738-414e-9949-3ff7443137af">
+                <propertyInstance
+                  Id="e7229cb8-d83f-4bb5-9d1d-700736bb0acd"
+                  name="PackageVisibility"
+                  value="internal" />
+              </stereotypeInstanceHasPropertyInstances>
+            </propertyInstances>
+          </stereotypeInstance>
+        </appliedStereotypesInternal>
+      </class>
+    </packageHasNamedElement>
+    <packageHasNamedElement>
+      <class
+        Id="e7dc2931-f506-4974-a748-590533533160"
+        name="DataEvent"
+        visibility="Package"
+        isAbstract="false"
+        isLeaf="false"
+        isActiveClass="false">
+        <referencesInternal>
+          <reference
+            Id="a10c119b-2f4c-4e65-94a2-2b82deab733f"
+            handle="viewcode://./CodeSchema_Class?Assembly%3D&quot;file:%2F%2F%2FC:%2FUsers%2FRune%2FDocuments%2FVisual Studio 2013%2FProjects%2Fecru_kernel%2Fecru_kernel%2FECRU.BLEController%2Fbin%2FDebug%2FECRU.BLEController.dll&quot; Namespace%3DECRU.BLEController.Packets Type%3DDataEvent"
+            tag="ViewCode" />
+        </referencesInternal>
+        <appliedStereotypesInternal>
+          <stereotypeInstance
+            Id="655eb9f2-ba8f-4316-92e1-dde128324b26"
+            name="class"
+            profile="CSharpProfile">
+            <propertyInstances>
+              <stereotypeInstanceHasPropertyInstances
+                Id="06694e1b-886b-490e-8479-dc952efaeaa5">
+                <propertyInstance
+                  Id="b721c08d-2bad-4288-bb9b-46d3938a7767"
+                  name="ClrAttributes" />
+              </stereotypeInstanceHasPropertyInstances>
+              <stereotypeInstanceHasPropertyInstances
+                Id="626b9c15-81f2-45a1-82cb-dec95cb4f76c">
+                <propertyInstance
+                  Id="094f8b83-46ba-4383-8214-b6ef64940dd9"
+                  name="IsPartial"
+                  value="false" />
+              </stereotypeInstanceHasPropertyInstances>
+              <stereotypeInstanceHasPropertyInstances
+                Id="92221070-9407-42e1-a633-c73986a44fcf">
+                <propertyInstance
+                  Id="8ea936c9-e092-49c0-8011-dfddef7e2204"
+                  name="IsStatic"
+                  value="False" />
+              </stereotypeInstanceHasPropertyInstances>
+              <stereotypeInstanceHasPropertyInstances
+                Id="31b9811e-d965-434f-93a5-b5d2de9b1f7f">
+                <propertyInstance
+                  Id="f9c7f539-5aef-4214-9d6d-02238c7dd615"
+                  name="IsUnsafe"
+                  value="false" />
+              </stereotypeInstanceHasPropertyInstances>
+              <stereotypeInstanceHasPropertyInstances
+                Id="29ac2e3b-011f-4028-a451-04e9738b43b8">
+                <propertyInstance
+                  Id="407909f2-f72b-4465-bb7e-14822fe4267e"
+                  name="PackageVisibility"
+                  value="internal" />
+              </stereotypeInstanceHasPropertyInstances>
+            </propertyInstances>
+          </stereotypeInstance>
+        </appliedStereotypesInternal>
+      </class>
+    </packageHasNamedElement>
+  </packagedElements>
+</package>

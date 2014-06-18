@@ -76,4 +76,7 @@
     <Folder Include="Buttons\Logging\" />
     <Folder Include="LEDs\" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="FileSystem\ClassDiagram1.cd" />
+  </ItemGroup>
 </Project>
