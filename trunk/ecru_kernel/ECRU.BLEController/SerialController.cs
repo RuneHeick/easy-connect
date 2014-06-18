@@ -3,6 +3,7 @@ using System.Collections;
 using System.IO.Ports;
 using SecretLabs.NETMF.Hardware.NetduinoPlus;
 using ECRU.Utilities.HelpFunction;
+using Microsoft.SPOT;
 
 namespace ECRU.BLEController
 {
@@ -84,29 +85,33 @@ namespace ECRU.BLEController
                 int len = serial.BytesToRead;
                 var data = new byte[len];
 
-                serial.Read(data, 0, len);
-                foreach (byte b in data)
+                int itemsRead = serial.Read(data, 0, len);
+                if (itemsRead > 0)
                 {
-                    if (b == 0xEC && packet.Count == 0)
-                        packet.Add(b);
-                    else if (packet.Count > 0)
+                    foreach (byte b in data)
                     {
-                        packet.Add(b);
+                        Debug.Print(b.ToHex());
+                        if (b == 0xEC && packet.Count == 0)
+                            packet.Add(b);
+                        else if (packet.Count > 0)
+                        {
+                            packet.Add(b);
 
-                        if (packet.Count - 1 == (((byte) packet[1]) & 0x7F))
-                        {
-                            byte[] newPacket = (byte[])packet.ToArray(typeof(byte));
-                            if (!lastPacket.ByteArrayCompare(newPacket))
+                            if (packet.Count - 1 == (((byte)packet[1]) & 0x7F))
                             {
-                                if (PacketRecived != null)
-                                    PacketRecived(newPacket);
+                                byte[] newPacket = (byte[])packet.ToArray(typeof(byte));
+                                if (!lastPacket.ByteArrayCompare(newPacket))
+                                {
+                                    if (PacketRecived != null)
+                                        PacketRecived(newPacket);
+                                }
+                                lastPacket = newPacket;
+                                packet.Clear();
                             }
-                            lastPacket = newPacket;
-                            packet.Clear();
-                        }
-                        if (packet.Count > 128)
-                        {
-                            packet.Clear();
+                            if (packet.Count > 128)
+                            {
+                                packet.Clear();
+                            }
                         }
                     }
                 }
@@ -117,6 +122,7 @@ namespace ECRU.BLEController
                 SerialStatus = Status.Error;
             }
         }
+        
 
         private void serial_ErrorReceived(object sender, SerialErrorReceivedEventArgs e)
         {

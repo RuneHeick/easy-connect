@@ -361,8 +361,7 @@ namespace ECRU.Utilities
             {
                 if(RU != Utilities.SystemInfo.SystemMAC.ToHex())
                 {
-                    NewConnectionMessage rq = new NewConnectionMessage() { Receiver = RU.FromHex(), ConnectionType = NetworkManager.connectionRQType, ConnectionCallback = (socket, r) => UpdateFileConnection(mutex.path,r, socket, UsersToUpdate, this) };
-                    EventBus.Publish(rq);
+                    CoordainatorQueue.Send(RU.FromHex(), NetworkManager.connectionRQType, (socket, r) => UpdateFileConnection(mutex.path, r, socket, UsersToUpdate, this));
                 }
             }
 
@@ -464,8 +463,7 @@ namespace ECRU.Utilities
             }
             else
             {
-                NewConnectionMessage rq = new NewConnectionMessage() { Receiver = receiver, ConnectionType = NetworkManager.connectionRQType, ConnectionCallback = (s, r) => UpdateFileConnection(path, r, s, UsersToUpdate, item) };
-                EventBus.Publish(rq);
+                CoordainatorQueue.Send(receiver, NetworkManager.connectionRQType, (s, r) => UpdateFileConnection(path, r, s, UsersToUpdate, item));
             }
         }
 
@@ -507,9 +505,7 @@ namespace ECRU.Utilities
             {
                 if (RU != Utilities.SystemInfo.SystemMAC.ToHex())
                 {
-                    NewConnectionMessage rq = new NewConnectionMessage() { Receiver = RU.FromHex(), ConnectionType = NetworkManager.connectionRQType, ConnectionCallback = (socket, resiver) => FileStateConnection(socket, resiver, PacketSendTo, FileState, this) };
-                    EventBus.Publish(rq);
-                    
+                    CoordainatorQueue.Send(RU.FromHex(), NetworkManager.connectionRQType, (socket, resiver) => FileStateConnection(socket, resiver, PacketSendTo, FileState, this));
                 }
             } 
         }
@@ -577,8 +573,7 @@ namespace ECRU.Utilities
             }
             else //Retry;
             {
-                NewConnectionMessage rq = new NewConnectionMessage() { Receiver = resiver, ConnectionType = NetworkManager.connectionRQType, ConnectionCallback = (so, re) => FileStateConnection(so, re, PacketSendTo, FileState, item) };
-                EventBus.Publish(rq);
+                CoordainatorQueue.Send(resiver,NetworkManager.connectionRQType, (so, re) => FileStateConnection(so, re, PacketSendTo, FileState, item));
                 return;
 
             }
@@ -642,8 +637,7 @@ namespace ECRU.Utilities
 
                     if (currentFile == null || currentFile.Version < best.version)
                     {
-                        NewConnectionMessage rq = new NewConnectionMessage() { Receiver = best.Mac, ConnectionType = NetworkManager.connectionRQType, ConnectionCallback = (socket, resiver) => GetFileConnection(socket, resiver, path, FileState, best.version, this) };
-                        EventBus.Publish(rq);
+                        CoordainatorQueue.Send(best.Mac,NetworkManager.connectionRQType, (socket, resiver) => GetFileConnection(socket, resiver, path, FileState, best.version, this));
                         HasAllFiles = false; 
                     }
                     else
@@ -769,12 +763,10 @@ namespace ECRU.Utilities
             }
             else
             {
-                NewConnectionMessage rq = new NewConnectionMessage() { Receiver = resiver, ConnectionType = NetworkManager.connectionRQType, ConnectionCallback = (so, re) => GetFileConnection(so, re, path, MasterFileStates, version, item) };
-                EventBus.Publish(rq);
+                CoordainatorQueue.Send(resiver, NetworkManager.connectionRQType, (so, re) => GetFileConnection(so, re, path, MasterFileStates, version, item));
             }
 
         }
-
 
         private static void UpdateFiles(string path, Hashtable MasterFileStates, long version, CordinatorRole item)
         {
@@ -793,8 +785,7 @@ namespace ECRU.Utilities
 
                         if (ver < version)
                         {
-                            NewConnectionMessage rq = new NewConnectionMessage() { Receiver = mac.FromHex(), ConnectionType = NetworkManager.connectionRQType, ConnectionCallback = (s, r) => UpdateFilesAtStartup(s, r, path, MasterFileStates, item) };
-                            EventBus.Publish(rq);
+                            CoordainatorQueue.Send(mac.FromHex(), NetworkManager.connectionRQType, (s, r) => UpdateFilesAtStartup(s, r, path, MasterFileStates, item));
                         }
                         else
                         {
@@ -811,7 +802,6 @@ namespace ECRU.Utilities
                 }
             }
         }
-
 
         private static void UpdateFilesAtStartup(Socket socket, byte[] resiver, string path, Hashtable MasterFileStates, CordinatorRole item)
         {
@@ -840,8 +830,7 @@ namespace ECRU.Utilities
             }
             else
             {
-                NewConnectionMessage rq = new NewConnectionMessage() { Receiver = resiver, ConnectionType = NetworkManager.connectionRQType, ConnectionCallback = (s, r) => UpdateFilesAtStartup(s, r, path, MasterFileStates, item) };
-                EventBus.Publish(rq);
+                CoordainatorQueue.Send(resiver, NetworkManager.connectionRQType, (s, r) => UpdateFilesAtStartup(s, r, path, MasterFileStates, item));
             }
         }
 
@@ -850,7 +839,6 @@ namespace ECRU.Utilities
             state = CordinatorState.Running;
             Debug.Print("CordinatorState.Running");
         }
-
 
         class FileMutex
         {
