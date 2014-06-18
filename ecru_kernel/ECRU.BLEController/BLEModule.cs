@@ -24,7 +24,7 @@ namespace ECRU.BLEController
         {
             packetmanager = new PacketManager(serial);
             Infofactory = new DeviceInfoFactory(packetmanager);
-            ResetTimer = new ECTimer(SendResetCallBack, null, 0, 2000);
+            ResetTimer = new ECTimer(SendResetCallBack, null, 0, 10000);
         }
 
         private bool IsInitMode { get; set; }
@@ -136,7 +136,7 @@ namespace ECRU.BLEController
                                     if (item != null)
                                     {
                                         AddDevice(item);
-                                        {
+                                        /*{
                                             WriteEvent Revent = new WriteEvent();
                                             Revent.Address = newDevice.Address;
 
@@ -155,7 +155,7 @@ namespace ECRU.BLEController
                                             
                                             
                                             packetmanager.Send(Revent);
-                                        }
+                                        }*/
                                     }
                                 }
                                 break; 
@@ -283,7 +283,10 @@ namespace ECRU.BLEController
             var info = new SystemInfoEvent();
             try
             {
-                info.SystemID = SystemInfo.SystemID;
+                if(IsInitMode == true)
+                    info.SystemID = new byte[8]; 
+                else
+                    info.SystemID = SystemInfo.SystemID;
             }
             catch
             {

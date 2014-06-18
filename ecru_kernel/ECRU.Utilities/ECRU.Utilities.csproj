@@ -60,6 +60,7 @@
     <Compile Include="FileSystem\CordinatorRole.cs" />
     <Compile Include="FileSystem\FileSystem.cs" />
     <Compile Include="FileSystem\File\ConfigFile.cs" />
+    <Compile Include="FileSystem\CoordainatorQueue.cs" />
     <Compile Include="FileSystem\File\FileBase.cs" />
     <Compile Include="FileSystem\File\InfoFile.cs" />
     <Compile Include="FileSystem\LocalManager.cs" />

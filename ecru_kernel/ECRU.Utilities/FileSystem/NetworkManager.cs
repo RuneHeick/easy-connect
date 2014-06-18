@@ -54,12 +54,14 @@ namespace ECRU.Utilities
 
                 cordinatorAddrs = Macs[0].FromHex();
                 SingleMode = Macs.Length == 1 ? true : false;
-
-                Debug.Print("CORDINATOR LOAD : " + cordinatorAddrs.ToHex());
-                if (cordinatorAddrs.ByteArrayCompare(ECRU.Utilities.SystemInfo.SystemMAC) && SingleMode == false)
+                if (SingleMode == false)
                 {
-                    //I am cordinator 
-                    StartTimer.Start(); 
+                    Debug.Print("CORDINATOR LOAD : " + cordinatorAddrs.ToHex());
+                    if (cordinatorAddrs.ByteArrayCompare(ECRU.Utilities.SystemInfo.SystemMAC))
+                    {
+                        //I am cordinator 
+                        StartTimer.Start();
+                    }
                 }
             }
             isOnline = true; 
@@ -76,7 +78,8 @@ namespace ECRU.Utilities
 
         private void StopNetShare()
         {
-            StartTimer.Stop(); 
+            StartTimer.Stop();
+            CoordainatorQueue.Clear();
             isOnline = false;
             MutexClear(); 
             if (cordinator != null)
