@@ -31,6 +31,7 @@ namespace ECRU.netd
                 _broadcastrunning = false;
             }
 
+            EventBus.Unsubscribe(typeof (RecivedBroadcastMessage), ReceivedBroadcast);
             NetworkTable.NetstateChanged -= UpdateBroadcastMessage;
             NetworkTable.ClearNetworkTable();
         }
@@ -74,6 +75,28 @@ namespace ECRU.netd
                     catch (Exception exception)
                     {
                         Debug.Print("NetworkDiscovery packet incorrect: " + exception);
+                    }
+                } else if (msg.MessageType.ByteArrayCompare(new byte[] {5}))
+                {
+
+                    NetworkTable.CheckTable();
+
+                    if (NetworkTable._netstate != null)
+                    {
+                        Array.Copy(NetworkTable._netstate.StringToBytes(), 0, _broadcastMessage, 6, NetworkTable._netstate.StringToBytes().Length);
+                    }
+
+                    try
+                    {
+                        EventBus.Publish(new SendBroadcastMessage
+                        {
+                            BroadcastType = new byte[] { 1 },
+                            Message = _broadcastMessage
+                        });
+                    }
+                    catch (Exception exception)
+                    {
+                        Debug.Print("Broadcast failed: " + exception);
                     }
                 }
             }

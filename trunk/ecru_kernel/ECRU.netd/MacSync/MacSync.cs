@@ -57,7 +57,6 @@ namespace ECRU.netd.MacSync
             }
         }
 
-
         public static void RequestDevices(object message)
         {
             var msg = message as ConnectionRequestMessage;
