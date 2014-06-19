@@ -12,6 +12,7 @@ public class ECRU {
 	public String mac;
 	public String Name;
 	public List<String> Devices = new ArrayList<String>();
+	private static Gson gson = new Gson();
 	
 	public ECRU(String Mac){
 		mac = Mac;
@@ -21,6 +22,10 @@ public class ECRU {
 	public void insertModuleMac(String mac){
 		Devices.add(mac);
 		Log.i(LOG_TAG, "module :"+ mac + ". added to functionlist");
+	}
+	
+	public static ECRU fromString(String gsonEcru)	{
+		return gson.fromJson(gsonEcru, ECRU.class); 
 	}
 	
 	@Override

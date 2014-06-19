@@ -43,19 +43,17 @@ public class NetworkService extends Service {
 
 	@Override
 	public void onCreate() {
-		
-//		Intent testintent = new Intent(this, SetDataIntentService.class);
-//		testintent.putExtra("test", "test");
-//		startService(testintent);
-		
-		Log.i(LOG_TAG,"onCreate Called");
-		UDPrunning = true;
-		routingTable = new RoutingTable();
 
-		new Thread(new UDPServer()).start(); 
-		try { 
-			Thread.sleep(500); 
-		} catch (InterruptedException e) { } 
+//		Log.i(LOG_TAG,"onCreate Called");
+//		UDPrunning = true;
+//		routingTable = new RoutingTable();
+//
+//		new Thread(new UDPServer()).start(); 
+//		try { 
+//			Thread.sleep(500); 
+//		} catch (InterruptedException e) { } 
+//
+//		new Thread(new UDPClient()).start();
 	}
 
 	@Override
@@ -119,7 +117,7 @@ public class NetworkService extends Service {
 						} else {
 							Log.i(LOG_TAG, "UnitAddress already there!");
 						}
-//						getDevices(received);
+						//						getDevices(received);
 						Log.i(LOG_TAG, "end of try");
 					} else {
 						Log.i(LOG_TAG, "Wrong package type");
@@ -142,21 +140,17 @@ public class NetworkService extends Service {
 		BufferedWriter out = null;
 		ECRU tempEcru = null;
 		try {
-			Log.d(LOG_TAG, "Connecting...");
 			tcpSocket = new Socket(roomUnit._currentIp, SERVERPORT);
-			Log.d(LOG_TAG, "Connected...");
 
 			in = new BufferedReader(new InputStreamReader(tcpSocket.getInputStream()));
-
-			Log.d(LOG_TAG, "Sending command.");
 			out = new BufferedWriter(new OutputStreamWriter(tcpSocket.getOutputStream()));
-
+			
+			
 			String outMsg;
 			outMsg = ReqDevs;
+			Log.i(LOG_TAG, "Sending command: " + outMsg);
 			out.write(outMsg);
-
 			out.flush();
-			Log.i(LOG_TAG, "sent: " + outMsg);
 
 			String inMsg = in.readLine() + System.getProperty("line.separator");
 			inMsg = inMsg.replace("Accepted", "");
@@ -209,12 +203,14 @@ public class NetworkService extends Service {
 			availableBytes = in.read(buf);		// reading if accepted
 
 			if (availableBytes > 0){
+				
 				availableBytes = 0;
 				Log.d(LOG_TAG, "reqDevInf: Sending macAddres.");
 				byte[] mac = new BigInteger(deviceMacAddress,16).toByteArray();
-				out.write(mac, 1, 6);				// Sending MacAddress of requested device
-
+				out.write(mac, 0, 6);				// Sending MacAddress of requested device
+				Thread.sleep(2000);
 				availableBytes = in.read(buf);	// Reading the ModuleInformation
+				
 				if (availableBytes > 0){
 					byte[] deviceInformation = Arrays.copyOfRange(buf, 0, availableBytes);
 					Log.i(LOG_TAG, "Writing ECM to sd-card");
@@ -255,4 +251,26 @@ public class NetworkService extends Service {
 			return null;
 		}
 	}
+	public class UDPClient implements Runnable {
+		private static final String LOG_TAG = "NetworkService:UDPClient";
+		@Override
+		public void run() {
+			DatagramSocket c = null;
+			Log.d(LOG_TAG, "Startup Broadcast: initialising");
+			try{
+				byte[] sendData = new byte[1];
+				c = new DatagramSocket();
+				c.setBroadcast(true);
+				sendData[0] = 5;
+
+				DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, InetAddress.getByName("192.168.1.255"), 4543);
+				c.send(sendPacket);
+				Log.d(LOG_TAG, "Startup Broadcast Completed!");
+			}
+			catch (Exception e){
+				Log.e(LOG_TAG, "Caught exception: " + e);
+			}
+		}
+	}
+
 }

@@ -4,6 +4,7 @@ import iha.bachelor.smo.aba.rah.easyconnect_v3.adapter.ExpandableListModuleAdapt
 import iha.bachelor.smo.aba.rah.easyconnect_v3.adapter.ModuleInfoParser;
 import iha.bachelor.smo.aba.rah.easyconnect_v3.contentprovider.FileHandler;
 import iha.bachelor.smo.aba.rah.easyconnect_v3.model.Characteristic;
+import iha.bachelor.smo.aba.rah.easyconnect_v3.model.ECRU;
 import iha.bachelor.smo.aba.rah.easyconnect_v3.model.ModuleInfo;
 import iha.bachelor.smo.aba.rah.easyconnect_v3.model.Service;
 
@@ -25,6 +26,8 @@ public class ModuleFragment extends Fragment {
 	List<Service> ServiceNameList;
     Map<Service, List<Characteristic>> CharacteristicsCollection;
 	ExpandableListView expListView;
+	public String ModuleMac;
+	private ECRU ParentEcru;
 
 	
 	@Override
@@ -32,15 +35,17 @@ public class ModuleFragment extends Fragment {
 		View rootView = inflater.inflate(R.layout.fragment_module, container, false);
 		
 		Log.i(LOG_TAG, "OnCreateView called");
+		
 		Bundle extras = getArguments();
 		if (extras != null) {
-	    	String temp = extras.getString("module");
-	    	createREALCollection(temp);
+			ModuleMac = extras.getString("module");
+			ParentEcru = ECRU.fromString(extras.getString("ECRU"));
+	    	createREALCollection(ModuleMac);
 	    }
 		
 		
 		expListView = (ExpandableListView) rootView.findViewById(R.id.service_list);
-		final ExpandableListModuleAdapter expListAdapter = new ExpandableListModuleAdapter(getActivity(), ServiceNameList, CharacteristicsCollection);
+		final ExpandableListModuleAdapter expListAdapter = new ExpandableListModuleAdapter(getActivity(), ServiceNameList, CharacteristicsCollection, ModuleMac, ParentEcru);
 		expListView.setAdapter(expListAdapter);
 				
 		return rootView;
