@@ -11,7 +11,7 @@ namespace Brodcaster_Test
 {
     class Program
     {
-        const int NUMBER_OF_ECRU = 5; 
+        const int NUMBER_OF_ECRU = 20; 
 
         static void Main(string[] args)
         {
