@@ -92,6 +92,7 @@ namespace ECRU.Utilities
 
         public void Clear()
         {
+            /*
             lock (Lock)
             {
                 while (mackList.Count > 0)
@@ -100,6 +101,7 @@ namespace ECRU.Utilities
                     Remove(mac);
                 }
             }
+             */
         }
 
         public event MacListChange MacAdded;

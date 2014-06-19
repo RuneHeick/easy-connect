@@ -12,7 +12,7 @@
     </AssociationLine>
     <AssociationLine Name="serial" Type="ECRU.BLEController.SerialController" ManuallyRouted="true">
       <Path>
-        <Point X="1.875" Y="6.911" />
+        <Point X="1.875" Y="7.04" />
         <Point X="1.875" Y="6.692" />
         <Point X="7.25" Y="6.692" />
         <Point X="7.25" Y="5.247" />
@@ -20,7 +20,7 @@
     </AssociationLine>
     <AssociationLine Name="Infofactory" Type="ECRU.BLEController.DeviceInfoFactory" ManuallyRouted="true" FixedFromPoint="true" FixedToPoint="true">
       <Path>
-        <Point X="1.312" Y="6.911" />
+        <Point X="1.312" Y="7.04" />
         <Point X="1.312" Y="7.062" />
         <Point X="7.675" Y="7.062" />
         <Point X="7.675" Y="6.841" />
@@ -37,7 +37,6 @@
       <Field Name="Infofactory" />
       <Field Name="data" />
     </ShowAsAssociation>
-    <Lollipop Position="0.2" />
   </Class>
   <Class Name="ECRU.BLEController.DeviceInfoFactory">
     <Position X="8.5" Y="1.25" Width="2.25" />
@@ -47,6 +46,11 @@
           <NewMemberFileName>Util\DeviceInfoFactory.cs</NewMemberFileName>
         </TypeIdentifier>
       </Enum>
+      <Class Name="ECRU.BLEController.DeviceInfoFactory.QueueItem" Collapsed="true">
+        <TypeIdentifier>
+          <NewMemberFileName>Util\DeviceInfoFactory.cs</NewMemberFileName>
+        </TypeIdentifier>
+      </Class>
       <Class Name="ECRU.BLEController.DeviceInfoFactory.InfoContainor" Collapsed="true">
         <TypeIdentifier>
           <NewMemberFileName>Util\DeviceInfoFactory.cs</NewMemberFileName>
@@ -54,7 +58,7 @@
       </Class>
     </NestedTypes>
     <TypeIdentifier>
-      <HashCode>AAAQAKAEACAAABIBQABABACAEAQIAEAAiAAAAABAAgQ=</HashCode>
+      <HashCode>AAAQAKAEACCAABIBQARABAiAEAUIAEAAiAAAAABAAgQ=</HashCode>
       <FileName>Util\DeviceInfoFactory.cs</FileName>
     </TypeIdentifier>
     <ShowAsAssociation>
@@ -90,7 +94,6 @@
     </TypeIdentifier>
     <ShowAsAssociation>
       <Field Name="seriel" />
-      <Field Name="workPool" />
     </ShowAsAssociation>
   </Class>
   <Class Name="ECRU.BLEController.SerialController">

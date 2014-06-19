@@ -46,15 +46,18 @@ namespace ECRU.BLEController
 
         public bool IsSystemDevice(byte[] addr)
         {
-            //if (FileSystem.Exists(addr.ToHex() + ".BLE", FileType.Shared))
-            //    return true;
+            
 #if DEMOECRU1
             return addr.ByteArrayCompare(new byte[] {0x52, 0xa0, 0x27, 0xaf, 0x59, 0x90});
-#endif
 
-#if DEMOECRU2
+#elif DEMOECRU2
             return addr.ByteArrayCompare(new byte[] { 0x66, 0xa0, 0x27, 0xaf, 0x59, 0x90});
+
+#else
+            if (FileSystem.Exists(addr.ToHex() + ".BLE", FileType.Shared))
+                return true;
 #endif
+            return false; 
         }
 
         public AddDeviceEvent addConnectedDevice(byte[] address)
@@ -229,10 +232,12 @@ namespace ECRU.BLEController
                             file = FileSystem.GetFile(buffer.ToHex() + ".BLE", FileAccess.Read, FileType.Shared);
                         }
 
-                        if (file == null) continue;
-
-                        socket.Send(file.Data);
-                        file.Close();
+                        if (file != null)
+                        {
+                            Debug.Print("Sending .BLE file with size " + file.Data.Length.ToString());
+                            socket.Send(file.Data);
+                            file.Close();
+                        }
                     }
                 }
                 catch (Exception exception)
