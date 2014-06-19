@@ -17,6 +17,7 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.Socket;
+import java.util.ArrayList;
 import java.util.Arrays;
 
 import android.app.Service;
@@ -44,16 +45,16 @@ public class NetworkService extends Service {
 	@Override
 	public void onCreate() {
 
-//		Log.i(LOG_TAG,"onCreate Called");
-//		UDPrunning = true;
-//		routingTable = new RoutingTable();
-//
-//		new Thread(new UDPServer()).start(); 
-//		try { 
-//			Thread.sleep(500); 
-//		} catch (InterruptedException e) { } 
-//
-//		new Thread(new UDPClient()).start();
+		Log.i(LOG_TAG,"onCreate Called");
+		UDPrunning = true;
+		routingTable = new RoutingTable();
+
+		new Thread(new UDPServer()).start(); 
+		try { 
+			Thread.sleep(500); 
+		} catch (InterruptedException e) { } 
+
+		new Thread(new UDPClient()).start();
 	}
 
 	@Override
@@ -110,20 +111,19 @@ public class NetworkService extends Service {
 						Log.i(LOG_TAG, "UnitAdress created!");
 
 						if (!routingTable.contains(received)){
+							getDevices(received);
 							routingTable.add(received);
-							getDevices(received);						
 							Log.i(LOG_TAG, "UnitAddress added");
 							FileHandler.writeToFile(getBaseContext(), CurrentProfileName, FileHandler.ROUTING_TABLE_DIR, "routingTable.txt", FileHandler.EncodeGSoN(routingTable));
 						} else {
 							Log.i(LOG_TAG, "UnitAddress already there!");
 						}
-						//						getDevices(received);
 						Log.i(LOG_TAG, "end of try");
 					} else {
 						Log.i(LOG_TAG, "Wrong package type");
 					}
 				} catch (Exception e) {
-					Log.i(LOG_TAG, "woups Exception Caught: "+ e.toString());
+					Log.i(LOG_TAG, "Exception Caught: "+ e.toString());
 				}
 				finally{
 					socket.close();
@@ -153,9 +153,13 @@ public class NetworkService extends Service {
 			out.flush();
 
 			String inMsg = in.readLine() + System.getProperty("line.separator");
-			inMsg = inMsg.replace("Accepted", "");
-
 			Log.i(LOG_TAG, "received inMsg: " + inMsg);
+			
+			if (inMsg.contains("Accepted"))
+				inMsg = inMsg.replace("Accepted", "");
+			else
+				return;
+			
 			tempEcru = FileHandler.DecodeGsonEcru(inMsg);
 
 			Log.i(LOG_TAG, "received ECRU: " + tempEcru.toString());
@@ -171,19 +175,24 @@ public class NetworkService extends Service {
 				Log.e(LOG_TAG, "Error", e);
 			}
 		}
-
-		FileHandler.writeToFile(this, CurrentProfileName, FileHandler.FUNCTIONS_LIST_DIR, roomUnit._macAdress + ".txt", tempEcru.toString());
+		
 		if (!tempEcru.Devices.isEmpty()){
+			ArrayList<String> ActualDevices = new ArrayList<String>();
 			for (String s: tempEcru.Devices){
-				getDeviceInformation(roomUnit, s);
+				if (getDeviceInformation(roomUnit, s))
+					ActualDevices.add(s);
 			}
+			tempEcru.Devices = ActualDevices;
+			
 		}
+		FileHandler.writeToFile(this, CurrentProfileName, FileHandler.FUNCTIONS_LIST_DIR, roomUnit._macAdress + ".txt", tempEcru.toString());
 	}
 
-	public void getDeviceInformation(UnitAdress roomUnit, String deviceMacAddress){
+	public boolean getDeviceInformation(UnitAdress roomUnit, String deviceMacAddress){
 		Socket tcpSocket = null;
 		InputStream in = null;
 		OutputStream out = null;
+		boolean succes = false;
 		try {
 			Log.d(LOG_TAG, "reqDevInf: Connecting...");
 			tcpSocket = new Socket(roomUnit._currentIp, SERVERPORT);
@@ -210,11 +219,12 @@ public class NetworkService extends Service {
 				out.write(mac, 0, 6);				// Sending MacAddress of requested device
 				Thread.sleep(2000);
 				availableBytes = in.read(buf);	// Reading the ModuleInformation
-				
+				Log.d(LOG_TAG, "reqDevInf: Available bytes = " + availableBytes);
 				if (availableBytes > 0){
 					byte[] deviceInformation = Arrays.copyOfRange(buf, 0, availableBytes);
 					Log.i(LOG_TAG, "Writing ECM to sd-card");
 					FileHandler.writeToFile(this, CurrentProfileName, FileHandler.MODULE_DIR, deviceMacAddress + ".BLE", deviceInformation);
+					succes = true;
 				}
 			}
 		} catch (Exception e) {
@@ -229,6 +239,7 @@ public class NetworkService extends Service {
 				Log.e(LOG_TAG, "Error", e);
 			}
 		}
+		return succes;
 	}
 
 	public String getMacAdress(DatagramPacket dataPacket){
