@@ -25,6 +25,8 @@ public class GetDataIntentService extends IntentService
 	public static final String TARGET_MODULE = "TargetModule";
 	public static final String TARGET_HANDLE = "TargetHandle";
 	public static final String RESPONSE_DATA = "Response";
+	public static final String PARENTPOSITION = "Parent";
+	public static final String CHILDPOSITION = "Child";
 	
 	private static final int SERVERPORT = 4543;
 	private final String LOG_TAG = "GetDataIntentService";
@@ -36,25 +38,25 @@ public class GetDataIntentService extends IntentService
 	protected void onHandleIntent(Intent intent) {
 		String serialRoutingTable = FileHandler.ReadStringFromFile(this, MainActivity.CurrentProfileName, FileHandler.ROUTING_TABLE_DIR, "routingTable.txt");
 		RoutingTable rt = FileHandler.DecodeGsonRoutingTable(serialRoutingTable);
-		
+
 		String serialECRU = intent.getStringExtra(TARGET_ECRU);
 		ECRU targetEcru = ECRU.fromString(serialECRU);
-		
+
 		String targetModule = intent.getStringExtra(TARGET_MODULE);
-		
+
 		short targetHandle = intent.getShortExtra(TARGET_HANDLE, (short) 0000);
 		String handleAndMac = new String(targetModule + "00" + ModuleInfoParser.byteToHex((byte)targetHandle));
-		
-		
+
+
 		Socket tcpSocket = null;
 		InputStream in = null;
 		OutputStream out = null;
 		byte[] ResponceData = null;
 		try {
 			Log.d(LOG_TAG, "Creating Socket");
-			
+
 			tcpSocket = new Socket(rt.GetIPFromMAC(targetEcru.mac), SERVERPORT);
-			
+
 			Log.d(LOG_TAG, "SocketCreated");
 
 			in = tcpSocket.getInputStream();
@@ -77,6 +79,7 @@ public class GetDataIntentService extends IntentService
 				out.write(mac, 0, 8);				// Sending MacAddress of requested device
 
 				availableBytes = in.read(buf);	// Reading the ModuleInformation
+				Log.d(LOG_TAG, "received: " + availableBytes + "bytes");
 				if (availableBytes > 0){
 					ResponceData = Arrays.copyOfRange(buf, 0, availableBytes);
 					Log.d(LOG_TAG, "received: " + ModuleInfoParser.bytesToHex(ResponceData));
@@ -94,11 +97,16 @@ public class GetDataIntentService extends IntentService
 				Log.e(LOG_TAG, "Error", e);
 			}
 		}
-	
-		Intent responceBroadcastIntent = new Intent();
-		responceBroadcastIntent.setAction(GetDataReceiver.RESPONSE);
-		responceBroadcastIntent.addCategory(Intent.CATEGORY_DEFAULT);
-		responceBroadcastIntent.putExtra(RESPONSE_DATA, ResponceData);
+
+		if (ResponceData != null){
+			Intent responceBroadcastIntent = new Intent();
+			responceBroadcastIntent.setAction(GetDataReceiver.RESPONSE);
+			responceBroadcastIntent.addCategory(Intent.CATEGORY_DEFAULT);
+			responceBroadcastIntent.putExtra(RESPONSE_DATA, ResponceData);
+			responceBroadcastIntent.putExtra(CHILDPOSITION, intent.getIntExtra(CHILDPOSITION, -1));
+			responceBroadcastIntent.putExtra(PARENTPOSITION, intent.getIntExtra(PARENTPOSITION, -1));
+			sendBroadcast(responceBroadcastIntent);
+		}
 	}
 
 }

@@ -27,7 +27,8 @@
         </activity>
         <activity
             android:name="iha.bachelor.smo.aba.rah.easyconnect_v3.MainActivity"
-            android:label="@string/title_activity_main" >
+            android:label="@string/title_activity_main" 
+            android:windowSoftInputMode="adjustPan">
         </activity>
         <provider
             android:name="iha.bachelor.smo.aba.rah.easyconnect_v3.contentprovider.ProfileContentProvider"
