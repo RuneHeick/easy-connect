@@ -4,6 +4,7 @@ using ECRU.BLEController.Util;
 using ECRU.Utilities;
 using ECRU.Utilities.Factories.ModuleFactory;
 using ECRU.Utilities.HelpFunction;
+using ECRU.Utilities.LEDs;
 using Microsoft.SPOT;
 using ResetEvent = ECRU.BLEController.Packets.ResetEvent;
 using ECRU.Utilities.Timers; 
@@ -221,6 +222,7 @@ namespace ECRU.BLEController
         {
             isreset = true; 
             Debug.Print("BLE RESET");
+            LEDriver.startBLEWhatever();
             data.Reset();
             SendSystemInfo();
             Infofactory.Dispose();

@@ -2,9 +2,11 @@
 using System.Threading;
 using ECRU.BLEController;
 using ECRU.netd;
-using ECRU.Utilities;
 using ECRU.Utilities.HelpFunction;
+using ECRU.Utilities.LEDs;
 using Microsoft.SPOT;
+using Microsoft.SPOT.Hardware;
+using SystemInfo = ECRU.Utilities.SystemInfo;
 
 namespace ECRU
 {
@@ -36,6 +38,8 @@ namespace ECRU
             Debug.Print("Hello this is ECRU2!");
 #endif
 
+            LEDriver.startAnimation();
+
             // write your code here
             Thread.Sleep(5000);
 
@@ -63,17 +67,19 @@ namespace ECRU
                             SystemInfo.LoadConfig("SysInfoConfig.cfg");
                             SystemInfo.Start();
 #if DEBUG
-                            SystemInfo.ConnectedDevices.Add("E68170E5C578".FromHex());
-                            SystemInfo.ConnectedDevices.Add("F83A228CBA1C".FromHex());
+                            //SystemInfo.ConnectedDevices.Add("E68170E5C578".FromHex());
+                            //SystemInfo.ConnectedDevices.Add("F83A228CBA1C".FromHex());
 #endif
                             break;
 
                         case 2: //System Configuration state
+                            LEDriver.startstagetwo();
                             _bleModule.LoadConfig("");
                             _bleModule.Start();
                             break;
 
                         case 3: //Normal state
+                            LEDriver.startstagethree();
                             _bleModule.Reset();
                             _netDaemon.LoadConfig("");
                             _netDaemon.Start();
