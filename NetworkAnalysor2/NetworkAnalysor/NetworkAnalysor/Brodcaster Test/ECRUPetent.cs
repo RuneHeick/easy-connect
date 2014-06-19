@@ -12,7 +12,7 @@ namespace Brodcaster_Test
 {
     public class ECRUPetent
     {
-        const int ECM_MAX = 10; 
+        const int ECM_MAX = 20; 
         private UdpClient client;
         private Timer timer;
         private Timer ECMmtimer;

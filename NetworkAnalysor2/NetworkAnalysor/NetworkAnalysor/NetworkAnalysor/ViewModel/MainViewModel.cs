@@ -8,6 +8,7 @@ using System.Collections.ObjectModel;
 using System.Net.Sockets;
 using System.Net;
 using System.Windows;
+using System.Net.NetworkInformation;
 
 namespace NetworkAnalysor.ViewModel
 {
@@ -102,6 +103,7 @@ namespace NetworkAnalysor.ViewModel
             {
                 ECRU oldunit = UnitsDiscovered.First((a) => ArraysEqual(a.Mac, mac));
                 oldunit.LastSeen = DateTime.Now;
+                oldunit.IPAddres = iPAddress.ToString(); 
                 oldunit.NetState = netState; 
             }
         }
@@ -148,9 +150,66 @@ namespace NetworkAnalysor.ViewModel
             }
         }
 
+        private RelayCommand sendBrodcast;
+        public ICommand SendBrodcast
+        {
+            get
+            {
+                if (sendBrodcast == null)
+                    sendBrodcast = new RelayCommand((p) => brodcastCommandExecute());
+                return sendBrodcast;
+            }
+        }
+
+        private void brodcastCommandExecute()
+        {
+            IPEndPoint ip = null; 
+
+
+            foreach (NetworkInterface nics in NetworkInterface.GetAllNetworkInterfaces())
+            {
+                if (nics.Name.ToLower().Contains("wi"))
+                {
+                    var prope = nics.GetIPProperties();
+                    var hep = prope.UnicastAddresses;
+                    var o = hep[1];
+                    var mask = o.IPv4Mask.ToString();
+                    var ipstring = o.Address.ToString();
+
+                    ip = new IPEndPoint(IPAddress.Parse(GetBroadcastAddress(ipstring, mask)), 4543);
+                    break;
+                }
+            }
+
+            UdpClient client = new UdpClient();
+            client.Send(new byte[] { 5 }, 1, ip); 
+        }
+
+
+        
         private void clearCommandExecute()
         {
             UnitsDiscovered.Clear();
+        }
+
+        public static string GetBroadcastAddress(string ipAddress, string subnetMask)
+        {
+            //determines a broadcast address from an ip and subnet
+            IPAddress ip = IPAddress.Parse(ipAddress);
+            IPAddress mask = IPAddress.Parse(subnetMask);
+
+            byte[] ipAdressBytes = ip.GetAddressBytes();
+            byte[] subnetMaskBytes = mask.GetAddressBytes();
+
+            if (ipAdressBytes.Length != subnetMaskBytes.Length)
+                throw new ArgumentException("Lengths of IP address and subnet mask do not match.");
+
+            var broadcastAddress = new byte[ipAdressBytes.Length];
+            for (int i = 0; i < broadcastAddress.Length; i++)
+            {
+                broadcastAddress[i] = (byte)(ipAdressBytes[i] | (subnetMaskBytes[i] ^ 255));
+            }
+            return new IPAddress(broadcastAddress).ToString();
         }
 
     }

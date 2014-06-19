@@ -39,7 +39,10 @@
 
             <StackPanel Grid.Column="1" >
                 <TextBlock VerticalAlignment="Center" Margin="10" FontSize="20" Text="{Binding NetState, Converter={StaticResource byteArrayConverter}}" />
-                <TextBlock Text="{Binding IPAddres}" Margin="10"></TextBlock>
+                <StackPanel Orientation="Horizontal" Margin="10">
+                    <TextBlock Text="{Binding IPAddres}"></TextBlock>
+                    <TextBlock Text="{Binding LastSeen}" Margin="50,0,0,0"></TextBlock>
+                </StackPanel>
             </StackPanel>
         </Grid>
         <ItemsControl Grid.Row="1" ItemsSource="{Binding ECMS.ECMs}">

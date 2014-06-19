@@ -18,8 +18,9 @@
             </ItemsControl>
         </ScrollViewer>
         
-        <StackPanel Grid.Row="1" HorizontalAlignment="Right" Margin="5,5,30,5">
+        <StackPanel Grid.Row="1" HorizontalAlignment="Right" Margin="5,5,30,5" Orientation="Horizontal">
             <Button Content="Clear" Width="100" Command='{Binding ClearCommand}'/>
+            <Button Content="Send" Width="100" Command='{Binding SendBrodcast}' Margin="10,0,0,0"/>
         </StackPanel>
     </Grid>
 </Window>
