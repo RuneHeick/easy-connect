@@ -21,6 +21,8 @@ import android.util.Log;
 
 public class GetDataIntentService extends IntentService
 {
+	private static final int SERVERPORT = 4543;
+	private static final String LOG_TAG = "GetDataIntentService";
 	public static final String TARGET_ECRU = "TargetEcru";
 	public static final String TARGET_MODULE = "TargetModule";
 	public static final String TARGET_HANDLE = "TargetHandle";
@@ -28,8 +30,6 @@ public class GetDataIntentService extends IntentService
 	public static final String PARENTPOSITION = "Parent";
 	public static final String CHILDPOSITION = "Child";
 	
-	private static final int SERVERPORT = 4543;
-	private final String LOG_TAG = "GetDataIntentService";
 	public GetDataIntentService(){
 		super("GetDataIntentService");
 	}
@@ -54,17 +54,16 @@ public class GetDataIntentService extends IntentService
 		byte[] ResponceData = null;
 		try {
 			Log.d(LOG_TAG, "Creating Socket");
-
 			tcpSocket = new Socket(rt.GetIPFromMAC(targetEcru.mac), SERVERPORT);
-
 			Log.d(LOG_TAG, "SocketCreated");
 
 			in = tcpSocket.getInputStream();
 			out = tcpSocket.getOutputStream();
 
-			Log.d(LOG_TAG, "Sending command.");
+			
 			String outMsg;
 			outMsg = "RequestECMData";
+			Log.d(LOG_TAG, "Sending command: " + outMsg );
 			out.write(outMsg.getBytes("UTF-8"));	// Sending Request ECM Data
 
 			byte[] buf = new byte[1024];

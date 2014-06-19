@@ -5,6 +5,7 @@ import iha.bachelor.smo.aba.rah.easyconnect_v3.model.Characteristic;
 import iha.bachelor.smo.aba.rah.easyconnect_v3.model.ECRU;
 import iha.bachelor.smo.aba.rah.easyconnect_v3.model.Service;
 import iha.bachelor.smo.aba.rah.easyconnect_v3.service.GetDataIntentService;
+import iha.bachelor.smo.aba.rah.easyconnect_v3.service.SetDataIntentService;
 
 import java.io.UnsupportedEncodingException;
 import java.util.List;
@@ -27,6 +28,7 @@ import android.widget.BaseExpandableListAdapter;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.SeekBar;
+import android.widget.SeekBar.OnSeekBarChangeListener;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -103,28 +105,7 @@ public class ExpandableListModuleAdapter extends BaseExpandableListAdapter {
 		}
 
 		ImageView update = (ImageView) convertView.findViewById(R.id.update_service);
-		update.setOnClickListener(new OnClickListener() {
-
-			public void onClick(View v) {
-				AlertDialog.Builder builder = new AlertDialog.Builder(context);
-				builder.setMessage("Start Service?");
-				builder.setCancelable(false);
-				builder.setPositiveButton("Yes",
-						new DialogInterface.OnClickListener() {
-					public void onClick(DialogInterface dialog, int id) {
-						Toast.makeText(context, "Updated", Toast.LENGTH_LONG).show(); 
-					}
-				});
-				builder.setNegativeButton("No",
-						new DialogInterface.OnClickListener() {
-					public void onClick(DialogInterface dialog, int id) {
-						dialog.cancel();
-					}
-				});
-				AlertDialog alertDialog = builder.create();
-				alertDialog.show();
-			}
-		});
+		update.setOnClickListener(new ServiceUpdateOnClickListener(service));
 
 		return convertView;
 	}
@@ -222,7 +203,8 @@ public class ExpandableListModuleAdapter extends BaseExpandableListAdapter {
 		if ( tempChar._range.handle != 0){
 			seeker.setMax(tempChar._range.Value[1]);
 		}
-		seeker.setProgress(tempChar._value.Value[0]); // TODO: test
+		seeker.setProgress(tempChar._value.Value[0]);
+		seeker.setOnSeekBarChangeListener(new SeekbarListener(tempChar));
 		return convertView;
 	}
 	
@@ -300,6 +282,79 @@ public class ExpandableListModuleAdapter extends BaseExpandableListAdapter {
 		public static final int UINT8 = 0x4;
 		public static final int Bool = 0x1;
 		public static final int UTFString = 0x19;
+	}
+	
+	public class ServiceUpdateOnClickListener implements OnClickListener
+	   {
+
+	     private Service currentService;
+	     
+	     public ServiceUpdateOnClickListener(Service Service) {
+	          this.currentService = Service;
+	     }
+
+	     @Override
+	     public void onClick(View v) {
+				AlertDialog.Builder builder = new AlertDialog.Builder(context);
+				builder.setMessage("Start Service?");
+				builder.setCancelable(false);
+				builder.setPositiveButton("Yes",
+						new DialogInterface.OnClickListener() {
+					public void onClick(DialogInterface dialog, int id) {
+						
+						Intent testintent = new Intent(context, SetDataIntentService.class);
+						testintent.putExtra(SetDataIntentService.TARGET_MODULE, ModuleMacAdress);
+						testintent.putExtra(SetDataIntentService.TARGET_ECRU, ParentEcru.toString());
+						testintent.putExtra(SetDataIntentService.TARGET_HANDLE, currentService._updatehandle);
+						testintent.putExtra(SetDataIntentService.VALUE, new byte[]{1});
+						testintent.putExtra(SetDataIntentService.DATA_TYPE, TypeEnum.UINT8);
+						context.startService(testintent);
+						
+						Toast.makeText(context, "Updated", Toast.LENGTH_LONG).show(); 
+					}
+				});
+				builder.setNegativeButton("No",
+						new DialogInterface.OnClickListener() {
+					public void onClick(DialogInterface dialog, int id) {
+						dialog.cancel();
+					}
+				});
+				AlertDialog alertDialog = builder.create();
+				alertDialog.show();
+			}
+
+	  };
+	
+	public class SeekbarListener implements OnSeekBarChangeListener {
+		private Characteristic characteristic;
+		
+		public SeekbarListener(Characteristic tempChar) {
+			this.characteristic = tempChar;
+		}
+
+		@Override
+		public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+			// TODO Auto-generated method stub
+			
+		}
+
+		@Override
+		public void onStartTrackingTouch(SeekBar seekBar) {
+			// TODO Auto-generated method stub
+			
+		}
+
+		@Override
+		public void onStopTrackingTouch(SeekBar seekBar) {
+			byte[] sendData = new byte[]  {(byte) seekBar.getProgress()};
+			Intent testintent = new Intent(context, SetDataIntentService.class);
+			testintent.putExtra(SetDataIntentService.TARGET_MODULE, ModuleMacAdress);
+			testintent.putExtra(SetDataIntentService.TARGET_ECRU, ParentEcru.toString());
+			testintent.putExtra(SetDataIntentService.TARGET_HANDLE, characteristic._value.handle);
+			testintent.putExtra(SetDataIntentService.VALUE, sendData);
+			testintent.putExtra(SetDataIntentService.DATA_TYPE, TypeEnum.UINT8);
+			context.startService(testintent);
+		}
 	}
 }
 
