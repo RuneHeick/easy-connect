@@ -23,9 +23,10 @@ import android.widget.ExpandableListView.OnChildClickListener;
 
 public class ModuleListFragment extends Fragment{
 	private final String LOG_TAG = "ModuleListFragment";
-	List<String> groupList;
-	Map<String, List<String>> roomUnitCollection;
+	
 	ExpandableListView expListView;
+	List<ECRU> EcruList;
+	Map<ECRU, List<String>> EcruDeviceCollection;
 
 	public ModuleListFragment(){}
 
@@ -39,7 +40,7 @@ public class ModuleListFragment extends Fragment{
 		createREALCollection();
 
 		expListView = (ExpandableListView) rootView.findViewById(R.id.function_list);
-		final ExpandableListAdapter expListAdapter = new ExpandableListAdapter(getActivity(), groupList, roomUnitCollection);
+		final ExpandableListAdapter expListAdapter = new ExpandableListAdapter(getActivity(), EcruList, EcruDeviceCollection);
 		expListView.setAdapter(expListAdapter);
 
 		expListView.setOnChildClickListener(new OnChildClickListener() {
@@ -51,6 +52,7 @@ public class ModuleListFragment extends Fragment{
 
 				Bundle bundle = new Bundle();
 				bundle.putString("module", selected);
+				bundle.putString("ECRU", EcruList.get(groupPosition).toString());
 				Fragment ModuleFragment = new ModuleFragment();
 				ModuleFragment.setArguments(bundle);
 				getFragmentManager().beginTransaction().replace(R.id.frame_container, ModuleFragment).commit();;
@@ -76,14 +78,14 @@ public class ModuleListFragment extends Fragment{
 							"routingTable",
 							"routingTable.txt"));
 
-			groupList = new ArrayList<String>();
-			roomUnitCollection = new LinkedHashMap<String, List<String>>();
+			EcruList = new ArrayList<ECRU>();
+			EcruDeviceCollection = new LinkedHashMap<ECRU, List<String>>();
 
 			for (UnitAdress ua : rt.UnitAdresses ){
 				String serialiseRoomUnit = FileHandler.ReadStringFromFile(getActivity(), MainActivity.CurrentProfileName, FileHandler.FUNCTIONS_LIST_DIR, ua._macAdress+ ".txt");
 				ECRU tempEcru = FileHandler.DecodeGsonEcru(serialiseRoomUnit);
-				groupList.add(tempEcru.Name);
-				roomUnitCollection.put(tempEcru.Name, tempEcru.Devices);
+				EcruList.add(tempEcru);
+				EcruDeviceCollection.put(tempEcru, tempEcru.Devices);
 			}
 		}
 		catch (Exception e){

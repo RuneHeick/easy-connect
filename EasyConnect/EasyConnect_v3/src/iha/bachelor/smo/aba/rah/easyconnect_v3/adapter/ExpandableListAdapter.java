@@ -3,6 +3,7 @@ package iha.bachelor.smo.aba.rah.easyconnect_v3.adapter;
 import iha.bachelor.smo.aba.rah.easyconnect_v3.MainActivity;
 import iha.bachelor.smo.aba.rah.easyconnect_v3.R;
 import iha.bachelor.smo.aba.rah.easyconnect_v3.contentprovider.FileHandler;
+import iha.bachelor.smo.aba.rah.easyconnect_v3.model.ECRU;
 import iha.bachelor.smo.aba.rah.easyconnect_v3.model.ModuleInfo;
 
 import java.io.UnsupportedEncodingException;
@@ -14,6 +15,7 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.graphics.Typeface;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -24,10 +26,11 @@ import android.widget.TextView;
  
 public class ExpandableListAdapter extends BaseExpandableListAdapter {
 	private Activity context;
-    private Map<String, List<String>> moduleNameCollections;
-    private List<String> roomUnitNames;
+    private Map<ECRU, List<String>> moduleNameCollections;
+    private List<ECRU> roomUnitNames;
+    private static String LOG_TAG = "ExpandableListAdapter";
  
-    public ExpandableListAdapter(Activity context, List<String> roomUnits, Map<String, List<String>> moduleCollections) {
+    public ExpandableListAdapter(Activity context, List<ECRU> roomUnits, Map<ECRU, List<String>> moduleCollections) {
         this.context = context;
         this.moduleNameCollections = moduleCollections;
         this.roomUnitNames = roomUnits;
@@ -44,6 +47,7 @@ public class ExpandableListAdapter extends BaseExpandableListAdapter {
      
     public View getChildView(final int groupPosition, final int childPosition, boolean isLastChild, View convertView, ViewGroup parent) {
         final String module = (String) getChild(groupPosition, childPosition);
+        
         ModuleInfo testMI = ModuleInfoParser.ByteToInfo(
         		FileHandler.ReadBytesFromFile(context,
         				MainActivity.CurrentProfileName,
@@ -90,6 +94,7 @@ public class ExpandableListAdapter extends BaseExpandableListAdapter {
          
         try {
 			item.setText(new String(testMI.Name.Value,"UTF-8"));
+			Log.i(LOG_TAG, "Text is:  "+item.getText());
 		} catch (UnsupportedEncodingException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -115,7 +120,8 @@ public class ExpandableListAdapter extends BaseExpandableListAdapter {
  
     public View getGroupView(int groupPosition, boolean isExpanded,
             View convertView, ViewGroup parent) {
-        String laptopName = (String) getGroup(groupPosition);
+        ECRU RoomUnit = (ECRU) getGroup(groupPosition);
+        String ecruName = RoomUnit.Name;
         if (convertView == null) {
             LayoutInflater infalInflater = (LayoutInflater) context
                     .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
@@ -124,7 +130,7 @@ public class ExpandableListAdapter extends BaseExpandableListAdapter {
         }
         TextView item = (TextView) convertView.findViewById(R.id.laptop);
         item.setTypeface(null, Typeface.BOLD);
-        item.setText(laptopName);
+        item.setText(ecruName);
         return convertView;
     }
  

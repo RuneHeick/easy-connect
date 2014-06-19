@@ -35,6 +35,11 @@ public interface IHandleValue {
 	    public byte[] Value;
 	    public byte ReadWriteProps;
 
+	    public CharacteristicValueHandle(){
+	    	
+	    	this.Value= new byte[255]; 
+	    }
+	    
 		public byte getReadWriteProps() {
 			return ReadWriteProps;
 		}
