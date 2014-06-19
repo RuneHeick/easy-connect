@@ -90,7 +90,7 @@ namespace ECRU.BLEController
                 {
                     foreach (byte b in data)
                     {
-                        Debug.Print(b.ToHex());
+                        
                         if (b == 0xEC && packet.Count == 0)
                             packet.Add(b);
                         else if (packet.Count > 0)

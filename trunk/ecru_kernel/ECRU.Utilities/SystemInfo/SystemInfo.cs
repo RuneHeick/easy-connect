@@ -58,12 +58,15 @@ namespace ECRU.Utilities
             }
             set
             {
-                _sysMac = value;
-                WriteConfigValueToFile("SystemMAC", value.ToHex());
-                Start();
-                if (SysInfoChange != null)
+                if (_sysMac == null || !value.ByteArrayCompare(_sysMac))
                 {
-                    SysInfoChange(value, Name, PassCode);
+                    _sysMac = value;
+                    WriteConfigValueToFile("SystemMAC", value.ToHex());
+                    Start();
+                    if (SysInfoChange != null)
+                    {
+                        SysInfoChange(value, Name, PassCode);
+                    }
                 }
             }
         }

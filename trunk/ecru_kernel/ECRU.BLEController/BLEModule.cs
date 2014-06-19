@@ -24,7 +24,7 @@ namespace ECRU.BLEController
         {
             packetmanager = new PacketManager(serial);
             Infofactory = new DeviceInfoFactory(packetmanager);
-            ResetTimer = new ECTimer(SendResetCallBack, null, 0, 10000);
+            ResetTimer = new ECTimer(SendResetCallBack, null, 0, 2000);
         }
 
         private bool IsInitMode { get; set; }
